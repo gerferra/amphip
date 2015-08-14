@@ -1,5 +1,5 @@
 # amphip
-`amphip` is a collection of experiments around working with GNU MathProg in Scala, at a high level.
+`amphip` is a collection of experiments around working with GNU MathProg in Scala at a high level.
 
 It includes:
 * A deep embedding of the MathProg language in Scala
