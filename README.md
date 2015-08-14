@@ -1,6 +1,8 @@
 # amphip
 `amphip` is a collection of experiments around working with GNU MathProg in Scala at a high level.
 
+<img style="float:right" alt="Hyalella azteca" src="https://upload.wikimedia.org/wikipedia/commons/5/59/Hyalella_azteca.jpg" width="200" />
+
 It includes:
 * A deep embedding of the MathProg language in Scala
   * The model is represented with an encoding of the language AST using case classes and sealed traits
