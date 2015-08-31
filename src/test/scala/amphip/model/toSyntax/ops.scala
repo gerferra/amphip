@@ -2,9 +2,9 @@ package amphip.model.toSyntax
 
 import scala.annotation.implicitNotFound
 
-object ops extends Ops
+object ops extends AllOps
 
-trait Ops {
+trait AllOps {
 
   @implicitNotFound("To is not defined for ${A}, ${B}")
   trait ToOp[A, B, C] {

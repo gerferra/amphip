@@ -10,9 +10,9 @@ import spire.implicits._
 import amphip.model.toSyntax.ops._
 import amphip.model.ast._
 
-object instances extends Instances
+object instances extends AllInstances
 
-trait Instances extends NumInstances
+trait AllInstances extends NumInstances
   with ToInstances
   
 trait NumInstances {

@@ -8,9 +8,9 @@ import amphip.model.ast._
 import amphip.model.toSyntax.ops._
 import amphip.model.toSyntax.instances._
 
-object syntax extends Syntax
+object syntax extends AllSyntax
 
-trait Syntax {
+trait AllSyntax {
 
   def num[A: Numeric](a: A): NumExpr = a
 
