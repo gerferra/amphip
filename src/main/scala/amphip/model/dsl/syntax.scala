@@ -14,9 +14,9 @@ import amphip.model.ast._
 import amphip.model.dsl.ops._
 import amphip.collect
 
-object syntax extends Syntax
+object syntax extends AllSyntax
 
-trait Syntax {
+trait AllSyntax {
   
   // TODO check the scope of the dummy indices used on the declarations
   // and maybe the arity of the references using `dimen' and `Try(eval)'

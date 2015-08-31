@@ -12,9 +12,9 @@ import spire.implicits._
 import amphip.model.ast._
 import amphip.model.dsl.ops._
 
-object instances extends Instances
+object instances extends AllInstances
 
-trait Instances extends NumInstances
+trait AllInstances extends NumInstances
   with SymInstances
   with SetInstances
   with LogInstances

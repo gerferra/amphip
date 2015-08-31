@@ -11,9 +11,9 @@ import amphip.data.dsl.ops._
 import amphip.collect
 import amphip.solver
 
-object syntax extends Syntax
+object syntax extends AllSyntax
 
-trait Syntax {
+trait AllSyntax {
 
   implicit def ModelAsModelWithData(m: Model): ModelWithData = ModelWithData(m, ModelData())
 

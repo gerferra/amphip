@@ -11,9 +11,9 @@ import amphip.data._
 import amphip.data.dsl.ops._
 import amphip.eval
 
-object instances extends Instances
+object instances extends AllInstances
 
-trait Instances extends SimpleDataInstances
+trait AllInstances extends SimpleDataInstances
   with ParamDataInstances
   with SetDataInstances
 
