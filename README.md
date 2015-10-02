@@ -12,7 +12,7 @@ It includes:
 * An evaluator of arbitrary MathProg expressions in the context of some model and data instance
 
 I talked about the techniques used to encode MathProg syntax in this library at [Scala by the Bay 2015](http://scalabythebay2015.sched.org/event/8cbbc52523ac9e5a905361e00d357099)
-
-[Slides](http://www.slideshare.net/gerferra/an-embedded-dsl-to-manipulate-mathprog-mixed-integer-programming-models-within-scala)
+* [Video](https://www.youtube.com/watch?v=Od_AH-_XoEQ)
+* [Slides](http://www.slideshare.net/gerferra/an-embedded-dsl-to-manipulate-mathprog-mixed-integer-programming-models-within-scala)
 
 // TBC
