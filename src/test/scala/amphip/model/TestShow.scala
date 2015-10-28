@@ -223,6 +223,9 @@ class TestShow {
 
     assertEquals("(b[i, j] + (0.5 * c))", (b(i, j) + .5 * c).shows)
 
+    assertEquals("min(1, 2, 3)", (Min(1, 2, 3): NumFuncRef).shows)
+
+
     assertEquals(i in I, IndEntry(List(i), I))
     assertEquals(3 in I, In(List(num(3)), I))
 

@@ -266,9 +266,9 @@ trait ShowInstances {
 
     case Log10(x) => s"log10(${x.shows})"
 
-    case Max(x) => s"max(${x.shows})"
+    case Max(xs @ _*) => s"max(${xs.map(_.shows).mkString(", ")})"
 
-    case Min(x) => s"min(${x.shows})"
+    case Min(xs @ _*) => s"min(${xs.map(_.shows).mkString(", ")})"
 
     case Round(x, n) =>
       val nShows = n.fold("")(x => s", ${x.shows}")
