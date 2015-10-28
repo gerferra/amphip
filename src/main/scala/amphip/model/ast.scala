@@ -19,73 +19,73 @@ object ast {
   sealed trait Stat extends Decl
 
   case class SetStat(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    atts: List[SetAtt] = Nil) extends Stat
+                      name: SymName,
+                      alias: Option[StringLit] = None,
+                      domain: Option[IndExpr] = None,
+                      atts: List[SetAtt] = Nil) extends Stat
 
   case class ParamStat(name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    atts: List[ParamAtt] = Nil) extends Stat
+                       alias: Option[StringLit] = None,
+                       domain: Option[IndExpr] = None,
+                       atts: List[ParamAtt] = Nil) extends Stat
 
   case class VarStat(name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    atts: List[VarAtt] = Nil) extends Stat
+                     alias: Option[StringLit] = None,
+                     domain: Option[IndExpr] = None,
+                     atts: List[VarAtt] = Nil) extends Stat
 
   sealed trait ConstraintStat extends Stat
 
   case class EqConstraintStat(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    left: LinExpr,
-    right: LinExpr) extends ConstraintStat
+                               name: SymName,
+                               alias: Option[StringLit] = None,
+                               domain: Option[IndExpr] = None,
+                               left: LinExpr,
+                               right: LinExpr) extends ConstraintStat
 
   case class LTEConstraintStat(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    left: LinExpr,
-    right: LinExpr) extends ConstraintStat
+                                name: SymName,
+                                alias: Option[StringLit] = None,
+                                domain: Option[IndExpr] = None,
+                                left: LinExpr,
+                                right: LinExpr) extends ConstraintStat
 
   case class GTEConstraintStat(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    left: LinExpr,
-    right: LinExpr) extends ConstraintStat
+                                name: SymName,
+                                alias: Option[StringLit] = None,
+                                domain: Option[IndExpr] = None,
+                                left: LinExpr,
+                                right: LinExpr) extends ConstraintStat
 
   case class DLTEConstraintStat(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    lower: NumExpr,
-    expr: LinExpr,
-    upper: NumExpr) extends ConstraintStat
+                                 name: SymName,
+                                 alias: Option[StringLit] = None,
+                                 domain: Option[IndExpr] = None,
+                                 lower: NumExpr,
+                                 expr: LinExpr,
+                                 upper: NumExpr) extends ConstraintStat
 
   case class DGTEConstraintStat(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    upper: NumExpr,
-    expr: LinExpr,
-    lower: NumExpr) extends ConstraintStat
+                                 name: SymName,
+                                 alias: Option[StringLit] = None,
+                                 domain: Option[IndExpr] = None,
+                                 upper: NumExpr,
+                                 expr: LinExpr,
+                                 lower: NumExpr) extends ConstraintStat
 
   sealed trait ObjectiveStat extends Stat
 
   case class Minimize(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    expr: LinExpr) extends ObjectiveStat
+                       name: SymName,
+                       alias: Option[StringLit] = None,
+                       domain: Option[IndExpr] = None,
+                       expr: LinExpr) extends ObjectiveStat
 
   case class Maximize(
-    name: SymName,
-    alias: Option[StringLit] = None,
-    domain: Option[IndExpr] = None,
-    expr: LinExpr) extends ObjectiveStat
+                       name: SymName,
+                       alias: Option[StringLit] = None,
+                       domain: Option[IndExpr] = None,
+                       expr: LinExpr) extends ObjectiveStat
 
   sealed trait SetAtt
 
@@ -201,26 +201,47 @@ object ast {
    * ....
    */
   sealed trait NumFuncRef extends NumExpr
+
   case class Abs(x: NumExpr) extends NumFuncRef
+
   case class Atan(x: NumExpr) extends NumFuncRef
+
   case class Atan2(y: NumExpr, x: NumExpr) extends NumFuncRef
+
   case class Card(x: SetExpr) extends NumFuncRef
+
   case class Ceil(x: NumExpr) extends NumFuncRef
+
   case class Cos(x: NumExpr) extends NumFuncRef
+
   case class Exp(x: NumExpr) extends NumFuncRef
+
   case class Floor(x: NumExpr) extends NumFuncRef
+
   case class Gmtime() extends NumFuncRef
+
   case class Length(x: SymExpr) extends NumFuncRef
+
   case class Log(x: NumExpr) extends NumFuncRef
+
   case class Log10(x: NumExpr) extends NumFuncRef
+
   case class Max(x: NumExpr*) extends NumFuncRef
+
   case class Min(x: NumExpr*) extends NumFuncRef
+
   case class Round(x: NumExpr, n: Option[NumExpr] = None) extends NumFuncRef
+
   case class Sin(x: NumExpr) extends NumFuncRef
+
   case class Sqrt(x: NumExpr) extends NumFuncRef
+
   case class Str2time(s: SymExpr, f: SymExpr) extends NumFuncRef
+
   case class Trunc(x: NumExpr, n: Option[NumExpr] = None) extends NumFuncRef
+
   case class Irand224() extends NumFuncRef
+
   case class Uniform01() extends NumFuncRef
 
   /*
@@ -238,7 +259,9 @@ object ast {
    * XXX Same comments as NumFuncRef
    */
   sealed trait SymFuncRef extends SymExpr
+
   case class Substr(x: SymExpr, from: NumExpr, length: Option[NumExpr] = None) extends SymFuncRef
+
   case class Time2str(t: NumExpr, f: SymExpr) extends SymFuncRef
 
   /*
@@ -347,22 +370,47 @@ object ast {
    */
 
   import java.util.concurrent.atomic.AtomicInteger
+  import java.util.concurrent.ConcurrentHashMap
 
   val gen = newGen
+
   def newGen: Gen = new Gen {}
+
   trait Gen {
+
     trait FreshNames {
       def prefix: String
+
       private[this] val count = new AtomicInteger(-1)
+      private[this] val hinted = new ConcurrentHashMap[String, FreshNames] // collection.mutable.Map.empty[String, FreshNames]
+
       private[this] def countStr = {
         val newVal = count.incrementAndGet
         if (newVal == 0) "" else newVal.toString
       }
+
       def freshName = {
-        s"$prefix${countStr}_"
+        s"$prefix${ countStr }_"
       }
 
-      override def toString = s"freshNames for prefix=$prefix, count=${count.get}"
+      def apply(hint: String): FreshNames = apply(Some(hint))
+
+      def apply(hint: Option[String]): FreshNames = hint match {
+        case None => this
+        case Some(h) =>
+          hinted.putIfAbsent(h, new FreshNames {
+            def prefix = h
+          })
+          hinted.get(h)
+      }
+
+      override def toString = {
+        import scala.collection.JavaConversions._
+        import scalaz._, Scalaz._
+        val hints = hinted.valuesIterator.map(x => s"- $x").toList.toNel.cata(_.list.mkString("\nhints:\n", "\n", ""), "")
+        s"freshNames for prefix=$prefix, count=${ count.get }$hints"
+      }
+
     }
 
     object ctr extends FreshNames {
@@ -387,16 +435,8 @@ object ast {
 
     object dummy extends FreshNames {
       def prefix = "d"
-
-      private[this] val hinted = collection.mutable.Map.empty[String, FreshNames]
-
-      def apply(hint: String): FreshNames = apply(Some(hint))
-      def apply(hint: Option[String]): FreshNames = hint match {
-        case None => this
-        case Some(h) => hinted.getOrElseUpdate(h, new FreshNames {
-          def prefix = h
-        })
-      }
     }
+
   }
+
 }
