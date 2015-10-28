@@ -15,6 +15,7 @@ import amphip.model.Parser.Implicits._
 class TestParser {
 
   val p = Parser()
+
   import p._
 
   implicit class TestRun[A](result: ParseResult[S[A]]) {
@@ -111,12 +112,12 @@ class TestParser {
       "
       //dd,dd,d
      */
-     
-     
+
+
      # test ### /* */
-     
+
      /* a */
-     
+
      /*
        a
        b
@@ -904,6 +905,11 @@ class TestParser {
           SetRef(F),
           SetRef(S, List(j)))))
 
+    /* TODO verify precedence of IndExpr `{X}' vs SetLit `{X}', with X being a Set in the first case and a Param in the second
+        param nA;
+        set A2 := A diff {nA}; # yields error because it enterpretes `{nA}' as an IndExprSet
+     */
+
     assertEquals(
       parse(phrase(pSetExpr), "1..10 union 21..30").runR,
       Union(
@@ -1594,7 +1600,7 @@ class TestParser {
           List(VarGTE(NumAdd(i, j)))))
 
     // TODO make this actual tests
-          
+
     val make = VarStat("make")
     val store = VarStat("store")
     val rprd = VarStat("rprd")
@@ -1604,7 +1610,7 @@ class TestParser {
     val pt = ParamStat("pt")
     val crews = ParamStat("crews")
     val profit = ParamStat("profit")
-          
+
     parse(phrase(pConstraintStat), """s.t. r: 1, >= x + y + z, >= 0;""").runR
 
     parse(phrase(pConstraintStat), """limit{t in T}: sum{j in prd} make[j,t] <= max_prd;""").runR(symTab + make + max_prd)
@@ -1657,7 +1663,7 @@ class TestParser {
         Maximize("D", expr = LinMult(NumLit(2), VarRef(VarStat("xC")))),
         EqConstraintStat("E", left = NumLit(1), right = ParamRef(ParamStat("pB"))))))
 
-    
+
     // XXX add tests for sample models
     /*
     import amphip.model.show._
