@@ -121,8 +121,8 @@ class TestEval {
     val ctrEqInd = st("ctrEq", i in I) { aInd(i) * xInd(i) === bInd(i) * yInd(i) }
     val ctrLTEInd = st("ctrLTE", i in I) { aInd(i) * xInd(i) <= bInd(i) * yInd(i) }
     val ctrGTEInd = st("ctrGTE", i in I) { aInd(i) * xInd(i) >= bInd(i) * yInd(i) }
-    val ctrDLTEInd: ConstraintStat = DLTEConstraintStat("ctrDLTE", domain = (ind(i in I)).some, lower = aInd(i), expr = bInd(i) * yInd(i), upper = bInd(i))
-    val ctrDGTEInd: ConstraintStat = DGTEConstraintStat("ctrDGTE", domain = (ind(i in I)).some, upper = aInd(i), expr = bInd(i) * yInd(i), lower = bInd(i))
+    val ctrDLTEInd: ConstraintStat = DLTEConstraintStat("ctrDLTE", domain = ind(i in I).some, lower = aInd(i), expr = bInd(i) * yInd(i), upper = bInd(i))
+    val ctrDGTEInd: ConstraintStat = DGTEConstraintStat("ctrDGTE", domain = ind(i in I).some, upper = aInd(i), expr = bInd(i) * yInd(i), lower = bInd(i))
 
     val indParamData =
       LinkedMap[DataKey, SimpleData](

@@ -2,13 +2,24 @@ package amphip.base
 
 import scala.collection._
 import scala.collection.generic._
-import scala.collection.mutable.Builder
 
 object implicits {
+
   /**
    * Extra members for seqs
    */
   implicit class SeqOpts[A, C <: Seq[A]](xs: C with SeqLike[A, C]) {
+
+    final def groupByKey[K](f: A => K): Map[K, A] = {
+      val builder = Map.newBuilder[K, A]
+
+      for (elem <- xs) {
+        val key = f(elem)
+        builder += ((key, elem))
+      }
+
+      builder.result()
+    }
 
     final def groupByLinked[K](f: A => K)(implicit cbf: CanBuildFrom[C, A, C]): LinkedMap[K, C] = {
 
@@ -22,9 +33,10 @@ object implicits {
       }
       val b = LinkedMap.newBuilder[K, C]
       for ((k, v) <- m)
-        b += ((k, v.result))
+        b += ((k, v.result()))
 
-      b.result
+      b.result()
     }
   }
+
 }
