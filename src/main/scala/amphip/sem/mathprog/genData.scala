@@ -41,7 +41,6 @@ object genData {
 
           case _ =>
 
-            val (keys, values) = valuesNE.unzip
             val valuesByQual = valuesNE.groupByLinked { case (k, v) => k.subscript.drop(2) }
             val tablesStrings =
               for {
@@ -78,7 +77,7 @@ object genData {
 
     val tabular = rowColumns.toSeq.distinct.size == 1
 
-    println(s"tabular? $tabular")
+    //println(s"tabular? $tabular")
 
     val valuesByRowCol =
       for {
