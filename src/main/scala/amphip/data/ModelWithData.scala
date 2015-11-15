@@ -31,6 +31,12 @@ case class ModelData(
   def +(m: ModelData): ModelData = ModelData(
     params = params ++ m.params,
     sets = sets ++ m.sets)
+
+  def filterParams(pred: DataKey => Boolean): ModelData =
+    params(params.filter { case (key, _) => pred(key) })
+
+  def filterSets(pred: DataKey => Boolean): ModelData =
+    sets(sets.filter { case (key, _) => pred(key)})
 }
 
 object ModelData {
