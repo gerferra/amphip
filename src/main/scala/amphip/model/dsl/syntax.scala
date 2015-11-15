@@ -17,16 +17,19 @@ import amphip.collect
 object syntax extends AllSyntax
 
 trait AllSyntax {
-  
+
   // TODO check the scope of the dummy indices used on the declarations
   // and maybe the arity of the references using `dimen' and `Try(eval)'
   def set(name: SymName, indexing: IndExpr): SetStat = SetStat(name, domain = indexing.some)
+
   def set(name: SymName, entries: IndEntry*): SetStat = SetStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
 
   def param(name: SymName, indexing: IndExpr): ParamStat = ParamStat(name, domain = indexing.some)
+
   def param(name: SymName, entries: IndEntry*): ParamStat = ParamStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
 
   def xvar(name: SymName, indexing: IndExpr): VarStat = VarStat(name, domain = indexing.some)
+
   def xvar(name: SymName, entries: IndEntry*): VarStat = VarStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
 
   def st(ctr: ConstraintStat): ConstraintStat =
@@ -56,7 +59,7 @@ trait AllSyntax {
   }
 
   def model(obj: ObjectiveStat, constr: ConstraintStat*): Model = {
-    val pf: PartialFunction[Any, Stat] = { case s: Stat => s }
+    val pf: PartialFunction[Any, Stat] = {case s: Stat => s}
     val refs = constr.flatMap(collect(_, pf)) ++ collect(obj, pf)
     val distinctRefs = refs.distinct.toList
 
@@ -77,11 +80,13 @@ trait AllSyntax {
   def dummy(name: String, synthetic: Boolean = false): DummyIndDecl = DummyIndDecl(name, synthetic)
 
   def tup(x: DummyIndDecl, xs: DummyIndDecl*): List[DummyIndDecl] = (x +: xs).toList
+
   def tup(x: SimpleExpr, xs: SimpleExpr*): List[SimpleExpr] = x :: xs.toList
 
   def num[A: Numeric](a: A): NumExpr = a
 
   def str(a: String): SymExpr = a
+
   def str(a: Char): SymExpr = a
 
   def ind(entries: IndEntry*): IndExpr = IndExpr(entries.toList)
@@ -100,6 +105,7 @@ trait AllSyntax {
 
   implicit class RefSyntax[A](val lhe: A) {
     def apply[B](expr: SimpleExpr*)(implicit RefOp: RefOp[A, B]): B = RefOp.apply(lhe, expr.toList)
+
     def apply[B, C](expr: => List[C])(implicit conv: C => SimpleExpr, RefOp: RefOp[A, B]): B = RefOp.apply[C](lhe, expr)
   }
 
@@ -176,15 +182,19 @@ trait AllSyntax {
   }
 
   def sum[A, B](indexing: IndExpr)(integrand: A)(implicit SumOp: SumOp[A, B]): B = SumOp.sum(indexing, integrand)
+
   def sum[A, B](entries: IndEntry*)(integrand: A)(implicit SumOp: SumOp[A, B]): B = sum(IndExpr(entries.toList))(integrand)
 
   def prod[A, B](indexing: IndExpr)(integrand: A)(implicit ProdOp: ProdOp[A, B]): B = ProdOp.prod(indexing, integrand)
+
   def prod[A, B](entries: IndEntry*)(integrand: A)(implicit ProdOp: ProdOp[A, B]): B = prod(IndExpr(entries.toList))(integrand)
 
   def max[A, B](indexing: IndExpr)(integrand: A)(implicit MaxOp: MaxOp[A, B]): B = MaxOp.max(indexing, integrand)
+
   def max[A, B](entries: IndEntry*)(integrand: A)(implicit MaxOp: MaxOp[A, B]): B = max(IndExpr(entries.toList))(integrand)
 
   def min[A, B](indexing: IndExpr)(integrand: A)(implicit MinOp: MinOp[A, B]): B = MinOp.min(indexing, integrand)
+
   def min[A, B](entries: IndEntry*)(integrand: A)(implicit MinOp: MinOp[A, B]): B = min(IndExpr(entries.toList))(integrand)
 
   implicit class MultSyntax[A](val lhe: A) {
@@ -232,29 +242,35 @@ trait AllSyntax {
   }
 
   def setOf[A, B](indexing: IndExpr)(integrand: A*)(implicit SetOfOp: SetOfOp[A, B]): B = SetOfOp.setOf(indexing, integrand: _*)
+
   def setOf[A, B](entries: IndEntry*)(integrand: A*)(implicit SetOfOp: SetOfOp[A, B]): B = setOf(IndExpr(entries.toList))(integrand: _*)
 
   /**
-   * Provides syntax for the "to" reserved word for arithmetic sets.
-   *
-   * `<: AnyRef' is a hack to not compete with `Predef.xxxWrapper(Xxx):RichXxx'
-   * which also provides a `to(Xxx)' method for literals in an implicit way ...
-   *
-   * The hack works by requiring the second argument to not be a literal (actually any `AnyVal'),
-   * so, in such cases `Predef.xxxWrapper' always wins.
-   *
-   * The second version, `AnyRefToSyntax', is needed to permit expressions of the from:
-   * `p to 3', being `p' a parameter.
-   */
+    * Provides syntax for the "to" reserved word for arithmetic sets.
+    *
+    * `<: AnyRef' is a hack to not compete with `Predef.xxxWrapper(Xxx):RichXxx'
+    * which also provides a `to(Xxx)' method for literals in an implicit way ...
+    *
+    * The hack works by requiring the second argument to not be a literal (actually any `AnyVal'),
+    * so, in such cases `Predef.xxxWrapper' always wins.
+    *
+    * The second version, `AnyRefToSyntax', is needed to permit expressions of the from:
+    * `p to 3', being `p' a parameter.
+    */
   implicit class ToAnyRefSyntax[A](val a: A) {
     def to[B <: AnyRef, C](tf: B)(implicit ToOp: ToOp[A, B, C]): C = ToOp.to(a, tf)
   }
+
   implicit class AnyRefToSyntax[A <: AnyRef](val a: A) {
     def to[B, C](tf: B)(implicit ToOp: ToOp[A, B, C]): C = ToOp.to(a, tf)
   }
+
   implicit def ToSyntaxInt(a: Int): ToAnyRefSyntax[Int] = ToAnyRefSyntax(a)
+
   implicit def ToSyntaxLong(a: Long): ToAnyRefSyntax[Long] = ToAnyRefSyntax(a)
+
   implicit def ToSyntaxFloat(a: Float): ToAnyRefSyntax[Float] = ToAnyRefSyntax(a)
+
   implicit def ToSyntaxDouble(a: Double): ToAnyRefSyntax[Double] = ToAnyRefSyntax(a)
 
   implicit class BySyntax[A](val exp: A) {
@@ -266,9 +282,11 @@ trait AllSyntax {
   }
 
   def forall[A, B](indexing: IndExpr)(integrand: A)(implicit ForallOp: ForallOp[A, B]): B = ForallOp.forall(indexing, integrand)
+
   def forall[A, B](entries: IndEntry*)(integrand: A)(implicit ForallOp: ForallOp[A, B]): B = forall(IndExpr(entries.toList))(integrand)
 
   def exists[A, B](indexing: IndExpr)(integrand: A)(implicit ExistsOp: ExistsOp[A, B]): B = ExistsOp.exists(indexing, integrand)
+
   def exists[A, B](entries: IndEntry*)(integrand: A)(implicit ExistsOp: ExistsOp[A, B]): B = exists(IndExpr(entries.toList))(integrand)
 
   implicit class ConjSyntax[A](val lhe: A) {
@@ -290,14 +308,21 @@ trait AllSyntax {
     def replace[A: Manifest](target: A, replacement: A): Model = amphip.replace(model, target, replacement)
 
     def variables: List[VarStat] = model.statements.collect { case x: VarStat => x }
+
     def parameters: List[ParamStat] = model.statements.collect { case x: ParamStat => x }
+
     def sets: List[SetStat] = model.statements.collect { case x: SetStat => x }
+
     def objective: ObjectiveStat = model.statements.collect { case x: ObjectiveStat => x }.headOption.err(s"Objective statement not defined")
+
     def constraints: List[ConstraintStat] = model.statements.collect { case x: ConstraintStat => x }
 
     def param(name: String): ParamStat = parameters.find(_.name == name).err(s"Parameter `$name' not defined")
+
     def xvar(name: String): VarStat = variables.find(_.name == name).err(s"Variable `$name' not defined")
+
     def set(name: String): SetStat = sets.find(_.name == name).err(s"Set `$name' not defined")
+
     def ctr(name: String): ConstraintStat = constraints.find(_.name == name).err(s"Constraint `$name' not defined")
 
     def +:(stat: Stat): Model = {
@@ -305,16 +330,31 @@ trait AllSyntax {
       val newStatements = refs ++ model.statements
       Model(newStatements.distinct)
     }
+
     def :+(stat: Stat): Model = {
       val refs = collect(stat, { case s: Stat => s })
       val newStatements = model.statements ++ refs
       Model(newStatements.distinct)
     }
+
     def ++(stats: List[Stat]): Model = {
       val refs = stats.flatMap(collect(_, { case s: Stat => s }))
       val newStatements = model.statements ++ refs
       Model(newStatements.distinct)
     }
+  }
+
+  implicit class IndExprSyntax(val indexing: IndExpr) {
+    def sets: List[SetExpr] = indexing.entries.map(_.set)
+  }
+
+  implicit class ParamStatSyntax(val param: ParamStat) {
+    def sets: List[SetExpr] = param.domain.map(_.sets) | Nil
+
+    def isComputable: Boolean = param.atts.exists(_ match {
+      case x: ParamAssign => true
+      case _ => false
+    })
   }
 
   implicit class VarStatSyntax(val xvar: VarStat) {
@@ -326,6 +366,8 @@ trait AllSyntax {
       }
       xvar.copy(atts = newAtts)
     }
+
+    def sets: List[SetExpr] = xvar.domain.map(_.sets) | Nil
   }
 
   //// FUNCTIONS
