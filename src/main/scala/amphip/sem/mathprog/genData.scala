@@ -16,8 +16,7 @@ object genData {
   }
 
   /**
-   *  Very basic support for transforming the EDSL parameter data format to MathpProg data format.
-   *  Doesn't handle non-tabular data.
+   *  Basic support for transforming the EDSL parameter data format to MathpProg data format.
    */
   def getParamData(params: ParamStatData): String = {
     val str =
@@ -25,41 +24,76 @@ object genData {
         (name, valuesNE) <- params.toSeq.groupByLinked { case (key, value) => key.name }
       } yield {
         val (key0, value0) = valuesNE.head
-        //println(name -> key0 -> value0)
-        // TODO handle non tabular data
         key0.subscript match {
 
           case Nil =>
-            s"param $name := ${value0.shows};"
+            s"param $name := ${value0.shows};\n"
 
           case _ :: Nil =>
-            s"param $name := ${valuesNE.map { case (k, v) => s"${k.subscript(0).shows} ${v.shows}" }.mkString(", ")};"
+            s"param $name := ${valuesNE.map { case (k, v) => s"${k.subscript(0).shows} ${v.shows}" }.mkString(", ")};\n"
 
           case _ :: _ :: Nil =>
-            s"""param $name:
-               |${tableString(valuesNE)};\n""".stripMargin
+            if (isTabular(valuesNE)) {
+              s"""param $name:
+                 |${tableString(name, valuesNE)};\n""".stripMargin
+            } else {
+              simpleValuesString(name, valuesNE)
+            }
 
           case _ =>
-
             val valuesByQual = valuesNE.groupByLinked { case (k, v) => k.subscript.drop(2) }
-            val tablesStrings =
-              for {
-                (qual, valuesNE) <- valuesByQual
-              } yield {
-                s"""[*, *, ${qual.map(_.shows).mkString(", ")}]:
-                |${tableString(valuesNE)}""".stripMargin
-              }
+            val allTabular = valuesByQual.forall(x => isTabular(x._2))
+            if (allTabular) {
+              val tablesStrings =
+                for {
+                  (qual, valuesNE) <- valuesByQual
+                } yield {
+                  s"""[*, *, ${qual.map(_.shows).mkString(", ")}]:
+                  |${tableString(name, valuesNE)}""".stripMargin
+                }
 
-            s"""param $name :=
-               |${tablesStrings.mkString("", "\n\n", ";\n")}""".stripMargin
-
+              s"""param $name :=
+                 |${tablesStrings.mkString("", "\n\n", ";\n")}""".stripMargin
+            } else {
+              simpleValuesString(name, valuesNE)
+            }
         }
       }
 
     str.mkString(f"%n")
   }
 
-  private def tableString(valuesNE: Seq[(DataKey, SimpleData)]): String = {
+  def isTabular(valuesNE: Seq[(DataKey, SimpleData)]): Boolean = {
+    val valuesByRow = valuesNE.groupByLinked { case (k, v) => k.subscript(0) }
+    val rowColumns =
+      for {
+        seq <- valuesByRow.values
+      } yield {
+        for {
+          (k, v) <- seq
+        } yield {
+          k.subscript(1)
+        }
+      }
+
+    rowColumns.toSeq.distinct.size == 1
+  }
+
+  private def simpleValuesString(pName: String, valuesNE: Seq[(DataKey, SimpleData)]): String = {
+    val valuesByQual = valuesNE.groupByLinked { case (k, v) => k.subscript.dropRight(1) }
+    val tablesStrings =
+      for {
+        (qual, valuesNE) <- valuesByQual
+      } yield {
+        val values = valuesNE.map { case (k, v) => s"${k.subscript.last.shows} ${v.shows}" }.mkString(", ")
+        s"""[${qual.map(_.shows).mkString(", ")}, *] := $values"""
+      }
+
+    s"""param $pName :=
+       |${tablesStrings.mkString("", "\n", ";\n")}""".stripMargin
+  }
+
+  private def tableString(pName: String, valuesNE: Seq[(DataKey, SimpleData)]): String = {
     val (keys, values) = valuesNE.unzip
     val rows = keys.map(_.subscript(0)).distinct
     val cols = keys.map(_.subscript(1)).distinct
@@ -76,8 +110,7 @@ object genData {
       }
 
     val tabular = rowColumns.toSeq.distinct.size == 1
-
-    //println(s"tabular? $tabular")
+    if (!tabular) println(s"warn: data is not tabular for parameter `$pName'")
 
     val valuesByRowCol =
       for {
@@ -111,7 +144,14 @@ object genData {
       for {
         c <- cols
       } {
-        val value = valuesByRowCol(r)(c).unzip._2.head // if the subscript is repeated, it will take only the first
+        val tryValue = 
+          scala.util.Try(valuesByRowCol(r)(c).head._2) // if the subscript is repeated, it will take only the first
+          .recover {
+            case ex: NoSuchElementException =>
+              val info = if (!isTabular(valuesNE)) ". Data is not tabular" else ""
+              throw new NoSuchElementException(s"no value for $pName[${r.shows},${c.shows}...]$info")
+          }
+        val value = tryValue.get 
         res.append(s"%${C}s ".format(value.shows))
       }
       res.append(if (rowsSize == (i + 1)) f"" else f"%n")
@@ -133,7 +173,7 @@ object genData {
             s"set ${k.shows} := ${v.shows};"
           }
 
-        indStr.mkString(f"%n")
+        indStr.mkString("", f"%n", f"%n")
 
       }
 
