@@ -1,4 +1,4 @@
-package amphip.model.dsl
+package amphip.model
 
 import scala.annotation.implicitNotFound
 

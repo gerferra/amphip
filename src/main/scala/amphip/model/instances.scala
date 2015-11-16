@@ -1,4 +1,4 @@
-package amphip.model.dsl
+package amphip.model
 
 import scala.language.implicitConversions
 
@@ -10,7 +10,7 @@ import spire.math._
 import spire.implicits._
 
 import amphip.model.ast._
-import amphip.model.dsl.ops._
+import amphip.model.ops._
 
 object instances extends AllInstances
 
@@ -343,6 +343,11 @@ trait InInstancesLowPriority1 extends InInstancesLowPriority2 {
       IndEntry(lhe, rhe)
   }
 
+  implicit def Tuple2DummyIndIndOp[A, B](implicit convA: A => Tuple2[DummyIndDecl, DummyIndDecl], convB: B => SetExpr): InOp[A, B, IndEntry] = new InOp[A, B, IndEntry] {
+    def in(lhe: A, rhe: B) =
+      IndEntry(List(lhe._1, lhe._2), rhe)
+  }
+
 }
 trait InInstancesLowPriority2 {
 
@@ -350,9 +355,15 @@ trait InInstancesLowPriority2 {
     def in(lhe: A, rhe: B) =
       In(List(lhe), rhe)
   }
+
   implicit def ListSimpleExprInOp[A, B](implicit convA: A => List[SimpleExpr], convB: B => SetExpr): InOp[A, B, LogicExpr] = new InOp[A, B, LogicExpr] {
     def in(lhe: A, rhe: B) =
       In(lhe, rhe)
+  }
+
+  implicit def Tuple2SimpleExprIndOp[A, B](implicit convA: A => Tuple2[SimpleExpr, SimpleExpr], convB: B => SetExpr): InOp[A, B, LogicExpr] = new InOp[A, B, LogicExpr] {
+    def in(lhe: A, rhe: B) =
+      In(List(lhe._1, lhe._2), rhe)
   }
 
 }

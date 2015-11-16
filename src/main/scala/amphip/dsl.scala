@@ -1,4 +1,3 @@
 package amphip
 
-// XXX put trait `DSL' outside package `dsl'?
-object dsl extends model.dsl.DSL with data.dsl.DSL
+object dsl extends model.ModelDSL with data.DataDSL

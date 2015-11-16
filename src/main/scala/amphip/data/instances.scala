@@ -1,4 +1,4 @@
-package amphip.data.dsl
+package amphip.data
 
 import scala.language.implicitConversions
 
@@ -7,8 +7,7 @@ import spire.implicits._
 
 import amphip.base._
 import amphip.model.ast._
-import amphip.data._
-import amphip.data.dsl.ops._
+import amphip.data.ops._
 import amphip.eval
 
 object instances extends AllInstances

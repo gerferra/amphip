@@ -6,3 +6,4 @@
 .settings/
 target/
 .idea/
+.DS_Store

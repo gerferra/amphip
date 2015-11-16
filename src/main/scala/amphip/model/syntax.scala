@@ -1,4 +1,4 @@
-package amphip.model.dsl
+package amphip.model
 
 import scala.language.implicitConversions
 
@@ -11,7 +11,8 @@ import scalaz.std.list.listSyntax._
 import spire.math._
 
 import amphip.model.ast._
-import amphip.model.dsl.ops._
+import amphip.model.ops._
+import amphip.model.instances._
 import amphip.collect
 
 object syntax extends AllSyntax

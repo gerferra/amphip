@@ -1,8 +1,7 @@
-package amphip.data.dsl
+package amphip.data
 
 import scala.annotation.implicitNotFound
 
-import amphip.data._
 
 object ops {
   
