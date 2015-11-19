@@ -1,7 +1,7 @@
 package amphip.base
 
-import scala.collection._
-import scala.collection.generic._
+import scala.collection.{ SeqLike, mutable }
+import scala.collection.generic.CanBuildFrom
 
 object implicits {
 
