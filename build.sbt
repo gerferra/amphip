@@ -49,8 +49,8 @@ scalacOptions in (Compile, console) ~= (_.filterNot(op => Seq("-Xlint", "-Ywarn-
 // DEPENDENCIES
 
 libraryDependencies ++= Seq(
-  "org.scalaz" %% "scalaz-core" % "7.1.3",
-  "org.spire-math" %% "spire" % "0.9.1",
+  "org.scalaz" %% "scalaz-core" % "7.1.5",
+  "org.spire-math" %% "spire" % "0.11.0",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1"
 )
 
