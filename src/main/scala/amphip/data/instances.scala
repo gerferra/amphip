@@ -42,9 +42,8 @@ trait ParamDataInstances {
 
   private[this] val key = DataKey
 
-  implicit def ParamStatExtensiveDataOp[A, B](
-    implicit convA: A => ParamStat,
-    convB: B => SimpleData): DataOp[A, B] = new DataOp[A, B] {
+  implicit def ParamStatExtensiveDataOp[A, B](implicit convA: A => ParamStat,
+                                                       convB: B => SimpleData): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => values match {
@@ -66,22 +65,20 @@ trait ParamDataInstances {
     }
   }
 
-  implicit def ParamStatExtensiveDataListOp[A, B](
-    implicit convA: A => ParamStat,
-    convB: B => List[SimpleData]): DataOp[A, B] = new DataOp[A, B] {
+  implicit def ParamStatExtensiveDataListOp[A, B](implicit convA: A => ParamStat,
+                                                           convB: B => List[SimpleData]): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData =
       ParamStatExtensiveDataOp[ParamStat, SimpleData].data(decl, values.flatten)
   }
 
-  implicit def ParamStatIndexedDataOp[A, B](
-    implicit convA: A => ParamStat,
-    convB: B => (List[SimpleData], SimpleData)): DataOp[A, B] = new DataOp[A, B] {
+  implicit def ParamStatIndexedDataOp[A, B](implicit convA: A => ParamStat,
+                                                     convB: B => (List[SimpleData], SimpleData)): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => ModelData()
         case Some(indexing) =>
-          val evInd = eval(indexing).map(_.values.toList)
-          val valuesFilter = values.filter(x => evInd.contains(x._1)).map(x => x._1 -> x._2)
+          val evIndSet = eval(indexing).map(_.values.toList).toSet
+          val valuesFilter = values.filter(x => evIndSet(x._1)).map(x => x._1 -> x._2)
           val pairs = valuesFilter.map { case (subscript, value) => key(decl.name, subscript) -> value }
 
           ModelData(params = LinkedMap(pairs: _*))
@@ -89,15 +86,15 @@ trait ParamDataInstances {
     }
   }
   
-  implicit def ParamStatIndexedDataOp1[A, B](
-    implicit convA: A => ParamStat,
-    convB: B => (SimpleData, SimpleData)): DataOp[A, B] = new DataOp[A, B] {
+  implicit def ParamStatIndexedDataOp1[A, B](implicit convA: A => ParamStat,
+                                                      convB: B => (SimpleData, SimpleData)): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
+      //TODO implement in terms of ParamStatIndexedDataOp instance
       decl.domain match {
         case None => ModelData()
         case Some(indexing) =>
-          val evInd = eval(indexing).map(_.values.toList)
-          val valuesFilter = values.filter(x => evInd.contains(List(x._1))).map(x => List(x._1) -> x._2)
+          val evIndSet = eval(indexing).map(_.values.toList).toSet
+          val valuesFilter = values.filter(x => evIndSet(List(x._1))).map(x => List(x._1) -> x._2)
           val pairs = valuesFilter.map { case (subscript, value) => key(decl.name, subscript) -> value }
 
           ModelData(params = LinkedMap(pairs: _*))
@@ -105,9 +102,8 @@ trait ParamDataInstances {
     }
   }
   
-  implicit def ParamStatIndexedDataListOp[A, B](
-    implicit convA: A => ParamStat,
-    convB: B => List[(List[SimpleData], SimpleData)]): DataOp[A, B] = new DataOp[A, B] {
+  implicit def ParamStatIndexedDataListOp[A, B](implicit convA: A => ParamStat,
+                                                         convB: B => List[(List[SimpleData], SimpleData)]): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData =
       ParamStatIndexedDataOp[ParamStat, (List[SimpleData], SimpleData)].data(decl, values.flatten)
   }
@@ -176,8 +172,8 @@ trait SetDataInstances {
       decl.domain match {
         case None => ModelData()
         case Some(indexing) =>
-          val evInd = eval(indexing).map(_.values.toList)
-          val valuesFilter = values.filter(x => evInd.contains(x._1)).map(x => x._1 -> x._2)
+          val evIndSet = eval(indexing).map(_.values.toList).toSet
+          val valuesFilter = values.filter(x => evIndSet(x._1)).map(x => x._1 -> x._2)
           val pairs = valuesFilter.map { case (subscript, values) => key(decl.name, subscript) -> values }
 
           ModelData(sets = LinkedMap(pairs: _*))
@@ -192,8 +188,8 @@ trait SetDataInstances {
       decl.domain match {
         case None => ModelData()
         case Some(indexing) =>
-          val evInd = eval(indexing).map(_.values.toList)
-          val valuesFilter = values.filter(x => evInd.contains(List(x._1))).map(x => List(x._1) -> x._2)
+          val evIndSet = eval(indexing).map(_.values.toList).toSet
+          val valuesFilter = values.filter(x => evIndSet(List(x._1))).map(x => List(x._1) -> x._2)
           val pairs = valuesFilter.map { case (subscript, values) => key(decl.name, subscript) -> values }
 
           ModelData(sets = LinkedMap(pairs: _*))

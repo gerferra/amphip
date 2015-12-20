@@ -731,12 +731,12 @@ object eval {
         })
 
       case NotWithin(left, right) =>
-        val r = eval(right)
-        !eval(left).forall(r.contains(_))
+        val r = eval(right).toSet
+        !eval(left).forall(r)
 
       case Within(left, right) =>
-        val r = eval(right)
-        eval(left).forall(r.contains(_))
+        val r = eval(right).toSet
+        eval(left).forall(r)
 
       case x: NumExpr => eval(x) != 0
     })
