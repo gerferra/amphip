@@ -35,6 +35,14 @@ class LinkedMap[K, +V] private (aVect: Vector[K], aMap: Map[K, V]) extends immut
   }
 
   def iterator: Iterator[(K, V)] = for (key <- theVect.iterator) yield key -> theMap(key)
+
+  /** alternative version of `updated`, not great wrt type inference though ... */
+  def updated[V1 >: V](key: K, f: V => V1): LinkedMap[K, V1] = {
+    get(key) match {
+      case Some(value) => this + ((key, f(value)))
+      case None => this
+    }
+  }
 }
 
 object LinkedMap extends generic.ImmutableMapFactory[LinkedMap] {

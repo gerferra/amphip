@@ -7,3 +7,5 @@
 target/
 .idea/
 .DS_Store
+.ensime
+.ensime_cache/
