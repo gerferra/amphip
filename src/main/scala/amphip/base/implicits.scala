@@ -1,14 +1,14 @@
 package amphip.base
 
-import scala.collection.{ SeqLike, mutable }
+import scala.collection.{ IterableLike, mutable }
 import scala.collection.generic.CanBuildFrom
 
 object implicits {
 
   /**
-   * Extra members for seqs
+   * Extra members for iterable
    */
-  implicit class SeqOpts[A, C <: Seq[A]](xs: C with SeqLike[A, C]) {
+  implicit class IterableOpts[A, C <: Iterable[A]](xs: C with IterableLike[A, C]) {
 
     final def groupByKey[K](f: A => K): Map[K, A] = {
       val builder = Map.newBuilder[K, A]

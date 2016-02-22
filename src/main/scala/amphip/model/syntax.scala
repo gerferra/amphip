@@ -22,16 +22,22 @@ trait AllSyntax {
   // TODO check the scope of the dummy indices used on the declarations
   // and maybe the arity of the references using `dimen' and `Try(eval)'
   def set(name: SymName, indexing: IndExpr): SetStat = SetStat(name, domain = indexing.some)
-
   def set(name: SymName, entries: IndEntry*): SetStat = SetStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
+  def set(indexing: IndExpr)(implicit name: sourcecode.Name): SetStat = set(name.value, indexing)
+  def set(entries: IndEntry*)(implicit name: sourcecode.Name): SetStat = set(name.value, entries: _*)
+  def set(implicit name: sourcecode.Name): SetStat = set(name.value)
 
   def param(name: SymName, indexing: IndExpr): ParamStat = ParamStat(name, domain = indexing.some)
-
   def param(name: SymName, entries: IndEntry*): ParamStat = ParamStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
+  def param(indexing: IndExpr)(implicit name: sourcecode.Name): ParamStat = param(name.value, indexing)
+  def param(entries: IndEntry*)(implicit name: sourcecode.Name): ParamStat = param(name.value, entries: _*)
+  def param(implicit name: sourcecode.Name): ParamStat = param(name.value)
 
   def xvar(name: SymName, indexing: IndExpr): VarStat = VarStat(name, domain = indexing.some)
-
   def xvar(name: SymName, entries: IndEntry*): VarStat = VarStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
+  def xvar(indexing: IndExpr)(implicit name: sourcecode.Name): VarStat = xvar(name.value, indexing)
+  def xvar(entries: IndEntry*)(implicit name: sourcecode.Name): VarStat = xvar(name.value, entries: _*)
+  def xvar(implicit name: sourcecode.Name): VarStat = xvar(name.value)
 
   def st(ctr: ConstraintStat): ConstraintStat =
     st(ctr.name, none, ctr)
