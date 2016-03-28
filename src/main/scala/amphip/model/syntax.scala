@@ -2,9 +2,6 @@ package amphip.model
 
 import scala.language.implicitConversions
 
-import scala.collection.immutable.NumericRange
-import scala.annotation.implicitNotFound
-
 import scalaz.std.option._, optionSyntax._
 import scalaz.std.list.listSyntax._
 
@@ -344,9 +341,15 @@ trait AllSyntax {
       Model(newStatements.distinct)
     }
 
-    def ++(stats: List[Stat]): Model = {
+    def :++(stats: List[Stat]): Model = {
       val refs = stats.flatMap(collect(_, { case s: Stat => s }))
       val newStatements = model.statements ++ refs
+      Model(newStatements.distinct)
+    }
+
+    def ++:(stats: List[Stat]): Model = {
+      val refs = stats.flatMap(collect(_, { case s: Stat => s }))
+      val newStatements = refs ++ model.statements
       Model(newStatements.distinct)
     }
   }

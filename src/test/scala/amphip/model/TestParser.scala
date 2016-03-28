@@ -2,8 +2,6 @@ package amphip.model
 
 import scalaz.{ Failure => _, Success => _, Length => _, Forall => _, _ }, Scalaz._
 
-import scalax.io.Resource
-
 import org.junit.Assert._
 import org.junit.Test
 
@@ -1667,6 +1665,7 @@ class TestParser {
     // XXX add tests for sample models
     /*
     import amphip.model.show._
+    import scalax.io.Resource
     
     object data {
       val modelA = Resource.fromClasspath("examples.modelA").string

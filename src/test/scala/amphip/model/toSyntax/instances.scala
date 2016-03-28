@@ -2,8 +2,6 @@ package amphip.model.toSyntax
 
 import scala.language.implicitConversions
 
-import scala.collection.immutable.NumericRange
-
 import spire.math._
 import spire.implicits._
 

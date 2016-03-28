@@ -1,7 +1,5 @@
 package amphip
 
-import scala.language.implicitConversions
-
 import scala.annotation.implicitNotFound
 import scala.math.BigDecimal.RoundingMode.{ HALF_UP => HalfUp, DOWN => Down }
 

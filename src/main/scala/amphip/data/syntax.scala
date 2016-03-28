@@ -7,7 +7,6 @@ import scalaz.std.list.listSyntax._
 import amphip.model.ast._
 import amphip.model.dsl._
 import amphip.data.ops._
-import amphip.collect
 import amphip.solver
 
 object syntax extends AllSyntax
@@ -38,7 +37,8 @@ trait AllSyntax {
 
     def +:(stat: Stat): ModelWithData = update(stat +: m.model)
     def :+(stat: Stat): ModelWithData = update(m.model :+ stat)
-    def ++(stats: List[Stat]): ModelWithData = update(m.model ++ stats)
+    def ++:(stats: List[Stat]): ModelWithData = update(stats ++: m.model)
+    def :++(stats: List[Stat]): ModelWithData = update(m.model :++ stats)
 
     ////
 

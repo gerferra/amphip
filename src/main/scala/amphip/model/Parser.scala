@@ -1,7 +1,5 @@
 package amphip.model
 
-import scala.language.{ existentials, higherKinds }
-
 import scala.util.parsing.combinator._
 import scala.util.parsing.input.Position
 import scala.util.parsing.input.CharArrayReader.EofCh

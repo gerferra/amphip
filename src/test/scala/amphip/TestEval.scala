@@ -42,6 +42,7 @@ class TestEval {
     assertEquals(eval(SAssg(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetData](3, 4, 5))
 
     val Empty = set("Empty") default Nil
+    
     val IndexedEmpty = set("IndexedEmpty", ind(SDef)) default Nil
 
     assertEquals(eval(Empty()), Nil)
