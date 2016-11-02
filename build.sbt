@@ -56,8 +56,8 @@ libraryDependencies ++= Seq(
   "com.lihaoyi"                   %% "sourcecode"    % "0.1.3",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
   // transitioning ...
-  "org.scalaz"                    %% "scalaz-core"   % "7.2.6",
-  "org.typelevel"                 %% "cats"          % "0.7.2"
+  "org.scalaz"                    %% "scalaz-core"   % "7.2.7",
+  "org.typelevel"                 %% "cats"          % "0.8.0"
 )
 
  
