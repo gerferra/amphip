@@ -1,6 +1,7 @@
 package amphip.data
 
-import scalaz.std.list.listSyntax._
+//import scalaz.std.list.listSyntax._
+import cats.syntax.list._
 import scalaz.syntax.show._
 
 import spire.algebra._
@@ -44,7 +45,7 @@ object ModelData {
 
 case class DataKey(name: String, subscript: List[SimpleData] = Nil) {
   override def toString = {
-    val subsTxt = subscript.toNel.fold("") { nel => "[" + nel.list.map(_.shows).mkString(",") + "]" }
+    val subsTxt = subscript.toNel.fold("") { nel => "[" + nel.toList.map(_.shows).mkString(",") + "]" }
     s"$name$subsTxt"
   }
 }

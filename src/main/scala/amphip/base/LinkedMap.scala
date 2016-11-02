@@ -1,15 +1,15 @@
 package amphip.base
 
-import scala.collection._
-import scala.collection.generic._
-import scala.collection.mutable.Builder
+import scala.collection.{immutable, generic, GenTraversableOnce}
+import scala.collection.generic.CanBuildFrom
 
 /**
  * Immutable map preserving insertion order
  */
-class LinkedMap[K, +V] private (aVect: Vector[K], aMap: Map[K, V]) extends immutable.Map[K, V] with immutable.MapLike[K, V, LinkedMap[K, V]] {
-  private[this] val theVect = aVect
-  private[this] val theMap = aMap
+class LinkedMap[K, +V] private (
+    private val theVect: Vector[K], 
+    private val theMap: Map[K, V]
+  ) extends immutable.Map[K, V] with immutable.MapLike[K, V, LinkedMap[K, V]] {
 
   override def empty = LinkedMap.empty
 

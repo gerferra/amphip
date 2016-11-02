@@ -1,6 +1,6 @@
 package amphip.model
 
-import scalaz.{ Failure => _, Success => _, Length => _, Forall => _, _ }, Scalaz._
+import scalaz.{ Failure => _, Success => _, Forall => _, _ }, Scalaz._
 
 import org.junit.Assert._
 import org.junit.Test

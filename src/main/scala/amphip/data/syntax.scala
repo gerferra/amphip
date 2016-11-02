@@ -2,7 +2,8 @@ package amphip.data
 
 import scala.language.implicitConversions
 
-import scalaz.std.list.listSyntax._
+//import scalaz.std.list.listSyntax._
+import cats.syntax.list._
 
 import amphip.model.ast._
 import amphip.model.dsl._
@@ -48,7 +49,7 @@ trait AllSyntax {
     }
     def paramDataList[B](list: List[(ParamStat, List[B])])(implicit DataOp: DataOp[ParamStat, B]): ModelWithData = {
       list.foldLeft(m: ModelWithData) {
-        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.paramData(decl, nel.list: _*))
+        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.paramData(decl, nel.toList: _*))
       }
     }
 
@@ -58,7 +59,7 @@ trait AllSyntax {
     }
     def setDataList[B](list: List[(SetStat, List[B])])(implicit DataOp: DataOp[SetStat, B]): ModelWithData = {
       list.foldLeft(m: ModelWithData) {
-        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.setData(decl, nel.list: _*))
+        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.setData(decl, nel.toList: _*))
       }
     }
 

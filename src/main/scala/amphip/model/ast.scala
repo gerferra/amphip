@@ -378,8 +378,9 @@ object ast {
 
   trait Gen {
 
-    trait FreshNames {
+    trait FreshNames { self =>
       def prefix: String
+      def suffix: String = "_"
 
       private[this] val count = new AtomicInteger(-1)
       private[this] val hinted = new ConcurrentHashMap[String, FreshNames] // collection.mutable.Map.empty[String, FreshNames]
@@ -390,7 +391,7 @@ object ast {
       }
 
       def freshName = {
-        s"$prefix${ countStr }_"
+        s"$prefix${ countStr }$suffix"
       }
 
       def apply(hint: String): FreshNames = apply(Some(hint))
@@ -400,6 +401,7 @@ object ast {
         case Some(h) =>
           hinted.putIfAbsent(h, new FreshNames {
             def prefix = h
+            override def suffix = self.suffix
           })
           hinted.get(h)
       }
@@ -407,7 +409,7 @@ object ast {
       override def toString = {
         import scala.collection.JavaConversions._
         import scalaz._, Scalaz._
-        val hints = hinted.valuesIterator.map(x => s"- $x").toList.toNel.cata(_.list.mkString("\nhints:\n", "\n", ""), "")
+        val hints = hinted.valuesIterator.map(x => s"- $x").toList.toNel.cata(_.toList.mkString("\nhints:\n", "\n", ""), "")
         s"freshNames for prefix=$prefix, count=${ count.get }$hints"
       }
 
@@ -435,6 +437,11 @@ object ast {
 
     object dummy extends FreshNames {
       def prefix = "d"
+    }
+
+    object nosuffix extends FreshNames {
+      def prefix = "n"
+      override def suffix = ""
     }
 
   }

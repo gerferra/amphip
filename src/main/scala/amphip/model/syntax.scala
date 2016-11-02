@@ -19,34 +19,34 @@ trait AllSyntax {
   // TODO check the scope of the dummy indices used on the declarations
   // and maybe the arity of the references using `dimen' and `Try(eval)'
   def set(name: SymName, indexing: IndExpr): SetStat = SetStat(name, domain = indexing.some)
-  def set(name: SymName, entries: IndEntry*): SetStat = SetStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
-  def set(indexing: IndExpr)(implicit name: sourcecode.Name): SetStat = set(name.value, indexing)
-  def set(entries: IndEntry*)(implicit name: sourcecode.Name): SetStat = set(name.value, entries: _*)
-  def set(implicit name: sourcecode.Name): SetStat = set(name.value)
+  def set(name: SymName, entries: IndEntry*): SetStat = SetStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list.toList)))
+  def set(indexing: IndExpr)(implicit name: sourcecode.Name): SetStat = set(gen.nosuffix(name.value).freshName, indexing)
+  def set(entries: IndEntry*)(implicit name: sourcecode.Name): SetStat = set(gen.nosuffix(name.value).freshName, entries: _*)
+  def set(implicit name: sourcecode.Name): SetStat = set(gen.nosuffix(name.value).freshName)
 
   def param(name: SymName, indexing: IndExpr): ParamStat = ParamStat(name, domain = indexing.some)
-  def param(name: SymName, entries: IndEntry*): ParamStat = ParamStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
-  def param(indexing: IndExpr)(implicit name: sourcecode.Name): ParamStat = param(name.value, indexing)
-  def param(entries: IndEntry*)(implicit name: sourcecode.Name): ParamStat = param(name.value, entries: _*)
-  def param(implicit name: sourcecode.Name): ParamStat = param(name.value)
+  def param(name: SymName, entries: IndEntry*): ParamStat = ParamStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list.toList)))
+  def param(indexing: IndExpr)(implicit name: sourcecode.Name): ParamStat = param(gen.nosuffix(name.value).freshName, indexing)
+  def param(entries: IndEntry*)(implicit name: sourcecode.Name): ParamStat = param(gen.nosuffix(name.value).freshName, entries: _*)
+  def param(implicit name: sourcecode.Name): ParamStat = param(gen.nosuffix(name.value).freshName)
 
   def xvar(name: SymName, indexing: IndExpr): VarStat = VarStat(name, domain = indexing.some)
-  def xvar(name: SymName, entries: IndEntry*): VarStat = VarStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list)))
-  def xvar(indexing: IndExpr)(implicit name: sourcecode.Name): VarStat = xvar(name.value, indexing)
-  def xvar(entries: IndEntry*)(implicit name: sourcecode.Name): VarStat = xvar(name.value, entries: _*)
-  def xvar(implicit name: sourcecode.Name): VarStat = xvar(name.value)
+  def xvar(name: SymName, entries: IndEntry*): VarStat = VarStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list.toList)))
+  def xvar(indexing: IndExpr)(implicit name: sourcecode.Name): VarStat = xvar(gen.nosuffix(name.value).freshName, indexing)
+  def xvar(entries: IndEntry*)(implicit name: sourcecode.Name): VarStat = xvar(gen.nosuffix(name.value).freshName, entries: _*)
+  def xvar(implicit name: sourcecode.Name): VarStat = xvar(gen.nosuffix(name.value).freshName)
 
-  def st(ctr: ConstraintStat): ConstraintStat =
-    st(ctr.name, none, ctr)
+  def st(ctr: ConstraintStat)(implicit name: sourcecode.Name): ConstraintStat =
+    st(gen.nosuffix(name.value).freshName, none, ctr)
 
   def st(name: SymName)(ctr: ConstraintStat): ConstraintStat =
     st(name, none, ctr)
 
-  def st(domain: IndExpr)(ctr: ConstraintStat): ConstraintStat =
-    st(ctr.name, domain.some, ctr)
+  def st(domain: IndExpr)(ctr: ConstraintStat)(implicit name: sourcecode.Name): ConstraintStat =
+    st(gen.nosuffix(name.value).freshName, domain.some, ctr)
 
-  def st(entries: IndEntry*)(ctr: ConstraintStat): ConstraintStat =
-    st(ctr.name, IndExpr(entries.toList).some, ctr)
+  def st(entries: IndEntry*)(ctr: ConstraintStat)(implicit name: sourcecode.Name): ConstraintStat =
+    st(gen.nosuffix(name.value).freshName, IndExpr(entries.toList).some, ctr)
 
   def st(name: SymName, entry: IndEntry, entries: IndEntry*)(ctr: ConstraintStat): ConstraintStat =
     st(name, IndExpr(entry :: entries.toList).some, ctr)
@@ -82,6 +82,7 @@ trait AllSyntax {
   }
 
   def dummy(name: String, synthetic: Boolean = false): DummyIndDecl = DummyIndDecl(name, synthetic)
+  def dummy(implicit name: sourcecode.Name): DummyIndDecl = DummyIndDecl(gen.nosuffix(name.value).freshName, synthetic = false)
 
   def tup(x: DummyIndDecl, xs: DummyIndDecl*): List[DummyIndDecl] = (x +: xs).toList
 
@@ -95,11 +96,11 @@ trait AllSyntax {
 
   def ind(entries: IndEntry*): IndExpr = IndExpr(entries.toList)
 
-  def minimize(expr: LinExpr): ObjectiveStat =
-    Minimize(name = gen.obj.freshName, expr = expr)
+  def minimize(expr: LinExpr)(implicit name: sourcecode.Name): ObjectiveStat =
+    Minimize(gen.nosuffix(name.value).freshName, expr = expr)
 
-  def maximize(expr: LinExpr): ObjectiveStat =
-    Maximize(name = gen.obj.freshName, expr = expr)
+  def maximize(expr: LinExpr)(implicit name: sourcecode.Name): ObjectiveStat =
+    Maximize(gen.nosuffix(name.value).freshName, expr = expr)
 
   def minimize(name: SymName)(expr: LinExpr): ObjectiveStat =
     Minimize(name = name, expr = expr)

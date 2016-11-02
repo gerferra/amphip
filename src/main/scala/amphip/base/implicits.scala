@@ -1,14 +1,12 @@
 package amphip.base
 
-import scala.collection.{ IterableLike, mutable }
+import scala.collection.{IterableLike, mutable}
 import scala.collection.generic.CanBuildFrom
 
 object implicits {
 
-  /**
-   * Extra members for iterable
-   */
-  implicit class IterableOpts[A, C <: Iterable[A]](xs: C with IterableLike[A, C]) {
+  /** Extra members for iterable */
+  implicit class IterableOps[A, C <: Iterable[A]](xs: C with IterableLike[A, C]) {
 
     final def groupByKey[K](f: A => K): Map[K, A] = {
       val builder = Map.newBuilder[K, A]

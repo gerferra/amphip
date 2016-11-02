@@ -1,7 +1,10 @@
 package amphip.model
 
-import scalaz.{ \/, -\/, \/-, Scalaz }, Scalaz._
+import scalaz.{\/, -\/, \/-}
 import scalaz.Show, Show._
+
+import scalaz.Scalaz.{ToListOpsFromList => _, _}
+import cats.syntax.list._
 
 import amphip.model.ast._
 
@@ -505,14 +508,14 @@ trait ShowInstances {
 
   private[this] def showStat[T: Show](stat: String, name: SymName, alias: Option[StringLit], domain: Option[IndExpr], atts: List[T]): String = {
     val nameAliasDomainShows = showStat(name, alias, domain)
-    val attsShows = atts.map(_.shows).toNel.map(_.list.mkString(", "))
+    val attsShows = atts.map(_.shows).toNel.map(_.toList.mkString(", "))
     val nameAliasDomainAttsShows = Seq(nameAliasDomainShows.some, attsShows).flatten.mkString(" ")
 
     s"$stat $nameAliasDomainAttsShows;"
   }
 
   private[this] def showSubscript(subscript: List[SimpleExpr]): String = {
-    subscript.toNel.fold("") { list => "[" + list.map(_.shows).list.mkString(", ") + "]" }
+    subscript.toNel.fold("") { list => "[" + list.map(_.shows).toList.mkString(", ") + "]" }
   }
 
   private[this] def showTupleDisj(tuple: List[SimpleExpr \/ DummyIndDecl]): String = {
