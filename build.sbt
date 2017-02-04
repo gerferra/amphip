@@ -46,7 +46,8 @@ scalacOptions ++= Seq(
   "-Ypartial-unification" // enable fix for SI-2712
 ) 
 
-scalacOptions in (Compile, console) ~= (_.filterNot(op => Seq("-Xlint", "-Ywarn-unused-import").contains(op)))
+scalacOptions in (Compile, console) --= Seq("-Xlint", "-Ywarn-unused-import")
+scalacOptions in (Test,    console) := scalacOptions.in(Compile, console).value
 
 
 // DEPENDENCIES
