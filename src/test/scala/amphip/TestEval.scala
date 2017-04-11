@@ -57,6 +57,8 @@ class TestEval {
     // aux
     val I = set("I") := List(3, 4, 5)
     val i = dummy("i")
+    val J = set("J") := List(6, 7, 8)
+    val j = dummy("j")
     val A = set("A") := List(1, 2)
     val B = set("B") := List(3, 4)
     val a = param("a") := 3
@@ -199,6 +201,18 @@ class TestEval {
         key("ctrDGTE", 3) -> DGTEConstraintStat("ctrDGTE", upper = 6, expr = 9 * yInd(3), lower = 9),
         key("ctrDGTE", 4) -> DGTEConstraintStat("ctrDGTE", upper = 7, expr = 10 * yInd(4), lower = 10),
         key("ctrDGTE", 5) -> DGTEConstraintStat("ctrDGTE", upper = 8, expr = 11 * yInd(5), lower = 11)))
+
+    ////
+
+    // INDEXING EXPRESSIONS
+
+    val varX = xvar("varX", ind(i in I, j in J) | (j - i === 1))
+    assertEquals(eval(varX, modelData), LinkedMap(key("varX", 5, 6) -> xvar("varX")))
+
+    val i1 = dummy("i1")
+    val i2 = dummy("i2")
+    val varY = xvar("varY", ind(i1 in I, i2 in I) | (b(i2) - a(i1) === 1))
+    assertEquals(eval(varY, modelData.plusParams(indParamData)), LinkedMap(key("varY", 5, 3) -> xvar("varY")))
 
     // XXX complete ...
   }

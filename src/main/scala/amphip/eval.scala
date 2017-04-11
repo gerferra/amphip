@@ -606,7 +606,7 @@ object eval {
         }
 
         entriesData.filter { data =>
-          expr.predicate.fold(true)(f => eval(f, modelData.params(data)))
+          expr.predicate.fold(true)(f => eval(f, modelData.plusParams(data)))
         }
     })
 
