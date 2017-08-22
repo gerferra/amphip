@@ -9,10 +9,6 @@ version := "0.0.2"
 
 // SBT
 
-incOptions := incOptions.value.withNameHashing(true)
-
-updateOptions := updateOptions.value.withCachedResolution(true)
-
 fork := true
 
 initialCommands in console :=
@@ -23,11 +19,12 @@ initialCommands in console :=
 
 // SCALA
 
-scalaOrganization := "org.typelevel"
+inThisBuild(Seq(
+  scalaOrganization := "org.typelevel",
+  scalaVersion      := "2.11.11-bin-typelevel-4"
+))
 
-scalaVersion := "2.11.8"
-
-libraryDependencies ++= Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4")
+libraryDependencies ++= Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6")
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -55,7 +52,7 @@ scalacOptions in (Test,    console) := scalacOptions.in(Compile, console).value
 libraryDependencies ++= Seq(
   "org.spire-math"                %% "spire"         % "0.12.0",
   "com.lihaoyi"                   %% "sourcecode"    % "0.1.3",
-  "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
+  "com.github.pathikrit"          %% "better-files"  % "2.17.1", //"3.0.0", // scala 2.12
   // transitioning ...
   "org.scalaz"                    %% "scalaz-core"   % "7.2.7",
   "org.typelevel"                 %% "cats"          % "0.8.0"
