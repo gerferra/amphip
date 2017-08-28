@@ -92,11 +92,11 @@ object TestAlternativeSyntaxImplicits {
     }
 
     implicit class ParamStatSyntax(lhe: ParamStat) {
-      def <=[A <% SimpleExpr](rhe: A): ParamStat = lhe.copy(atts = lhe.atts :+ ParamLTE(rhe))
+      def <=[A](rhe: A)(implicit ev: A => SimpleExpr): ParamStat = lhe.copy(atts = lhe.atts :+ ParamLTE(rhe))
     }
 
     implicit class VarStatSyntax(lhe: VarStat) {
-      def <=[A <% NumExpr](rhe: A): VarStat = lhe.copy(atts = lhe.atts :+ VarLTE(rhe))
+      def <=[A](rhe: A)(implicit ev: A => NumExpr): VarStat = lhe.copy(atts = lhe.atts :+ VarLTE(rhe))
     }
 
     implicit def DummyIndDeclAsDummyIndRef(x: DummyIndDecl): DummyIndRef = DummyIndRef(x)
@@ -130,14 +130,14 @@ object TestAlternativeSyntaxImplicits {
   trait ViewSyntax extends BaseSyntax with ViewSyntaxLowPriority1
 
   trait ViewSyntaxLowPriority1 extends ViewSyntaxLowPriority2 {
-    implicit class NumExprSyntax[A <% NumExpr](lhe: A) {
-      def <=[B <% NumExpr](rhe: B): LogicExpr = LTE(lhe, rhe)
+    implicit class NumExprSyntax[A](lhe: A)(implicit evA: A => NumExpr) {
+      def <=[B](rhe: B)(implicit evB: B => NumExpr): LogicExpr = LTE(lhe, rhe)
     }
   }
 
   trait ViewSyntaxLowPriority2 {
-    implicit class LinExprSyntax[A <% LinExpr](lhe: A) {
-      def <=[B <% LinExpr](rhe: B): ConstraintStat =
+    implicit class LinExprSyntax[A](lhe: A)(implicit evA: A => LinExpr) {
+      def <=[B](rhe: B)(implicit evB: B => LinExpr): ConstraintStat =
         LTEConstraintStat(
           name = gen.ctr.freshName,
           left = lhe,
@@ -150,13 +150,13 @@ object TestAlternativeSyntaxImplicits {
   trait DirectSyntax extends BaseSyntax with DirectSyntaxLowPriority1
 
   trait DirectSyntaxLowPriority1 extends DirectSyntaxLowPriority2 {
-    implicit class NumExprSyntax[A <% NumExpr](lhe: A) {
+    implicit class NumExprSyntax[A](lhe: A)(implicit ev: A => NumExpr) {
       def <=(rhe: NumExpr): LogicExpr = LTE(lhe, rhe)
     }
   }
 
   trait DirectSyntaxLowPriority2 {
-    implicit class LinExprSyntax[A <% LinExpr](lhe: A) {
+    implicit class LinExprSyntax[A](lhe: A)(implicit ev: A => LinExpr) {
       def <=(rhe: LinExpr): ConstraintStat =
         LTEConstraintStat(
           name = gen.ctr.freshName,

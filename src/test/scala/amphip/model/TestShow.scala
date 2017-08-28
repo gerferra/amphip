@@ -12,7 +12,7 @@ import amphip.model.dsl._
 class TestShow {
 
   @Test
-  def test() {
+  def test(): Unit = {
 
     assertEquals("1", (NumLit(1): NumExpr).shows)
     assertEquals(""""abc"""", (StringLit("abc"): SymExpr).shows)

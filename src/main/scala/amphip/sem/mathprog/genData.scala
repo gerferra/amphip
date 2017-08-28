@@ -21,7 +21,7 @@ object genData {
   def getParamData(params: ParamStatData): String = {
     val str =
       for {
-        (name, valuesNE) <- params.toSeq.groupByLinked { case (key, value) => key.name }
+        (name, valuesNE) <- params.toSeq.groupByLinked { case (key, _) => key.name }
       } yield {
         val (key0, value0) = valuesNE.head
         key0.subscript match {
@@ -41,7 +41,7 @@ object genData {
             }
 
           case _ =>
-            val valuesByQual = valuesNE.groupByLinked { case (k, v) => k.subscript.drop(2) }
+            val valuesByQual = valuesNE.groupByLinked { case (k, _) => k.subscript.drop(2) }
             val allTabular = valuesByQual.forall(x => isTabular(x._2))
             if (allTabular) {
               val tablesStrings =
@@ -64,7 +64,7 @@ object genData {
   }
 
   def isTabular(valuesNE: Seq[(DataKey, SimpleData)]): Boolean = {
-    val valuesByRow = valuesNE.groupByLinked { case (k, v) => k.subscript(0) }
+    val valuesByRow = valuesNE.groupByLinked { case (k, _) => k.subscript(0) }
     val rowColumns =
       for {
         seq <- valuesByRow.values
@@ -80,7 +80,7 @@ object genData {
   }
 
   private def simpleValuesString(pName: String, valuesNE: Seq[(DataKey, SimpleData)]): String = {
-    val valuesByQual = valuesNE.groupByLinked { case (k, v) => k.subscript.dropRight(1) }
+    val valuesByQual = valuesNE.groupByLinked { case (k, _) => k.subscript.dropRight(1) }
     val tablesStrings =
       for {
         (qual, valuesNE) <- valuesByQual
@@ -97,7 +97,7 @@ object genData {
     val (keys, values) = valuesNE.unzip
     val rows = keys.map(_.subscript(0)).distinct
     val cols = keys.map(_.subscript(1)).distinct
-    val valuesByRow = valuesNE.groupByLinked { case (k, v) => k.subscript(0) }
+    val valuesByRow = valuesNE.groupByLinked { case (k, _) => k.subscript(0) }
     val rowColumns =
       for {
         seq <- valuesByRow.values
@@ -117,7 +117,7 @@ object genData {
         (k, values) <- valuesByRow
       } yield {
         k -> values.groupByLinked {
-          case (k, v) => k.subscript(1)
+          case (k, _) => k.subscript(1)
         }
       }
     val rowsSize = rows.size
@@ -147,7 +147,7 @@ object genData {
         val tryValue = 
           scala.util.Try(valuesByRowCol(r)(c).head._2) // if the subscript is repeated, it will take only the first
           .recover {
-            case ex: NoSuchElementException =>
+            case _: NoSuchElementException =>
               val info = if (!isTabular(valuesNE)) ". Data is not tabular" else ""
               throw new NoSuchElementException(s"no value for $pName[${r.shows},${c.shows}...]$info")
           }
@@ -164,7 +164,7 @@ object genData {
   def getSetData(sets: SetStatData): String = {
     val str =
       for {
-        (name, valuesNE) <- sets.toSeq.groupByLinked { case (key, value) => key.name }
+        (name, valuesNE) <- sets.toSeq.groupByLinked { case (key, _) => key.name }
       } yield {
         val indStr =
           for {

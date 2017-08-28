@@ -18,7 +18,7 @@ object replace {
    * from other cases, so Scala can do exhaustiveness check on the `otherwise' match
    */
   private def raux[A, B: Manifest](x: A, pv: B, nv: B)(otherwise: A => A): A = x match {
-    case a: B if x == pv => nv.asInstanceOf[A] // x is an A /\ pv is a B /\ x == pv ===> A is B ===> nv is an A
+    case _: B if x == pv => nv.asInstanceOf[A] // x is an A /\ pv is a B /\ x == pv ===> A is B ===> nv is an A
     case _ => otherwise(x)
   }
 
@@ -294,7 +294,7 @@ object replace {
 
         case Str2time(s, f) => Str2time(replace(s, pv, nv), replace(f, pv, nv))
 
-        case Trunc(expr, n) => Trunc(replace(expr, pv, nv))
+        case Trunc(expr, n) => Trunc(replace(expr, pv, nv), n.map(replace(_, pv, nv)))
 
         case Irand224() => x
 

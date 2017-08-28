@@ -38,30 +38,30 @@ object dimen {
   })
 
   implicit val SetExprDimen: Dimen[SetExpr] = from({
-    case CondSetExpr(test, ifTrue, otherwise) =>
+    case CondSetExpr(_, ifTrue, _) =>
       // both branches must have the same dimension. check?
       dimen(ifTrue)
 
     case Union(left, right) => math.max(dimen(left), dimen(right))
 
-    case Diff(left, right) => dimen(left)
+    case Diff(left, _) => dimen(left)
 
     case SymDiff(left, right) => math.max(dimen(left), dimen(right))
 
-    case Inter(left, right) => dimen(left)
+    case Inter(left, _) => dimen(left)
 
     case Cross(left, right) => dimen(left) + dimen(right)
 
-    case SetOf(indexing, integrand) => integrand.size
+    case SetOf(_, integrand) => integrand.size
 
-    case ArithSet(t0, tf, deltaT) => 1
+    case ArithSet(_, _, _) => 1
 
-    case SetRef(set, subscript) => dimen(set)
+    case SetRef(set, _) => dimen(set)
 
     case SetLit(values @ _*) =>
       values.headOption.map {
         case Nil => 1 // empty set has dimen 1 in MathProg
-        case x :: Nil => 1
+        case _ :: Nil => 1
         case l => l.size
       } | 1
 

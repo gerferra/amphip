@@ -31,6 +31,18 @@ object eval {
   type IndexingData = List[LinkedMap[DataKey, SimpleData]]
   type Expansion[A] = LinkedMap[DataKey, A]
 
+  /*
+  case class EvalData(modelData: ModelData, 
+                      setsExpansion  : Expansion[SetStat], 
+                      paramsExpansion: Expansion[ParamStat],
+                      varsExpansion  : Expansion[VarStat]) {
+    def plusParams(d: ParamStatData): EvalData = copy(modelData = modelData.plusParams(d))
+
+    def params: ParamStatData = modelData.params
+    def sets  : SetStatData   = modelData.sets
+  }
+  */
+
   @implicitNotFound("Eval is not defined for ${A}")
   trait Eval[A, B] {
     def eval(expr: A)(implicit modelData: ModelData): B
@@ -479,10 +491,10 @@ object eval {
 
       case Sqrt(expr) => sqrt(eval(expr))
 
-      case Str2time(s, f) => sys.error("`str2time' not yet supported")
+      case Str2time(s @_, f @_) => sys.error("`str2time' not yet supported")
 
       case Trunc(expr, n) => {
-        def trunc(x: BigDecimal, n: BigDecimal): BigDecimal = eval(expr).setScale(n.toIntExact, Down)
+        def trunc(x: BigDecimal, n: BigDecimal): BigDecimal = x.setScale(n.toIntExact, Down)
 
         n.fold(trunc(eval(expr), 0))(n => trunc(eval(expr), eval(n)))
       }
@@ -519,7 +531,7 @@ object eval {
 
         text.substring(start, end)
 
-      case Time2str(t, f) => sys.error("`time2str' not yet supported")
+      case Time2str(t @_, f @_) => sys.error("`time2str' not yet supported")
     })
 
   // SET
@@ -583,7 +595,7 @@ object eval {
           case l => SetTuple(eval(l))
         }
 
-      case x @ IndExprSet(indexing) =>
+      case IndExprSet(indexing) =>
         eval(indexing).map(_.values.toList).map {
           case Nil => SetTuple(Nil)
           case x :: Nil => SetVal(x)
@@ -636,13 +648,13 @@ object eval {
         /*
        * the final expression must have only the values not appearing in the predicate expression
        */
-        filtered.map(_.filter { case (k, v) => predExprMap.get(k.name).isEmpty })
+        filtered.map(_.filter { case (k, _) => predExprMap.get(k.name).isEmpty })
     })
 
   def effectiveIndices(setEv: List[SetData], indices: List[DummyIndDecl], nameHint: Option[String] = None, gen: Gen = gen): List[DummyIndDecl] = {
     if (indices.isEmpty) {
       val dimen = setEv.headOption.fold(0)(_ match {
-        case SetVal(x) => 1
+        case SetVal(_) => 1
         case SetTuple(xs) => xs.size
       })
       List.fill(dimen)(DummyIndDecl(gen.dummy(nameHint).freshName, synthetic = true))

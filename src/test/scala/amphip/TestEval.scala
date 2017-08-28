@@ -13,7 +13,7 @@ import amphip.model.ast.{ ConstraintStat, DLTEConstraintStat, DGTEConstraintStat
 class TestEval {
 
   @Test
-  def test() {
+  def test(): Unit = {
 
     implicit val modelData = ModelData()
 

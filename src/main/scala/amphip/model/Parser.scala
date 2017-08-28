@@ -319,6 +319,7 @@ class Parser extends RegexParsers with PackratParsers {
               case "+" => NumAdd(exp, num)
               case "-" => NumSub(exp, num)
               case "less" => NumLess(exp, num)
+              case _ => sys.error(s"""Found `$oper' expecting `("+" | "-" | "less")' on pre-validated String. This is a bug.""")
             }
           }
         }
@@ -341,6 +342,7 @@ class Parser extends RegexParsers with PackratParsers {
             case "prod" => NumProd(indexing, integrand)
             case "min" => NumMin(indexing, integrand)
             case "max" => NumMax(indexing, integrand)
+            case _ => sys.error(s"""Found `$op' expecting `("sum" | "prod" | "min" | "max")' on pre-validated String. This is a bug.""")
           }): NumExpr
         }
     }
@@ -361,6 +363,7 @@ class Parser extends RegexParsers with PackratParsers {
               case "/" => NumDiv(exp, num)
               case "div" => NumDivExact(exp, num)
               case "mod" => NumMod(exp, num)
+              case _ => sys.error(s"""Found `$oper' expecting `("*" | "/" | "div" | "mod")' on pre-validated String. This is a bug.""")
             }
           }
         }
@@ -376,6 +379,7 @@ class Parser extends RegexParsers with PackratParsers {
             (op match {
               case "+" => NumUnaryPlus(exp)
               case "-" => NumUnaryMinus(exp)
+              case _ => sys.error(s"""Found `$op' expecting `("+" | "-")' on pre-validated String. This is a bug.""")
             }): NumExpr
           }
       }
@@ -523,6 +527,7 @@ class Parser extends RegexParsers with PackratParsers {
               case "union" => Union(exp, set)
               case "diff" => Diff(exp, set)
               case "symdiff" => SymDiff(exp, set)
+              case _ => sys.error(s"""Found `$oper' expecting `("union" | "diff" | "symdiff")' on pre-validated String. This is a bug.""")
             }
           }
         }
@@ -723,6 +728,7 @@ class Parser extends RegexParsers with PackratParsers {
           op match {
             case "forall" => Forall(indexing, integrand): LogicExpr
             case "exists" => Exists(indexing, integrand): LogicExpr
+            case _ => sys.error(s"""Found `$op' expecting `("forall" | "exists")' on pre-validated String. This is a bug.""")
           }
         }
     }
@@ -873,6 +879,7 @@ class Parser extends RegexParsers with PackratParsers {
                         TypeMismatch(s"`less' of linear expressions is not allowed: `$str'", pos).left
                       case (x, _) => x
                     }
+                  case _ => sys.error(s"""Found `$oper' expecting `("+" | "-" | "less")' on pre-validated String. This is a bug.""")
                 }
               }
             newVal
@@ -895,16 +902,16 @@ class Parser extends RegexParsers with PackratParsers {
           integrand = p._2
           safeIntegrand <- stateT {
             (op, integrand) match {
-              case ("sum", x) => integrand.right
-              case (op, \/-(num)) => integrand.right
-              case (op, -\/(lin)) =>
+              case ("sum", _) => integrand.right
+              case (_, \/-(num @_)) => integrand.right
+              case (_, -\/(lin)) =>
                 val linStr = lin.shows
                 TypeMismatch(s"`$op' is not allowed for linear expresions: `$linStr'", pos).left
             }
           }
         } yield {
           ((op, safeIntegrand): @unchecked) match {
-            case ("sum", x) =>
+            case ("sum", _) =>
               integrand.bimap(
                 LinSum(indexing, _): LinExpr,
                 NumSum(indexing, _): NumExpr)
@@ -963,6 +970,7 @@ class Parser extends RegexParsers with PackratParsers {
                         TypeMismatch(s"Modulus of linear expressions is not allowed: `$str'", pos).left
                       case (x, _) => x
                     }
+                  case _ => sys.error(s"""Found `$oper' expecting `("*" | "/" | "div" | "mod")' on pre-validated String. This is a bug.""")
                 }
               }
             newVal
@@ -982,6 +990,7 @@ class Parser extends RegexParsers with PackratParsers {
             op match {
               case "+" => exp.bimap(LinUnaryPlus(_): LinExpr, NumUnaryPlus(_): NumExpr)
               case "-" => exp.bimap(LinUnaryMinus(_): LinExpr, NumUnaryMinus(_): NumExpr)
+              case _ => sys.error(s"""Found `$op' expecting `("+" | "-")' on pre-validated String. This is a bug.""")
             }
           }
       }
@@ -1101,7 +1110,8 @@ class Parser extends RegexParsers with PackratParsers {
         case w.Success(tok, _) =>
           //println(s"$source has whitespace from $offset to ${tok.length}")
           offset + tok.mkString("").length
-        case ns: w.NoSuccess => offset
+        case _: w.NoSuccess => 
+          offset
       }
     } else
       offset
@@ -1361,7 +1371,7 @@ object Parser {
 
       def run2(implicit symTab: SymTab): \/[Parsers#NoSuccess \/ RefError, A] = {
         run match {
-          case \/-((state, value)) =>
+          case \/-((_, value)) =>
             //println(state); println()
             value.right
 

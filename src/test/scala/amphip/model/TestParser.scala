@@ -27,7 +27,7 @@ class TestParser {
   }
 
   @Test
-  def test() {
+  def test(): Unit = {
 
     def mkSymTab(stats: Decl*): SymTab = SymTab(LinkedMap(stats.map(x => x.name -> x): _*))
 

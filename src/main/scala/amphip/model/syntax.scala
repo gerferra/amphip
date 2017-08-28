@@ -363,7 +363,7 @@ trait AllSyntax {
     def sets: List[SetExpr] = param.domain.map(_.sets) | Nil
 
     def isComputable: Boolean = param.atts.exists(_ match {
-      case x: ParamAssign => true
+      case _: ParamAssign => true
       case _ => false
     })
   }

@@ -48,7 +48,7 @@ trait ParamDataInstances {
       decl.domain match {
         case None => values match {
           case Nil => ModelData()
-          case List(v) => ModelData(params = LinkedMap(key(decl.name) -> v))
+          case _   => ModelData(params = LinkedMap(key(decl.name) -> values.head))
         }
         case Some(indexing) =>
           val pairs =
@@ -141,7 +141,7 @@ trait SetDataInstances {
       decl.domain match {
         case None => values match {
           case Nil => ModelData()
-          case List(v) => ModelData(sets = LinkedMap(key(decl.name) -> v))
+          case _ => ModelData(sets = LinkedMap(key(decl.name) -> values.head))
         }
         case Some(indexing) =>
           val pairs =

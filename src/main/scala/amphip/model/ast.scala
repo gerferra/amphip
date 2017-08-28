@@ -300,7 +300,7 @@ object ast {
     def extract(predicate: LogicExpr): Map[DummyIndDecl, SimpleExpr] = predicate match {
       case Conj(expr1: LogicExpr, expr2: LogicExpr) => extract(expr1) ++ extract(expr2)
       case Eq(DummyIndRef(ind), expr: SimpleExpr) => Map(ind -> expr)
-      case other => Map()
+      case _ => Map()
     }
   }
 
@@ -407,9 +407,9 @@ object ast {
       }
 
       override def toString = {
-        import scala.collection.JavaConversions._
+        import scala.collection.JavaConverters._
         import scalaz._, Scalaz._
-        val hints = hinted.valuesIterator.map(x => s"- $x").toList.toNel.cata(_.toList.mkString("\nhints:\n", "\n", ""), "")
+        val hints = hinted.asScala.valuesIterator.map(x => s"- $x").toList.toNel.cata(_.toList.mkString("\nhints:\n", "\n", ""), "")
         s"freshNames for prefix=$prefix, count=${ count.get }$hints"
       }
 
