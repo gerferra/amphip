@@ -442,6 +442,7 @@ object replace {
         case LinSub(left, right) => LinSub(replace(left, pv, nv), replace(right, pv, nv))
 
         case LinSum(indexing, integrand) => LinSum(replace(indexing, pv, nv), replace(integrand, pv, nv))
+        case LinSumExp(summands) => LinSumExp(summands.map(replace(_, pv, nv)))
 
         case LinMult(left, right) => LinMult(replace(left, pv, nv), replace(right, pv, nv))
 

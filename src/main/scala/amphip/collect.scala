@@ -455,6 +455,7 @@ object collect {
       case LinSub(left, right) => collect_(left, pf) ++ collect_(right, pf) ++ pf.lift(x).toList
 
       case LinSum(indexing, integrand) => collect_(indexing, pf) ++ collect_(integrand, pf) ++ pf.lift(x).toList
+      case LinSumExp(summands) => summands.collect(pf) ++ pf.lift(x).toList
 
       case LinMult(left, right) => collect_(left, pf) ++ collect_(right, pf) ++ pf.lift(x).toList
 

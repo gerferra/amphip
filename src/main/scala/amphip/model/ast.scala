@@ -347,6 +347,8 @@ object ast {
   case class LinSub(left: LinExpr, right: LinExpr) extends LinExpr
 
   case class LinSum(indexing: IndExpr, integrand: LinExpr) extends LinExpr
+  // XXX artificial construct to handle more easily this case when interpreting the model
+  case class LinSumExp(summands: List[LinExpr]) extends LinExpr
 
   case class LinMult(left: NumExpr, right: LinExpr) extends LinExpr
 

@@ -468,6 +468,7 @@ trait ShowInstances {
     case LinSub(left, right) => s"(${left.shows} - ${right.shows})"
 
     case LinSum(indexing, integrand) => s"(sum${indexing.shows} ${integrand.shows})"
+    case LinSumExp(summands) => s"(${summands.map(_.shows).mkString(" + ")})"
 
     case LinMult(left, right) => s"(${left.shows} * ${right.shows})"
 
