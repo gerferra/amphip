@@ -41,8 +41,9 @@ class TestEval {
     assertEquals(eval(SAssg()), List[SetData](3, 4, 5))
     assertEquals(eval(SAssg(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetData](3, 4, 5))
 
+    // default sets
+
     val Empty = set("Empty") default Nil
-    
     val IndexedEmpty = set("IndexedEmpty", ind(SDef)) default Nil
 
     assertEquals(eval(Empty()), Nil)
@@ -211,7 +212,7 @@ class TestEval {
 
     val i1 = dummy("i1")
     val i2 = dummy("i2")
-    val varY = xvar("varY", ind(i1 in I, i2 in I) | (b(i2) - a(i1) === 1))
+    val varY = xvar("varY", ind(i1 in I, i2 in I) | (bInd(i2) - aInd(i1) === 1))
     assertEquals(eval(varY, modelData.plusParams(indParamData)), LinkedMap(key("varY", 5, 3) -> xvar("varY")))
 
     // XXX complete ...

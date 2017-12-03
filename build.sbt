@@ -21,7 +21,7 @@ initialCommands in console :=
 
 inThisBuild(Seq(
   scalaOrganization := "org.typelevel",
-  scalaVersion      := "2.12.3-bin-typelevel-4"
+  scalaVersion      := "2.12.4-bin-typelevel-4"
 ))
 
 libraryDependencies ++= Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6")
@@ -78,7 +78,8 @@ scalacOptions ++= Seq(
 // typelevel scala
 scalacOptions ++= Seq(
   "-Yinduction-heuristics",       // speeds up the compilation of inductive implicit resolution
-  "-Ykind-polymorphism",          // type and method definitions with type parameters of arbitrary kinds
+  // bug [Kind-Polymorphic Error] Foo.FooInt[String] inferred to type Foo.FooInt[String] with illegally kinded type arguments String applied to type Foo[A,B] 
+  //"-Ykind-polymorphism",          // type and method definitions with type parameters of arbitrary kinds
   "-Yliteral-types",              // literals can appear in type position
   "-Xstrict-patmat-analysis",     // more accurate reporting of failures of match exhaustivity
   "-Xlint:strict-unsealed-patmat" // warn on inexhaustive matches against unsealed traits

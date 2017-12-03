@@ -28,21 +28,6 @@ object eval {
 
   val key = DataKey
 
-  type IndexingData = List[LinkedMap[DataKey, SimpleData]]
-  type Expansion[A] = LinkedMap[DataKey, A]
-
-  /*
-  case class EvalData(modelData: ModelData, 
-                      setsExpansion  : Expansion[SetStat], 
-                      paramsExpansion: Expansion[ParamStat],
-                      varsExpansion  : Expansion[VarStat]) {
-    def plusParams(d: ParamStatData): EvalData = copy(modelData = modelData.plusParams(d))
-
-    def params: ParamStatData = modelData.params
-    def sets  : SetStatData   = modelData.sets
-  }
-  */
-
   @implicitNotFound("Eval is not defined for ${A}")
   trait Eval[A, B] {
     def eval(expr: A)(implicit modelData: ModelData): B
@@ -57,64 +42,234 @@ object eval {
 
   // STATEMENTS
 
-  def evalAtt(x: SetStat, dataExpr: PartialFunction[SetAtt, SetExpr])(implicit modelData: ModelData): SetStatData = x match {
-
-    case SetStat(name, _, domain, atts) =>
-
-      val optDataExpr = atts.collect(dataExpr).headOption
-
-      optDataExpr match {
-
-        case None => LinkedMap.empty[DataKey, List[SetData]]
-
-        case Some(dataExpr) => domain match {
-
-          case None => LinkedMap(key(name) -> eval(dataExpr))
-
-          case Some(indExpr) =>
-
-            val pairs =
-              for {
-                localData <- eval(indExpr)
-              } yield {
-                val k = key(name, localData.values.toList)
-                k -> eval(dataExpr, modelData.plusParams(localData))
-              }
-
-            LinkedMap(pairs: _*)
+  private val PFSetAssing: PartialFunction[SetAtt, List[SetData]] = { 
+    case SetAssign(SetLit(values @ _*)) =>  
+        values.toList.map {
+          case Nil                   => SetTuple(Nil)
+          case NumLit   (num) :: Nil => SetVal(SimpleNum(num))
+          case StringLit(str) :: Nil => SetVal(SimpleStr(str))
+          case l => SetTuple(l.collect {
+            case NumLit   (num) => SimpleNum(num)
+            case StringLit(str) => SimpleStr(str)
+          })
         }
-      }
-
+  }
+  
+  private val PFSetDefault: PartialFunction[SetAtt, List[SetData]] = { 
+    case SetDefault(SetLit(values @ _*)) =>  
+        values.toList.map {
+          case Nil                   => SetTuple(Nil)
+          case NumLit   (num) :: Nil => SetVal(SimpleNum(num))
+          case StringLit(str) :: Nil => SetVal(SimpleStr(str))
+          case l => SetTuple(l.collect {
+            case NumLit   (num) => SimpleNum(num)
+            case StringLit(str) => SimpleStr(str)
+          })
+        }
   }
 
-  def evalAtt(x: ParamStat, dataExpr: PartialFunction[ParamAtt, SimpleExpr])(implicit modelData: ModelData): ParamStatData = x match {
+  /**
+   * Helper to get the value of an specific attribute.
+   * It assumes that the set is expanded, ie, the domain is `none'.
+   */
+  private def evalAtt(expansion: SetStat, dataPF: PartialFunction[SetAtt, List[SetData]]): Option[List[SetData]] = 
+    expansion.atts.collect(dataPF).headOption
 
-    case ParamStat(name, _, domain, atts) =>
+  private val PFParamAssing: PartialFunction[ParamAtt, SimpleData] = { 
+    case ParamAssign(NumLit   (num)) => SimpleNum(num)
+    case ParamAssign(StringLit(str)) => SimpleStr(str) 
+  }
 
-      val optDataExpr = atts.collect(dataExpr).headOption
+  private val PFParamDefault: PartialFunction[ParamAtt, SimpleData] = { 
+    case ParamDefault(NumLit   (num)) => SimpleNum(num)
+    case ParamDefault(StringLit(str)) => SimpleStr(str)
+  }
 
-      optDataExpr match {
+  /**
+   * Helper to get the value of an specific attribute.
+   * It assumes that the parameter is expanded, ie, the domain is `none'.
+   */
+  private def evalAtt(expansion: ParamStat, dataPF: PartialFunction[ParamAtt, SimpleData]): Option[SimpleData] = 
+    expansion.atts.collect(dataPF).headOption
 
-        case None => LinkedMap.empty[DataKey, SimpleData]
+  def expand(stat: Stat)(implicit modelData: ModelData): Expansion[Stat] = stat match {
+    case x: SetStat        => expand(x)
+    case x: ParamStat      => expand(x)
+    case x: VarStat        => expand(x)
+    case x: ConstraintStat => expand(x)
+    case x: ObjectiveStat  => expand(x)
+  }
 
-        case Some(dataExpr) => domain match {
+  def expand(set: SetStat)(implicit modelData: ModelData): Expansion[SetStat] = set match {
+    case SetStat(name, alias, domain, atts) =>
+      domain match {
+        case None => LinkedMap(key(name) -> SetStat(name, alias, none, atts.map(eval(_))))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> SetStat(name, alias, none, atts.map(eval(_, modelData.plusParams(localData))))
+            }
 
-          case None => LinkedMap(key(name) -> eval(dataExpr))
+          LinkedMap(pairs: _*)
+      }
+  }
 
-          case Some(indExpr) =>
+  def expand(param: ParamStat)(implicit modelData: ModelData): Expansion[ParamStat] = param match {
+    case ParamStat(name, alias, domain, atts) =>
+      domain match {
+        case None => LinkedMap(key(name) -> ParamStat(name, alias, none, atts.map(eval(_))))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> ParamStat(name, alias, none, atts.map(eval(_, modelData.plusParams(localData))))
+            }
 
-            val pairs =
-              for {
-                localData <- eval(indExpr)
-              } yield {
-                val k = key(name, localData.values.toList)
-                k -> eval(dataExpr, modelData.plusParams(localData))
-              }
+          LinkedMap(pairs: _*)
+      }
+  }
 
-            LinkedMap(pairs: _*)
-        }
+  def expand(xvar: VarStat)(implicit modelData: ModelData): Expansion[VarStat] = xvar match {
+    case VarStat(name, alias, domain, atts) =>
+      domain match {
+        case None => LinkedMap(key(name) -> VarStat(name, alias, none, atts.map(eval(_))))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> VarStat(name, alias, none, atts.map(eval(_, modelData.plusParams(localData))))
+            }
+
+          LinkedMap(pairs: _*)
+      }
+  }
+
+  def expand(ctr: ConstraintStat)(implicit modelData: ModelData): Expansion[ConstraintStat] = ctr match {
+    case EqConstraintStat(name, alias, domain, left, right) =>
+      domain match {
+        case None => LinkedMap(key(name) -> EqConstraintStat(name, alias, none, eval(left), eval(right)))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> EqConstraintStat(name, alias, none, eval(left, modelData.plusParams(localData)), eval(right, modelData.plusParams(localData)))
+            }
+
+          LinkedMap(pairs: _*)
       }
 
+    case LTEConstraintStat(name, alias, domain, left, right) =>
+      domain match {
+        case None => LinkedMap(key(name) -> LTEConstraintStat(name, alias, none, eval(left), eval(right)))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> LTEConstraintStat(name, alias, none, eval(left, modelData.plusParams(localData)), eval(right, modelData.plusParams(localData)))
+            }
+
+          LinkedMap(pairs: _*)
+      }
+
+    case GTEConstraintStat(name, alias, domain, left, right) =>
+      domain match {
+        case None => LinkedMap(key(name) -> GTEConstraintStat(name, alias, none, eval(left), eval(right)))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> GTEConstraintStat(name, alias, none, eval(left, modelData.plusParams(localData)), eval(right, modelData.plusParams(localData)))
+            }
+
+          LinkedMap(pairs: _*)
+      }
+
+    case DLTEConstraintStat(name, alias, domain, lower, expr, upper) =>
+      domain match {
+        case None => LinkedMap(key(name) -> DLTEConstraintStat(name, alias, none, NumLit(eval(lower)), eval(expr), NumLit(eval(upper))))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> DLTEConstraintStat(
+                name,
+                alias,
+                none,
+                NumLit(eval(lower, modelData.plusParams(localData))),
+                eval(expr, modelData.plusParams(localData)),
+                NumLit(eval(upper, modelData.plusParams(localData))))
+            }
+
+          LinkedMap(pairs: _*)
+      }
+
+    case DGTEConstraintStat(name, alias, domain, lower, expr, upper) =>
+      domain match {
+        case None => LinkedMap(key(name) -> DGTEConstraintStat(name, alias, none, NumLit(eval(lower)), eval(expr), NumLit(eval(upper))))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> DGTEConstraintStat(
+                name,
+                alias,
+                none,
+                NumLit(eval(lower, modelData.plusParams(localData))),
+                eval(expr, modelData.plusParams(localData)),
+                NumLit(eval(upper, modelData.plusParams(localData))))
+            }
+
+          LinkedMap(pairs: _*)
+      }
+  }
+
+  def expand(obj: ObjectiveStat)(implicit modelData: ModelData): Expansion[ObjectiveStat] = obj match {
+    case Minimize(name, alias, domain, expr) =>
+      domain match {
+        case None => LinkedMap(key(name) -> Minimize(name, alias, none, eval(expr)))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> Minimize(name, alias, none, eval(expr, modelData.plusParams(localData)))
+            }
+
+          LinkedMap(pairs: _*)
+      }
+
+    case Maximize(name, alias, domain, expr) =>
+      domain match {
+        case None => LinkedMap(key(name) -> Maximize(name, alias, none, eval(expr)))
+        case Some(indExpr) =>
+          val pairs =
+            for {
+              localData <- eval(indExpr)
+            } yield {
+              val k = key(name, localData.values.toList)
+              k -> Maximize(name, alias, none, eval(expr, modelData.plusParams(localData)))
+            }
+
+          LinkedMap(pairs: _*)
+      }
   }
 
   implicit val StatEval: Eval[Stat, Expansion[Stat]] = from(implicit modelData =>
@@ -388,17 +543,18 @@ object eval {
   implicit val ParamRefEval: Eval[ParamRef, SimpleData] = from(implicit modelData =>
     {
       case ParamRef(param, subscript) =>
-        val pfAssing: PartialFunction[ParamAtt, SimpleExpr] = { case ParamAssign(expr) => expr }
-        val pfDefault: PartialFunction[ParamAtt, SimpleExpr] = { case ParamDefault(expr) => expr }
-
-        // TODO memoize. Use StateT? carry `Expansion[ParamStat]' as well as ModeData?
-        val assignData = evalAtt(param, pfAssing)
-        val defaultData = evalAtt(param, pfDefault)
-
         val k = key(param.name, eval(subscript))
-        assignData.get(k)
+        val expParam = 
+          modelData.paramsExpansion.get(k) 
+          .orElse(expand(param).get(k)) // only calculates the expansion if it is not preloaded
+          .err(s"subscript `${subscript.shows}' does not conform to parameter `${param.name}' definition")
+
+        val assignData  = evalAtt(expParam, PFParamAssing)
+        val defaultData = evalAtt(expParam, PFParamDefault)
+
+        assignData
           .orElse(modelData.params.get(k))
-          .orElse(defaultData.get(k))
+          .orElse(defaultData)
           .err(s"no data found for `$k'")
     })
 
@@ -574,18 +730,19 @@ object eval {
         (t0Val to tfVal by deltaTVal).map(x => SetVal(SimpleNum(x))).toList
 
       case SetRef(set, subscript) =>
-
-        val pfAssing: PartialFunction[SetAtt, SetExpr] = { case SetAssign(expr) => expr }
-        val pfDefault: PartialFunction[SetAtt, SetExpr] = { case SetDefault(expr) => expr }
-
-        // TODO memoize. Use StateT? carry `Expansion[SetStat]' as well as ModeData? 
-        val assignData = evalAtt(set, pfAssing)
-        val defaultData = evalAtt(set, pfDefault)
-
         val k = key(set.name, eval(subscript))
-        assignData.get(k)
+
+        val expSet = 
+          modelData.setsExpansion.get(k) 
+          .orElse(expand(set).get(k)) // only calculates the expansion if it is not preloaded
+          .err(s"subscript `${subscript.shows}' does not conform to set `${set.name}' definition")
+
+        val assignData  = evalAtt(expSet, PFSetAssing)
+        val defaultData = evalAtt(expSet, PFSetDefault)
+
+        assignData
           .orElse(modelData.sets.get(k))
-          .orElse(defaultData.get(k))
+          .orElse(defaultData)
           .err(s"no data found for `$k'")
 
       case SetLit(values @ _*) =>
@@ -768,7 +925,19 @@ object eval {
             eval(integrand, modelData.plusParams(localData))
           }
 
-        evIntegrand.toNel.fold[LinExpr](NumLit(0))(_.foldLeft1((expr1, expr2) => LinAdd(expr1, expr2)))
+        LinSumExp(evIntegrand)
+
+      case LinSumExp(summands) => LinSumExp(summands.map(eval(_)))
+
+      /* case LinSum(indexing, integrand) =>
+        val evIntegrand =
+          for {
+            localData <- eval(indexing)
+          } yield {
+            eval(integrand, modelData.plusParams(localData))
+          }
+
+        evIntegrand.toNel.fold[LinExpr](NumLit(0))(_.foldLeft1((expr1, expr2) => LinAdd(expr1, expr2))) */
 
       case LinMult(left, right) => LinMult(NumLit(eval(left)), eval(right))
 
