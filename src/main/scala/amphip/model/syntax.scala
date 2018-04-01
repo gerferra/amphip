@@ -108,10 +108,31 @@ trait AllSyntax {
   def maximize(name: SymName)(expr: LinExpr): ObjectiveStat =
     Maximize(name = name, expr = expr)
 
-  implicit class RefSyntax[A](val lhe: A) {
-    def apply[B](expr: SimpleExpr*)(implicit RefOp: RefOp[A, B]): B = RefOp.apply(lhe, expr.toList)
+  implicit class RefSyntax[A](lhe: A) {
 
-    def apply[B, C](expr: => List[C])(implicit conv: C => SimpleExpr, RefOp: RefOp[A, B]): B = RefOp.apply[C](lhe, expr)
+    def apply[C]()(implicit R: RefOp[A, SimpleExpr, C]): C = R.apply(lhe, Nil)
+
+    def apply[X1, B, C](x1: X1)(
+        implicit conv: X1 => B,
+                 R: RefOp[A, B, C]): C = R.apply(lhe, List(x1))
+
+    def apply[X1, X2, B, C](x1: X1, x2: X2)(
+      implicit conv: (X1, X2) => List[B],
+                R: RefOp[A, B, C]): C = R.apply(lhe, conv(x1, x2))
+
+    def apply[X1, X2, X3, B, C](x1: X1, x2: X2, x3: X3)(
+      implicit conv: (X1, X2, X3) => List[B],
+                R: RefOp[A, B, C]): C = R.apply(lhe, conv(x1, x2, x3))
+
+    def apply[X1, X2, X3, X4, B, C](x1: X1, x2: X2, x3: X3, x4: X4)(
+      implicit conv: (X1, X2, X3, X4) => List[B],
+                R: RefOp[A, B, C]): C = R.apply(lhe, conv(x1, x2, x3, x4))
+
+    def apply[X1, X2, X3, X4, X5, B, C](x1: X1, x2: X2, x3: X3, x4: X4, x5: X5)(
+      implicit conv: (X1, X2, X3, X4, X5) => List[B],
+                R: RefOp[A, B, C]): C = R.apply(lhe, conv(x1, x2, x3, x4, x5))
+    
+    def apply[B, C](expr: => List[B])(implicit R: RefOp[A, B, C]): C = R.apply(lhe, expr)
   }
 
   implicit class EqSyntax[A](val lhe: A) {
@@ -170,9 +191,9 @@ trait AllSyntax {
     def symbolic(implicit SymbolicOp: SymbolicOp[A]): A = SymbolicOp.symbolic(a)
   }
 
-  def cond[A, B, C](test: LogicExpr)(ifTrue: A)(otherwise: B)(implicit CondOp: CondOp[A, B, C]): C = CondOp.cond(test)(ifTrue)(otherwise)
+  def cond[A, B, C](test: LogicExpr)(ifTrue: A)(otherwise: B)(implicit CondOp: CondOp[LogicExpr, A, B, C]): C = CondOp.cond(test)(ifTrue)(otherwise)
 
-  def cond1[A, B](test: LogicExpr)(ifTrue: A)(implicit Cond1Op: Cond1Op[A, B]): B = Cond1Op.cond1(test)(ifTrue)
+  def cond1[A, B](test: LogicExpr)(ifTrue: A)(implicit Cond1Op: Cond1Op[LogicExpr, A, B]): B = Cond1Op.cond1(test)(ifTrue)
 
   implicit class AddSyntax[A](val lhe: A) {
     def +[B, C](rhe: B)(implicit AddOp: AddOp[A, B, C]): C = AddOp.add(lhe, rhe)
@@ -186,21 +207,21 @@ trait AllSyntax {
     def less[B, C](rhe: B)(implicit LessOp: LessOp[A, B, C]): C = LessOp.less(lhe, rhe)
   }
 
-  def sum[A, B](indexing: IndExpr)(integrand: A)(implicit SumOp: SumOp[A, B]): B = SumOp.sum(indexing, integrand)
+  def sum[A, B](indexing: IndExpr)(integrand: A)(implicit SumOp: SumOp[IndExpr, A, B]): B = SumOp.sum(indexing, integrand)
 
-  def sum[A, B](entries: IndEntry*)(integrand: A)(implicit SumOp: SumOp[A, B]): B = sum(IndExpr(entries.toList))(integrand)
+  def sum[A, B](entries: IndEntry*)(integrand: A)(implicit SumOp: SumOp[IndExpr, A, B]): B = sum(IndExpr(entries.toList))(integrand)
 
-  def prod[A, B](indexing: IndExpr)(integrand: A)(implicit ProdOp: ProdOp[A, B]): B = ProdOp.prod(indexing, integrand)
+  def prod[A, B](indexing: IndExpr)(integrand: A)(implicit ProdOp: ProdOp[IndExpr, A, B]): B = ProdOp.prod(indexing, integrand)
 
-  def prod[A, B](entries: IndEntry*)(integrand: A)(implicit ProdOp: ProdOp[A, B]): B = prod(IndExpr(entries.toList))(integrand)
+  def prod[A, B](entries: IndEntry*)(integrand: A)(implicit ProdOp: ProdOp[IndExpr, A, B]): B = prod(IndExpr(entries.toList))(integrand)
 
-  def max[A, B](indexing: IndExpr)(integrand: A)(implicit MaxOp: MaxOp[A, B]): B = MaxOp.max(indexing, integrand)
+  def max[A, B](indexing: IndExpr)(integrand: A)(implicit MaxOp: MaxOp[IndExpr, A, B]): B = MaxOp.max(indexing, integrand)
 
-  def max[A, B](entries: IndEntry*)(integrand: A)(implicit MaxOp: MaxOp[A, B]): B = max(IndExpr(entries.toList))(integrand)
+  def max[A, B](entries: IndEntry*)(integrand: A)(implicit MaxOp: MaxOp[IndExpr, A, B]): B = max(IndExpr(entries.toList))(integrand)
 
-  def min[A, B](indexing: IndExpr)(integrand: A)(implicit MinOp: MinOp[A, B]): B = MinOp.min(indexing, integrand)
+  def min[A, B](indexing: IndExpr)(integrand: A)(implicit MinOp: MinOp[IndExpr, A, B]): B = MinOp.min(indexing, integrand)
 
-  def min[A, B](entries: IndEntry*)(integrand: A)(implicit MinOp: MinOp[A, B]): B = min(IndExpr(entries.toList))(integrand)
+  def min[A, B](entries: IndEntry*)(integrand: A)(implicit MinOp: MinOp[IndExpr, A, B]): B = min(IndExpr(entries.toList))(integrand)
 
   implicit class MultSyntax[A](val lhe: A) {
     def *[B, C](rhe: B)(implicit MultOp: MultOp[A, B, C]): C = MultOp.mult(lhe, rhe)
@@ -246,9 +267,9 @@ trait AllSyntax {
     def &[B, C](rhe: B)(implicit InterOp: InterOp[A, B, C]): C = InterOp.inter(lhe, rhe)
   }
 
-  def setOf[A, B](indexing: IndExpr)(integrand: A*)(implicit SetOfOp: SetOfOp[A, B]): B = SetOfOp.setOf(indexing, integrand: _*)
+  def setOf[A, B](indexing: IndExpr)(integrand: A*)(implicit SetOfOp: SetOfOp[IndExpr, A, B]): B = SetOfOp.setOf(indexing, integrand: _*)
 
-  def setOf[A, B](entries: IndEntry*)(integrand: A*)(implicit SetOfOp: SetOfOp[A, B]): B = setOf(IndExpr(entries.toList))(integrand: _*)
+  def setOf[A, B](entries: IndEntry*)(integrand: A*)(implicit SetOfOp: SetOfOp[IndExpr, A, B]): B = setOf(IndExpr(entries.toList))(integrand: _*)
 
   /**
     * Provides syntax for the "to" reserved word for arithmetic sets.
@@ -286,13 +307,13 @@ trait AllSyntax {
     def ||[B, C](rhe: B)(implicit DisjOp: DisjOp[A, B, C]): C = DisjOp.disj(lhe, rhe)
   }
 
-  def forall[A, B](indexing: IndExpr)(integrand: A)(implicit ForallOp: ForallOp[A, B]): B = ForallOp.forall(indexing, integrand)
+  def forall[A, B](indexing: IndExpr)(integrand: A)(implicit ForallOp: ForallOp[IndExpr, A, B]): B = ForallOp.forall(indexing, integrand)
 
-  def forall[A, B](entries: IndEntry*)(integrand: A)(implicit ForallOp: ForallOp[A, B]): B = forall(IndExpr(entries.toList))(integrand)
+  def forall[A, B](entries: IndEntry*)(integrand: A)(implicit ForallOp: ForallOp[IndExpr, A, B]): B = forall(IndExpr(entries.toList))(integrand)
 
-  def exists[A, B](indexing: IndExpr)(integrand: A)(implicit ExistsOp: ExistsOp[A, B]): B = ExistsOp.exists(indexing, integrand)
+  def exists[A, B](indexing: IndExpr)(integrand: A)(implicit ExistsOp: ExistsOp[IndExpr, A, B]): B = ExistsOp.exists(indexing, integrand)
 
-  def exists[A, B](entries: IndEntry*)(integrand: A)(implicit ExistsOp: ExistsOp[A, B]): B = exists(IndExpr(entries.toList))(integrand)
+  def exists[A, B](entries: IndEntry*)(integrand: A)(implicit ExistsOp: ExistsOp[IndExpr, A, B]): B = exists(IndExpr(entries.toList))(integrand)
 
   implicit class ConjSyntax[A](val lhe: A) {
     def &&[B, C](rhe: B)(implicit ConjOp: ConjOp[A, B, C]): C = ConjOp.conj(lhe, rhe)
@@ -370,10 +391,10 @@ trait AllSyntax {
 
   implicit class VarStatSyntax(val xvar: VarStat) {
     def relax: VarStat = {
-      val newAtts = xvar.atts.filter {
-        case Binary => false
-        case Integer => false
-        case _ => true
+      val newAtts = xvar.atts.flatMap {
+        case Binary => List(VarGTE(0), VarLTE(1))
+        case Integer => List.empty
+        case x => List(x)
       }
       xvar.copy(atts = newAtts)
     }

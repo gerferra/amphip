@@ -78,6 +78,9 @@ object SimpleData {
       case SimpleNum(num) => ifNum(num)
       case SimpleStr(str) => ifStr(str)
     }
+
+    def numOr(default: => BigDecimal): BigDecimal = fold(identity    , _ => default)
+    def strOr(default: => String    ): String     = fold(_ => default, identity)
   }
 
   implicit val SimpleDataOrder: Order[SimpleData] = new Order[SimpleData] {

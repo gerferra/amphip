@@ -24,7 +24,7 @@ inThisBuild(Seq(
   scalaVersion      := "2.12.4-bin-typelevel-4"
 ))
 
-libraryDependencies ++= Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6")
+libraryDependencies ++= Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0")
 
 // based on https://tpolecat.github.io/2017/04/25/scalac-flags.html
 scalacOptions ++= Seq(
@@ -92,17 +92,17 @@ scalacOptions in (Test,    console) := scalacOptions.in(Compile, console).value
 // DEPENDENCIES
 
 libraryDependencies ++= Seq(
-  "org.spire-math"                %% "spire"         % "0.13.0",
-  "com.lihaoyi"                   %% "sourcecode"    % "0.1.4",
-  "com.github.pathikrit"          %% "better-files"  % "3.0.0", 
+  "org.typelevel"        %% "spire"         % "0.15.0",
+  "com.lihaoyi"          %% "sourcecode"    % "0.1.4",
+  "com.github.pathikrit" %% "better-files"  % "3.4.0", 
   // transitioning ...
-  "org.scalaz"                    %% "scalaz-core"   % "7.2.15",
-  "org.typelevel"                 %% "cats"          % "0.9.0"
+  "org.scalaz"           %% "scalaz-core"   % "7.2.20",
+  "org.typelevel"        %% "cats-core"     % "1.0.1"
 )
 
  
  // TEST-DEPENDENCIES
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest"       % "3.0.4" % Test,
+  "org.scalatest" %% "scalatest"       % "3.0.5" % Test,
   "com.novocode"   % "junit-interface" % "0.11"  % Test)

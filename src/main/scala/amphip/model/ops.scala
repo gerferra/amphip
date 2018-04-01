@@ -2,13 +2,11 @@ package amphip.model
 
 import scala.annotation.implicitNotFound
 
-import amphip.model.ast._
-
 object ops {
 
   @implicitNotFound("Ref is not defined for ${A}")
-  trait RefOp[A, B] {
-    def apply[C](a: A, expr: List[C])(implicit conv: C => SimpleExpr): B
+  trait RefOp[A, B, C] {
+    def apply(a: A, expr: List[B]): C
   }
 
   @implicitNotFound("=== is not defined for ${A}, ${B}")
@@ -81,14 +79,14 @@ object ops {
     def symbolic(a: A): A
   }
 
-  @implicitNotFound("Cond is not defined for ${A}, ${B}")
-  trait CondOp[A, B, C] {
-    def cond(test: LogicExpr)(ifTrue: A)(otherwise: B): C
+  @implicitNotFound("Cond is not defined for ${A}, ${B}, ${C}")
+  trait CondOp[A, B, C, D] {
+    def cond(test: A)(ifTrue: B)(otherwise: C): D
   }
 
-  @implicitNotFound("Cond1 is not defined for ${A}")
-  trait Cond1Op[A, B] {
-    def cond1(test: LogicExpr)(ifTrue: A): B
+  @implicitNotFound("Cond1 is not defined for ${A}, ${B}")
+  trait Cond1Op[A, B, C] {
+    def cond1(test: A)(ifTrue: B): C
   }
 
   @implicitNotFound("Addition is not defined for ${A}, ${B}")
@@ -106,24 +104,24 @@ object ops {
     def less(lhe: A, rhe: B): C
   }
 
-  @implicitNotFound("Sum is not defined for ${A}")
-  trait SumOp[A, B] {
-    def sum(indexing: IndExpr, integrand: A): B
+  @implicitNotFound("Sum is not defined for ${A}, ${B}")
+  trait SumOp[A, B, C] {
+    def sum(indexing: A, integrand: B): C
   }
 
-  @implicitNotFound("Prod is not defined for ${A}")
-  trait ProdOp[A, B] {
-    def prod(indexing: IndExpr, integrand: A): B
+  @implicitNotFound("Prod is not defined for ${A}, ${B}")
+  trait ProdOp[A, B, C] {
+    def prod(indexing: A, integrand: B): C
   }
 
-  @implicitNotFound("Max is not defined for ${A}")
-  trait MaxOp[A, B] {
-    def max(indexing: IndExpr, integrand: A): B
+  @implicitNotFound("Max is not defined for ${A}, ${B}")
+  trait MaxOp[A, B, C] {
+    def max(indexing: A, integrand: B): C
   }
 
-  @implicitNotFound("Min is not defined for ${A}")
-  trait MinOp[A, B] {
-    def min(indexing: IndExpr, integrand: A): B
+  @implicitNotFound("Min is not defined for ${A}, ${B}")
+  trait MinOp[A, B, C] {
+    def min(indexing: A, integrand: B): C
   }
 
   @implicitNotFound("Multiplication is not defined for ${A}, ${B}")
@@ -181,9 +179,9 @@ object ops {
     def inter(lhe: A, rhe: B): C
   }
 
-  @implicitNotFound("SetOf is not defined for ${A}")
-  trait SetOfOp[A, B] {
-    def setOf(indexing: IndExpr, integrand: A*): B
+  @implicitNotFound("SetOf is not defined for ${A}, ${B}")
+  trait SetOfOp[A, B, C] {
+    def setOf(indexing: A, integrand: B*): C
   }
 
   @implicitNotFound("To is not defined for ${A}, ${B}")
@@ -201,14 +199,14 @@ object ops {
     def disj(lhe: A, rhe: B): C
   }
 
-  @implicitNotFound("Forall is not defined for ${A}")
-  trait ForallOp[A, B] {
-    def forall(indexing: IndExpr, integrand: A): B
+  @implicitNotFound("Forall is not defined for ${A}, ${B}")
+  trait ForallOp[A, B, C] {
+    def forall(indexing: A, integrand: B): C
   }
 
-  @implicitNotFound("Exists is not defined for ${A}")
-  trait ExistsOp[A, B] {
-    def exists(indexing: IndExpr, integrand: A): B
+  @implicitNotFound("Exists is not defined for ${A}, ${B}")
+  trait ExistsOp[A, B, C] {
+    def exists(indexing: A, integrand: B): C
   }
 
   @implicitNotFound("Conj is not defined for ${A}, ${B}")

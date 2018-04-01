@@ -145,13 +145,18 @@ object ast {
   sealed trait LinExpr extends Expr
 
   /*
+   * Groups SetRef, ParamRef, VarRef, ConstraintRef, ObjectiveRef
+   */
+  sealed trait StatRef
+
+  /*
    * SIMPLE
    */
   sealed trait NumExpr extends LogicExpr with SimpleExpr with LinExpr
 
   sealed trait SymExpr extends SimpleExpr
 
-  case class ParamRef(param: ParamStat, subscript: List[SimpleExpr] = Nil) extends NumExpr with SymExpr
+  case class ParamRef(param: ParamStat, subscript: List[SimpleExpr] = Nil) extends NumExpr with SymExpr with StatRef
 
   case class DummyIndRef(dummyInd: DummyIndDecl) extends NumExpr with SymExpr
 
@@ -283,7 +288,7 @@ object ast {
 
   case class ArithSet(t0: NumExpr, tf: NumExpr, deltaT: Option[NumExpr] = None) extends SetExpr
 
-  case class SetRef(set: SetStat, subscript: List[SimpleExpr] = Nil) extends SetExpr
+  case class SetRef(set: SetStat, subscript: List[SimpleExpr] = Nil) extends SetExpr with StatRef
 
   case class SetLit(values: Tuple*) extends SetExpr
 
@@ -358,7 +363,16 @@ object ast {
 
   case class LinUnaryMinus(x: LinExpr) extends LinExpr
 
-  case class VarRef(xvar: VarStat, subscript: List[SimpleExpr] = Nil) extends LinExpr
+  case class VarRef(xvar: VarStat, subscript: List[SimpleExpr] = Nil) extends LinExpr with StatRef
+
+  /*
+   * STAT
+   */
+  sealed trait RowRef extends StatRef // to group ConstraintRef and ObjectiveRef ...
+  case class ConstraintRef(crt: ConstraintStat, subscript: List[SimpleExpr] = Nil) extends RowRef
+  case class ObjectiveRef(obj: ObjectiveStat, subscript: List[SimpleExpr] = Nil) extends RowRef
+  
+
 
   /*
   * BASIC

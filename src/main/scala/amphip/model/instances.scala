@@ -16,6 +16,7 @@ object instances extends AllInstances
 
 trait AllInstances extends NumInstances
   with SymInstances
+  with TupleInstances
   with SetInstances
   with LogInstances
   with RefInstances
@@ -84,6 +85,30 @@ trait SymInstances {
 
 }
 
+trait TupleInstances {
+  implicit def Tuple2AsListSimpleExpr[A, B](a: A, b: B)(
+    implicit conv1: A => SimpleExpr,
+             conv2: B => SimpleExpr): List[SimpleExpr] = List(a, b)
+
+  implicit def Tuple3AsListSimpleExpr[A, B, C](a: A, b: B, c: C)(
+    implicit conv1: A => SimpleExpr,
+             conv2: B => SimpleExpr,
+             conv3: C => SimpleExpr): List[SimpleExpr] = List(a, b, c)
+
+  implicit def Tuple4AsListSimpleExpr[A, B, C, D](a: A, b: B, c: C, d: D)(
+    implicit conv1: A => SimpleExpr,
+             conv2: B => SimpleExpr,
+             conv3: C => SimpleExpr,
+             conv4: D => SimpleExpr): List[SimpleExpr] = List(a, b, c, d)
+
+  implicit def Tuple5AsListSimpleExpr[A, B, C, D, E](a: A, b: B, c: C, d: D, e: E)(
+    implicit conv1: A => SimpleExpr,
+             conv2: B => SimpleExpr,
+             conv3: C => SimpleExpr,
+             conv4: D => SimpleExpr,
+             conv5: E => SimpleExpr): List[SimpleExpr] = List(a, b, c, d, e)
+}
+
 trait SetInstances { self: NumInstances =>
 
   implicit def SetExprAsIndEntry[A](a: A)(implicit conv: A => SetExpr): IndEntry = IndEntry(Nil, a)
@@ -104,22 +129,32 @@ trait LogInstances {
 
 trait RefInstances {
 
-  implicit val SetStatRefOp: RefOp[SetStat, SetExpr] = new RefOp[SetStat, SetExpr] {
-    def apply[C](a: SetStat, expr: List[C])(implicit conv: C => SimpleExpr): SetExpr = SetRef(a, expr.map(conv))
+  implicit def SetStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[SetStat, B, SetRef] = new RefOp[SetStat, B, SetRef] {
+    def apply(a: SetStat, expr: List[B]): SetRef = SetRef(a, expr.map(conv))
   }
 
-  implicit val ParamStatRefOp: RefOp[ParamStat, NumExpr with SymExpr] = new RefOp[ParamStat, NumExpr with SymExpr] {
-    def apply[C](a: ParamStat, expr: List[C])(implicit conv: C => SimpleExpr): NumExpr with SymExpr = ParamRef(a, expr.map(conv))
+  implicit def ParamStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[ParamStat, B, ParamRef] = new RefOp[ParamStat, B, ParamRef] {
+    def apply(a: ParamStat, expr: List[B]): ParamRef = ParamRef(a, expr.map(conv))
   }
 
-  implicit val VarStatRefOp: RefOp[VarStat, LinExpr] = new RefOp[VarStat, LinExpr] {
-    def apply[C](a: VarStat, expr: List[C])(implicit conv: C => SimpleExpr): LinExpr = VarRef(a, expr.map(conv))
+  implicit def VarStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[VarStat, B, VarRef] = new RefOp[VarStat, B, VarRef] {
+    def apply(a: VarStat, expr: List[B]): VarRef = VarRef(a, expr.map(conv))
   }
 
-  def AAsRef[A, B](lhe: A)(implicit RefOp: RefOp[A, B]): B = RefOp.apply(lhe, Nil)
-  implicit def SetStatAsRef(lhe: SetStat): SetExpr = AAsRef(lhe)
-  implicit def ParamStatAsRef(lhe: ParamStat): NumExpr with SymExpr = AAsRef(lhe)
-  implicit def VarStatAsRef(lhe: VarStat): LinExpr = AAsRef(lhe)
+  implicit def ConstraintStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[ConstraintStat, B, ConstraintRef] = new RefOp[ConstraintStat, B, ConstraintRef] {
+    def apply(a: ConstraintStat, expr: List[B]): ConstraintRef = ConstraintRef(a, expr.map(conv))
+  }
+
+  implicit def ObjectiveStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[ObjectiveStat, B, ObjectiveRef] = new RefOp[ObjectiveStat, B, ObjectiveRef] {
+    def apply(a: ObjectiveStat, expr: List[B]): ObjectiveRef = ObjectiveRef(a, expr.map(conv))
+  }
+ 
+  def AAsRef[A, C](lhe: A)(implicit RefOp: RefOp[A, SimpleExpr, C]): C = RefOp.apply(lhe, Nil)
+  implicit def SetStatAsRef(lhe: SetStat): SetRef = AAsRef(lhe)
+  implicit def ParamStatAsRef(lhe: ParamStat): ParamRef = AAsRef(lhe)
+  implicit def VarStatAsRef(lhe: VarStat): VarRef = AAsRef(lhe)
+  implicit def ConstraintStatAsRef(lhe: ConstraintStat): ConstraintRef = AAsRef(lhe)
+  implicit def ObjectiveStatAsRef(lhe: ObjectiveStat): ObjectiveRef = AAsRef(lhe)
 
   implicit def DummyIndDeclAsDummyIndRef(x: DummyIndDecl): DummyIndRef = DummyIndRef(x)
 }
@@ -405,11 +440,11 @@ trait SymbolicInstances {
 
 trait CondInstances extends CondInstancesLowPriority1 {
 
-  implicit def NumExprCondOp[A, B](implicit convA: A => NumExpr, convB: B => NumExpr): CondOp[A, B, NumExpr] = new CondOp[A, B, NumExpr] {
+  implicit def NumExprCondOp[A, B](implicit convA: A => NumExpr, convB: B => NumExpr): CondOp[LogicExpr, A, B, NumExpr] = new CondOp[LogicExpr, A, B, NumExpr] {
     def cond(test: LogicExpr)(ifTrue: A)(otherwise: B): NumExpr =
       CondNumExpr(test, ifTrue, (otherwise: NumExpr).some)
   }
-  implicit def SetExprCondOp[A, B](implicit convA: A => SetExpr, convB: B => SetExpr): CondOp[A, B, SetExpr] = new CondOp[A, B, SetExpr] {
+  implicit def SetExprCondOp[A, B](implicit convA: A => SetExpr, convB: B => SetExpr): CondOp[LogicExpr, A, B, SetExpr] = new CondOp[LogicExpr, A, B, SetExpr] {
     def cond(test: LogicExpr)(ifTrue: A)(otherwise: B): SetExpr =
       CondSetExpr(test, ifTrue, otherwise)
   }
@@ -417,7 +452,7 @@ trait CondInstances extends CondInstancesLowPriority1 {
 }
 trait CondInstancesLowPriority1 extends CondInstancesLowPriority2 {
 
-  implicit def SymExprCondOp[A, B](implicit convA: A => SymExpr, convB: B => SymExpr): CondOp[A, B, SymExpr] = new CondOp[A, B, SymExpr] {
+  implicit def SymExprCondOp[A, B](implicit convA: A => SymExpr, convB: B => SymExpr): CondOp[LogicExpr, A, B, SymExpr] = new CondOp[LogicExpr, A, B, SymExpr] {
     def cond(test: LogicExpr)(ifTrue: A)(otherwise: B): SymExpr =
       CondSymExpr(test, ifTrue, (otherwise: SymExpr).some)
   }
@@ -425,7 +460,7 @@ trait CondInstancesLowPriority1 extends CondInstancesLowPriority2 {
 }
 trait CondInstancesLowPriority2 {
 
-  implicit def LinExprCondOp[A, B](implicit convA: A => LinExpr, convB: B => LinExpr): CondOp[A, B, LinExpr] = new CondOp[A, B, LinExpr] {
+  implicit def LinExprCondOp[A, B](implicit convA: A => LinExpr, convB: B => LinExpr): CondOp[LogicExpr, A, B, LinExpr] = new CondOp[LogicExpr, A, B, LinExpr] {
     def cond(test: LogicExpr)(ifTrue: A)(otherwise: B): LinExpr =
       CondLinExpr(test, ifTrue, (otherwise: LinExpr).some)
   }
@@ -434,7 +469,7 @@ trait CondInstancesLowPriority2 {
 
 trait Cond1Instances extends Cond1InstancesLowPriority1 {
 
-  implicit def NumExprCond1Op[A](implicit convA: A => NumExpr): Cond1Op[A, NumExpr] = new Cond1Op[A, NumExpr] {
+  implicit def NumExprCond1Op[A](implicit convA: A => NumExpr): Cond1Op[LogicExpr, A, NumExpr] = new Cond1Op[LogicExpr, A, NumExpr] {
     def cond1(test: LogicExpr)(ifTrue: A): NumExpr =
       CondNumExpr(test, ifTrue)
   }
@@ -442,7 +477,7 @@ trait Cond1Instances extends Cond1InstancesLowPriority1 {
 }
 trait Cond1InstancesLowPriority1 extends Cond1InstancesLowPriority2 {
 
-  implicit def SymExprCond1Op[A](implicit convA: A => SymExpr): Cond1Op[A, SymExpr] = new Cond1Op[A, SymExpr] {
+  implicit def SymExprCond1Op[A](implicit convA: A => SymExpr): Cond1Op[LogicExpr, A, SymExpr] = new Cond1Op[LogicExpr, A, SymExpr] {
     def cond1(test: LogicExpr)(ifTrue: A): SymExpr =
       CondSymExpr(test, ifTrue)
   }
@@ -450,7 +485,7 @@ trait Cond1InstancesLowPriority1 extends Cond1InstancesLowPriority2 {
 }
 trait Cond1InstancesLowPriority2 {
 
-  implicit def LinExprCond1Op[A](implicit convA: A => LinExpr): Cond1Op[A, LinExpr] = new Cond1Op[A, LinExpr] {
+  implicit def LinExprCond1Op[A](implicit convA: A => LinExpr): Cond1Op[LogicExpr, A, LinExpr] = new Cond1Op[LogicExpr, A, LinExpr] {
     def cond1(test: LogicExpr)(ifTrue: A): LinExpr =
       CondLinExpr(test, ifTrue)
   }
@@ -507,7 +542,7 @@ trait LessInstances {
 
 trait SumInstances extends SumInstancesLowPriority {
 
-  implicit def NumExprSumOp[A](implicit convA: A => NumExpr): SumOp[A, NumExpr] = new SumOp[A, NumExpr] {
+  implicit def NumExprSumOp[A](implicit convA: A => NumExpr): SumOp[IndExpr, A, NumExpr] = new SumOp[IndExpr, A, NumExpr] {
     def sum(indexing: IndExpr, integrand: A) =
       NumSum(indexing, integrand)
   }
@@ -515,7 +550,7 @@ trait SumInstances extends SumInstancesLowPriority {
 }
 trait SumInstancesLowPriority {
 
-  implicit def LinExprSumOp[A](implicit convA: A => LinExpr): SumOp[A, LinExpr] = new SumOp[A, LinExpr] {
+  implicit def LinExprSumOp[A](implicit convA: A => LinExpr): SumOp[IndExpr, A, LinExpr] = new SumOp[IndExpr, A, LinExpr] {
     def sum(indexing: IndExpr, integrand: A) =
       LinSum(indexing, integrand)
   }
@@ -524,7 +559,7 @@ trait SumInstancesLowPriority {
 
 trait ProdInstances {
 
-  implicit def NumExprProdOp[A](implicit convA: A => NumExpr): ProdOp[A, NumExpr] = new ProdOp[A, NumExpr] {
+  implicit def NumExprProdOp[A](implicit convA: A => NumExpr): ProdOp[IndExpr, A, NumExpr] = new ProdOp[IndExpr, A, NumExpr] {
     def prod(indexing: IndExpr, integrand: A) =
       NumProd(indexing, integrand)
   }
@@ -533,7 +568,7 @@ trait ProdInstances {
 
 trait MaxInstances {
 
-  implicit def NumExprMaxOp[A](implicit convA: A => NumExpr): MaxOp[A, NumExpr] = new MaxOp[A, NumExpr] {
+  implicit def NumExprMaxOp[A](implicit convA: A => NumExpr): MaxOp[IndExpr, A, NumExpr] = new MaxOp[IndExpr, A, NumExpr] {
     def max(indexing: IndExpr, integrand: A) =
       NumMax(indexing, integrand)
   }
@@ -542,7 +577,7 @@ trait MaxInstances {
 
 trait MinInstances {
 
-  implicit def NumExprMinOp[A](implicit convA: A => NumExpr): MinOp[A, NumExpr] = new MinOp[A, NumExpr] {
+  implicit def NumExprMinOp[A](implicit convA: A => NumExpr): MinOp[IndExpr, A, NumExpr] = new MinOp[IndExpr, A, NumExpr] {
     def min(indexing: IndExpr, integrand: A) =
       NumMin(indexing, integrand)
   }
@@ -708,7 +743,7 @@ trait InterInstances {
 
 trait SetOfInstances {
 
-  implicit def ListSimpleExprSetOfOp[A](implicit convA: A => SimpleExpr): SetOfOp[A, SetExpr] = new SetOfOp[A, SetExpr] {
+  implicit def ListSimpleExprSetOfOp[A](implicit convA: A => SimpleExpr): SetOfOp[IndExpr, A, SetExpr] = new SetOfOp[IndExpr, A, SetExpr] {
     def setOf(indexing: IndExpr, integrand: A*) =
       SetOf(indexing, integrand.map(x => x: SimpleExpr).toList)
   }
@@ -744,7 +779,7 @@ trait DisjInstances {
 
 trait ForallInstances {
 
-  implicit def LogicExprForallOp[A](implicit convA: A => LogicExpr): ForallOp[A, LogicExpr] = new ForallOp[A, LogicExpr] {
+  implicit def LogicExprForallOp[A](implicit convA: A => LogicExpr): ForallOp[IndExpr, A, LogicExpr] = new ForallOp[IndExpr, A, LogicExpr] {
     def forall(indexing: IndExpr, integrand: A) =
       Forall(indexing, integrand)
   }
@@ -753,7 +788,7 @@ trait ForallInstances {
 
 trait ExistsInstances {
 
-  implicit def LogicExprExistsOp[A](implicit convA: A => LogicExpr): ExistsOp[A, LogicExpr] = new ExistsOp[A, LogicExpr] {
+  implicit def LogicExprExistsOp[A](implicit convA: A => LogicExpr): ExistsOp[IndExpr, A, LogicExpr] = new ExistsOp[IndExpr, A, LogicExpr] {
     def exists(indexing: IndExpr, integrand: A) =
       Exists(indexing, integrand)
   }

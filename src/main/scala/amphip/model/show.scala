@@ -352,10 +352,7 @@ trait ShowInstances {
       val deltaTShows = deltaT.fold("")(expr => s" by ${expr.shows}")
       s"$t0Shows .. $tfShows$deltaTShows"
 
-    case SetRef(set, subscript) =>
-      val nameShows = set.name
-      val subscriptShows = showSubscript(subscript)
-      s"$nameShows$subscriptShows"
+    case x: SetRef => x.shows
 
     case SetLit(values @ _*) =>
       val valuesShow = values.map(showTuple).mkString(", ")
@@ -364,6 +361,13 @@ trait ShowInstances {
 
     case IndExprSet(indexing) => indexing.shows
 
+  }
+
+  implicit val SetRefShow: Show[SetRef] = shows {
+    case SetRef(set, subscript) =>
+      val nameShows = set.name
+      val subscriptShows = showSubscript(subscript)
+      s"$nameShows$subscriptShows"
   }
 
   //INDEXING

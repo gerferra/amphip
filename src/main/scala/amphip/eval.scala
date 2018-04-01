@@ -552,6 +552,7 @@ object eval {
         val assignData  = evalAtt(expParam, PFParamAssing)
         val defaultData = evalAtt(expParam, PFParamDefault)
 
+        // FIXME check lower and upper bounds
         assignData
           .orElse(modelData.params.get(k))
           .orElse(defaultData)
@@ -609,6 +610,7 @@ object eval {
       case NumLit(num) => num
     })
 
+  // XXX 😬 🤔 
   private val rnd = new scala.util.Random()
 
   implicit val NumFuncRefEval: Eval[NumFuncRef, BigDecimal] = from(implicit modelData =>
@@ -729,21 +731,7 @@ object eval {
 
         (t0Val to tfVal by deltaTVal).map(x => SetVal(SimpleNum(x))).toList
 
-      case SetRef(set, subscript) =>
-        val k = key(set.name, eval(subscript))
-
-        val expSet = 
-          modelData.setsExpansion.get(k) 
-          .orElse(expand(set).get(k)) // only calculates the expansion if it is not preloaded
-          .err(s"subscript `${subscript.shows}' does not conform to set `${set.name}' definition")
-
-        val assignData  = evalAtt(expSet, PFSetAssing)
-        val defaultData = evalAtt(expSet, PFSetDefault)
-
-        assignData
-          .orElse(modelData.sets.get(k))
-          .orElse(defaultData)
-          .err(s"no data found for `$k'")
+      case x: SetRef => eval(x)
 
       case SetLit(values @ _*) =>
         values.toList.map {
@@ -759,6 +747,24 @@ object eval {
           case l => SetTuple(l)
         }
     })
+
+  implicit val SetRefEval: Eval[SetRef, List[SetData]] = from(implicit modelData => {
+    case SetRef(set, subscript) =>
+      val k = key(set.name, eval(subscript))
+
+      val expSet = 
+        modelData.setsExpansion.get(k) 
+        .orElse(expand(set).get(k)) // only calculates the expansion if it is not preloaded
+        .err(s"subscript `${subscript.shows}' does not conform to set `${set.name}' definition")
+
+      val assignData  = evalAtt(expSet, PFSetAssing)
+      val defaultData = evalAtt(expSet, PFSetDefault)
+
+      assignData
+        .orElse(modelData.sets.get(k))
+        .orElse(defaultData)
+        .err(s"no data found for `$k'")
+  })
 
   // INDEXING
 
@@ -802,9 +808,9 @@ object eval {
 
         val predExprMap = predicate.fold(Map.empty[String, SimpleExpr])(p => IndEntry.extract(p).mapKeys(_.name))
 
-        /*
-       * the final expression must have only the values not appearing in the predicate expression
-       */
+       /*
+        * the final expression must have only the values not appearing in the predicate expression
+        */
         filtered.map(_.filter { case (k, _) => predExprMap.get(k.name).isEmpty })
     })
 
@@ -844,7 +850,7 @@ object eval {
         }
     })
 
-  implicit val IndExprLoginIntegrandEval: Eval[(IndExpr, LogicExpr), List[Boolean]] = from(implicit modelData =>
+  implicit val IndExprLogicIntegrandEval: Eval[(IndExpr, LogicExpr), List[Boolean]] = from(implicit modelData =>
     {
       case (indexing, integrand) =>
         for {
@@ -947,18 +953,22 @@ object eval {
 
       case LinUnaryMinus(x) => LinUnaryMinus(eval(x))
 
-      case VarRef(xvar, subscript) => VarRef(xvar, eval(subscript).map(_.fold(NumLit(_), StringLit(_))))
+      case x: VarRef => eval(x)
 
       case x: NumExpr => NumLit(eval(x))
     })
+
+  implicit val VarRefEval: Eval[VarRef, VarRef] = from(implicit modelData => {
+    case VarRef(xvar, subscript) => VarRef(xvar, eval(subscript).map(_.fold(NumLit(_), StringLit(_))))
+  })
 
   // BASIC
 
   implicit val SubscriptEval: Eval[List[SimpleExpr], List[SimpleData]] = from(implicit modelData => _.map(eval(_)))
 
-  private[this] def typeMismatchNumExpr(decl: SymName, declType: String) = s"$declType `$decl' has incorrect type. Expected `NumExpr', found `SymExpr'."
+  def typeMismatchNumExpr(decl: SymName, declType: String) = s"$declType `$decl' has incorrect type. Expected `NumExpr', found `SymExpr'."
 
-  private[this] def asSetLit(data: List[SetData]): SetLit = {
+  private def asSetLit(data: List[SetData]): SetLit = {
     val tuples =
       data.map {
         case SetVal(x) => List(x.fold(NumLit, StringLit))
