@@ -584,7 +584,6 @@ class Parser extends RegexParsers with PackratParsers {
           for {
             _ <- putScope
             indexing <- indexingS
-            s <- ev.get
             _ <- removeScope
           } yield {
             IndExprSet(indexing): SetExpr
@@ -1253,7 +1252,6 @@ object Parser {
       _ <- putScope
       indexing <- indexingS
       integrand <- integrandS
-      s <- ev.get
       _ <- removeScope
     } yield {
       //println(s)

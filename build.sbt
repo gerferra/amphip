@@ -4,7 +4,7 @@ organization := "amphip"
 
 name := "amphip"
 
-version := "0.0.2"
+version := "0.0.3"
 
 
 // SBT
@@ -19,11 +19,7 @@ initialCommands in console :=
 
 // SCALA
 
-inThisBuild(Seq(
-  scalaOrganization := "org.typelevel",
-  scalaVersion      := "2.12.4-bin-typelevel-4"
-))
-
+scalaVersion      := "2.12.8"
 libraryDependencies ++= Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0")
 
 // based on https://tpolecat.github.io/2017/04/25/scalac-flags.html
@@ -75,16 +71,6 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
 )
 
-// typelevel scala
-scalacOptions ++= Seq(
-  "-Yinduction-heuristics",       // speeds up the compilation of inductive implicit resolution
-  // bug [Kind-Polymorphic Error] Foo.FooInt[String] inferred to type Foo.FooInt[String] with illegally kinded type arguments String applied to type Foo[A,B] 
-  //"-Ykind-polymorphism",          // type and method definitions with type parameters of arbitrary kinds
-  "-Yliteral-types",              // literals can appear in type position
-  "-Xstrict-patmat-analysis",     // more accurate reporting of failures of match exhaustivity
-  "-Xlint:strict-unsealed-patmat" // warn on inexhaustive matches against unsealed traits
-)
-
 scalacOptions in (Compile, console) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports")
 scalacOptions in (Test,    console) := scalacOptions.in(Compile, console).value
 
@@ -94,7 +80,8 @@ scalacOptions in (Test,    console) := scalacOptions.in(Compile, console).value
 libraryDependencies ++= Seq(
   "org.typelevel"        %% "spire"         % "0.15.0",
   "com.lihaoyi"          %% "sourcecode"    % "0.1.4",
-  "com.github.pathikrit" %% "better-files"  % "3.4.0", 
+  "com.github.pathikrit" %% "better-files"  % "3.4.0",
+  "com.chuusai"          %% "shapeless"     % "2.3.3", 
   // transitioning ...
   "org.scalaz"           %% "scalaz-core"   % "7.2.20",
   "org.typelevel"        %% "cats-core"     % "1.0.1"

@@ -10,3 +10,5 @@ target/
 .ensime
 .ensime_cache/
 ensime.sbt
+.bloop/
+.metals/

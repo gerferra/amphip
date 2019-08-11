@@ -373,6 +373,7 @@ trait InInstancesLowPriority1 extends InInstancesLowPriority2 {
       IndEntry(List(lhe), rhe)
   }
 
+  /* This two definitions can be replaced with GenericDummyIndInOp? */
   implicit def ListDummyIndInOp[A, B](implicit convA: A => List[DummyIndDecl], convB: B => SetExpr): InOp[A, B, IndEntry] = new InOp[A, B, IndEntry] {
     def in(lhe: A, rhe: B) =
       IndEntry(lhe, rhe)
@@ -382,6 +383,25 @@ trait InInstancesLowPriority1 extends InInstancesLowPriority2 {
     def in(lhe: A, rhe: B) =
       IndEntry(List(lhe._1, lhe._2), rhe)
   }
+  
+  /*
+  // TODO Evaluate if it is worth to have this to replace previous two definitions
+  import scala.language.higherKinds
+  import shapeless.Generic
+
+  implicit def GenericDummyIndInOp[A, F[_] <: Product, B]
+    (implicit 
+      convA: A => F[DummyIndDecl], 
+      convB: B => SetExpr,
+      gen: Generic[F[DummyIndDecl]]
+    ): InOp[A, B, IndEntry] = new InOp[A, B, IndEntry] {
+    def in(lhe: A, rhe: B) = {
+      val x = convA(lhe)
+      println(gen)
+      IndEntry(x.productIterator.toList.asInstanceOf[List[DummyIndDecl]], rhe)
+    }
+  }
+  */
 
 }
 trait InInstancesLowPriority2 {
@@ -391,6 +411,7 @@ trait InInstancesLowPriority2 {
       In(List(lhe), rhe)
   }
 
+  /* This two definitions can be replaced with GenericSimpleExprInOp? */
   implicit def ListSimpleExprInOp[A, B](implicit convA: A => List[SimpleExpr], convB: B => SetExpr): InOp[A, B, LogicExpr] = new InOp[A, B, LogicExpr] {
     def in(lhe: A, rhe: B) =
       In(lhe, rhe)
@@ -401,6 +422,24 @@ trait InInstancesLowPriority2 {
       In(List(lhe._1, lhe._2), rhe)
   }
 
+  /*
+  // TODO Evaluate if it is worth to have this to replace previous two definitions
+  import scala.language.higherKinds
+  import shapeless.Generic
+
+  implicit def GenericSimpleExprInOp[A, F[_] <: Product, B]
+    (implicit 
+      convA: A => F[SimpleExpr], // OJO esto acepta `(X, Y, SimpleExpr)`, al cosiderar una tupla como F[_] solo importa el ultimo parámetro de tipo
+      convB: B => SetExpr,
+      gen: Generic[F[SimpleExpr]]
+    ): InOp[A, B, LogicExpr] = new InOp[A, B, LogicExpr] {
+    def in(lhe: A, rhe: B) = {
+      val x = convA(lhe)
+      println(gen)
+      In(x.productIterator.toList.asInstanceOf[List[SimpleExpr]], rhe)
+    }
+  }
+  */
 }
 
 trait IntegerInstances {
@@ -761,7 +800,7 @@ trait ToInstances {
 
 trait ByInstances {
 
-  implicit def ArithSetByOp[A](implicit conv: A => NumExpr): ByOp[ArithSet, A, ArithSet] = new ByOp[ArithSet, A, ArithSet] {
+  implicit def ArithSetByOp[A](implicit conv: A => NumExpr): ByOp[ArithSet, A, SetExpr] = new ByOp[ArithSet, A, SetExpr] {
     def by(exp: ArithSet, deltaT: A) =
       exp.copy(deltaT = (deltaT: NumExpr).some)
   }
