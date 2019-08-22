@@ -61,10 +61,19 @@ lazy val commonSettings = Seq(
     "-Ywarn-macros:before",              // via som
     "-Yrangepos"                         // for longer squiggles
   ),
-  Compile / console / scalacOptions --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
-  Test    / console / scalacOptions --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
-  Compile / doc     / scalacOptions --= Seq("-Xfatal-warnings"),
-  //Test    / fork := true
+  console / scalacOptions --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
+  doc     / scalacOptions --= Seq("-Xfatal-warnings"),
+  
+  // Running
+  fork := true,
+  javaOptions ++= Seq(
+      "-XX:MaxInlineLevel=18",
+
+      // requires recent opejdk (>= 10?)
+      "-XX:+UnlockExperimentalVMOptions",
+      "-XX:+EnableJVMCI",
+      "-XX:+UseJVMCICompiler"
+    )
 )
 
 lazy val amphip = project
