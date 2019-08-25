@@ -1,4 +1,4 @@
-package amphip
+package amphip.stoch
 
 //import scalaz._, Scalaz._
 import scalaz.Scalaz.{ToListOpsFromList => _, _}
@@ -6,10 +6,10 @@ import cats.syntax.list._
 
 import amphip.dsl._
 import amphip.model.ast._
+import amphip.model.{collect, replace}
 import amphip.data._
-import amphip.stoch._
-import amphip.collect.Collect
-import amphip.replace.Replace
+import collect.Collect
+import replace.Replace
 
 object separate {
 

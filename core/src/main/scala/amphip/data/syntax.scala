@@ -63,7 +63,7 @@ trait AllSyntax {
       }
     }
 
-    def eval[A, B](expr: A)(implicit Eval: amphip.eval.Eval[A, B]): B = amphip.eval(expr, m.data)
+    def eval[A, B](expr: A)(implicit Eval: amphip.data.eval.Eval[A, B]): B = amphip.data.eval(expr, m.data)
 
     def solve = solver.GLPSOL.solve(m)
 

@@ -8,7 +8,6 @@ import spire.implicits._
 import amphip.base._
 import amphip.model.ast._
 import amphip.data.ops._
-import amphip.eval
 
 object instances extends AllInstances
 

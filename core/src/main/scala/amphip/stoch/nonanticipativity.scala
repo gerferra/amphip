@@ -7,6 +7,7 @@ import spire.implicits._
 
 import amphip.dsl._
 import amphip.model.ast._
+import amphip.model.dimen
 
 object nonanticipativity {
 
@@ -35,7 +36,7 @@ object nonanticipativity {
 
       val effInd0 =
         if (indices.isEmpty) {
-          val dim = amphip.dimen(entry.set)
+          val dim = dimen(entry.set)
           List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
         } else {
           indices
@@ -113,7 +114,7 @@ object nonanticipativity {
 
           val effInd0 =
             if (indices.isEmpty) {
-              val dim = amphip.dimen(entry.set)
+              val dim = dimen(entry.set)
               List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
             } else {
               indices
@@ -159,7 +160,7 @@ object nonanticipativity {
                               subscript1: List[DummyIndDecl],
                               subscript2: List[DummyIndDecl]): ConstraintStat = {
 
-    val indexing1 = amphip.replace(indexing, s, s1)
+    val indexing1 = amphip.model.replace(indexing, s, s1)
 
     st(s"NonAnticipativity${ xvar.name }", indexing1) {
       sum(s2 in S)(link(s1, s2, t) * xvar(subscript2)) === sum(s2 in S)(link(s1, s2, t)) * xvar(subscript1)

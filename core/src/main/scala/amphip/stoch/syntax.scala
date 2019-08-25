@@ -9,7 +9,7 @@ import amphip.model.dsl._
 import amphip.data._
 import amphip.data.dsl._
 import amphip.data.ops._
-import amphip.collect
+import amphip.model.collect
 import amphip.solver
 
 object syntax extends AllSyntax
@@ -86,7 +86,7 @@ trait AllSyntax {
 
     def setDataList[B](list: List[(SetStat, List[B])])(implicit DataOp: DataOp[SetStat, B]): StochModel = update(m.model.setDataList(list))
 
-    def eval[A, B](expr: A)(implicit Eval: amphip.eval.Eval[A, B]): B = m.model.eval(expr)
+    def eval[A, B](expr: A)(implicit Eval: amphip.data.eval.Eval[A, B]): B = m.model.eval(expr)
 
     def solve = {
       solver.GLPSOL.solve(m.mip)
@@ -127,7 +127,7 @@ trait AllSyntax {
 
     def stochasticParameters: List[ParamStat] = parameters.filter(isStochastic)
 
-    def separate: ModelWithData = amphip.separate(m)
+    def separate: ModelWithData = amphip.stoch.separate(m)
 
     def nonanticipativityConstraints: List[ConstraintStat] = stochasticVariables.flatMap(nonanticipativity)
 

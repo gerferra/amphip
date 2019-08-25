@@ -10,7 +10,6 @@ import spire.math._
 import amphip.model.ast._
 import amphip.model.ops._
 import amphip.model.instances._
-import amphip.collect
 
 object syntax extends AllSyntax
 
@@ -331,7 +330,7 @@ trait AllSyntax {
 
     def relax: Model = model.variables.foldLeft(model)((model, v) => model.relax(v))
 
-    def replace[A: Manifest](target: A, replacement: A): Model = amphip.replace(model, target, replacement)
+    def replace[A: Manifest](target: A, replacement: A): Model = amphip.model.replace(model, target, replacement)
 
     def variables: List[VarStat] = model.statements.collect { case x: VarStat => x }
 

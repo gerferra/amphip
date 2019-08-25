@@ -1,4 +1,4 @@
-package amphip
+package amphip.model
 
 import scala.annotation.implicitNotFound
 
@@ -13,7 +13,7 @@ object collect {
 
   def apply[A, B](in: A, matching: PartialFunction[Any, B])(implicit Collect: Collect[A]): List[B] = Collect.collect(in, matching)
 
-  private[this] val collect_ = amphip.collect // to disambiguate with Collect#collect method
+  private[this] val collect_ = amphip.model.collect // to disambiguate with Collect#collect method
 
   // MODEL
 

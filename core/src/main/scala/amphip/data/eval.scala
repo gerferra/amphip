@@ -1,4 +1,4 @@
-package amphip
+package amphip.data
 
 import scala.annotation.implicitNotFound
 import scala.math.BigDecimal.RoundingMode.{ HALF_UP => HalfUp, DOWN => Down }
@@ -20,7 +20,6 @@ import spire.implicits._
 import amphip.base._
 import amphip.model.ast._
 import amphip.model.show._
-import amphip.data._
 import amphip.data.SimpleData._
 import amphip.data.ModelData._
 
