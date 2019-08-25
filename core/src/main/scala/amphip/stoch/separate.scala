@@ -11,15 +11,6 @@ import amphip.stoch._
 import amphip.collect.Collect
 import amphip.replace.Replace
 
-// FIXME ¿mover a paquete stoch?
-// en general estas funciones genéricas las puse en `amphip`
-// en vez de en subpaquetes .... quizá pueda rever eso
-// ie: collect   -> amphip.model
-//     dimen     -> amphip.model
-//     replace   -> amphip.model
-//     eval      -> amphip.data
-//     separate  -> amphip.stoch
-//     (run)eval -> amphip.run (esta ya está acá)
 object separate {
 
   /**
