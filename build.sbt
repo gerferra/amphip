@@ -107,7 +107,9 @@ lazy val core = project
       """
       |import scalaz.syntax.show._
       |import amphip.dsl._
-      """.stripMargin
+      """.stripMargin,
+    // BigModelSpec
+    Test / run / connectInput := true
   )
 
 lazy val bench = project
