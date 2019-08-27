@@ -1,4 +1,4 @@
-package amphip
+package amphip.stoch
 
 import org.junit.Assert._
 import org.junit.Test

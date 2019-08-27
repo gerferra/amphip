@@ -1,4 +1,4 @@
-package amphip
+package amphip.data
 
 import scalaz.std.option.optionSyntax._
 
@@ -7,7 +7,6 @@ import org.junit.Test
 
 import amphip.base._
 import amphip.dsl._
-import amphip.data._
 import amphip.model.ast.{ ConstraintStat, DLTEConstraintStat, DGTEConstraintStat, ObjectiveStat, Minimize, Maximize }
 
 class TestEval {
