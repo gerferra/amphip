@@ -130,26 +130,26 @@ trait LogInstances {
 trait RefInstances {
 
   implicit def SetStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[SetStat, B, SetRef] = new RefOp[SetStat, B, SetRef] {
-    def apply(a: SetStat, expr: List[B]): SetRef = SetRef(a, expr.map(conv))
+    def apply(a: => SetStat, expr: List[B]): SetRef = SetRef(a, expr.map(conv))
   }
 
   implicit def ParamStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[ParamStat, B, ParamRef] = new RefOp[ParamStat, B, ParamRef] {
-    def apply(a: ParamStat, expr: List[B]): ParamRef = ParamRef(a, expr.map(conv))
+    def apply(a: => ParamStat, expr: List[B]): ParamRef = ParamRef(a, expr.map(conv))
   }
 
   implicit def VarStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[VarStat, B, VarRef] = new RefOp[VarStat, B, VarRef] {
-    def apply(a: VarStat, expr: List[B]): VarRef = VarRef(a, expr.map(conv))
+    def apply(a: => VarStat, expr: List[B]): VarRef = VarRef(a, expr.map(conv))
   }
 
   implicit def ConstraintStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[ConstraintStat, B, ConstraintRef] = new RefOp[ConstraintStat, B, ConstraintRef] {
-    def apply(a: ConstraintStat, expr: List[B]): ConstraintRef = ConstraintRef(a, expr.map(conv))
+    def apply(a: => ConstraintStat, expr: List[B]): ConstraintRef = ConstraintRef(a, expr.map(conv))
   }
 
   implicit def ObjectiveStatRefOp[B](implicit conv: B => SimpleExpr): RefOp[ObjectiveStat, B, ObjectiveRef] = new RefOp[ObjectiveStat, B, ObjectiveRef] {
-    def apply(a: ObjectiveStat, expr: List[B]): ObjectiveRef = ObjectiveRef(a, expr.map(conv))
+    def apply(a: => ObjectiveStat, expr: List[B]): ObjectiveRef = ObjectiveRef(a, expr.map(conv))
   }
  
-  def AAsRef[A, C](lhe: A)(implicit RefOp: RefOp[A, SimpleExpr, C]): C = RefOp.apply(lhe, Nil)
+  def AAsRef[A, C](lhe: => A)(implicit RefOp: RefOp[A, SimpleExpr, C]): C = RefOp.apply(lhe, Nil)
   implicit def SetStatAsRef(lhe: SetStat): SetRef = AAsRef(lhe)
   implicit def ParamStatAsRef(lhe: ParamStat): ParamRef = AAsRef(lhe)
   implicit def VarStatAsRef(lhe: VarStat): VarRef = AAsRef(lhe)
@@ -157,6 +157,15 @@ trait RefInstances {
   implicit def ObjectiveStatAsRef(lhe: ObjectiveStat): ObjectiveRef = AAsRef(lhe)
 
   implicit def DummyIndDeclAsDummyIndRef(x: DummyIndDecl): DummyIndRef = DummyIndRef(x)
+
+  // lazy versions to allow recursive definitions
+  implicit def SetStatAsRef(lhe: => SetStat): SetRef = AAsRef(lhe)
+  implicit def ParamStatAsRef(lhe: => ParamStat): ParamRef = AAsRef(lhe)
+  implicit def VarStatAsRef(lhe: => VarStat): VarRef = AAsRef(lhe)
+  implicit def ConstraintStatAsRef(lhe: => ConstraintStat): ConstraintRef = AAsRef(lhe)
+  implicit def ObjectiveStatAsRef(lhe: => ObjectiveStat): ObjectiveRef = AAsRef(lhe)
+
+  
 }
 
 trait EqInstances extends EqInstancesLowPriority1 {
