@@ -54,6 +54,7 @@ object ModelData {
 
   type IndexingData = List[LinkedMap[DataKey, SimpleData]]
   type Expansion[A] = LinkedMap[DataKey, A]
+  type LazyExpansion[A] = LinkedMap[DataKey, () => A]
 }
 
 case class DataKey(name: String, subscript: List[SimpleData] = Nil) {

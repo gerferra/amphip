@@ -16,7 +16,7 @@ object syntax extends AllSyntax
 
 trait AllSyntax {
 
-  implicit class ModelWithDataStochSyntax[M](val m: M)(implicit conv: M => ModelWithData) {
+  implicit class ModelWithDataStochSyntax[M](m: M)(implicit conv: M => ModelWithData) {
     private def update(model: Model): ModelWithData = m.copy(model = model)
 
     def stochastic(S: SetStat, T: SetStat, prob: ParamStat, link: SetStat): StochModel = {
@@ -36,7 +36,7 @@ trait AllSyntax {
 
   }
 
-  implicit class StochModelSyntax[M](val m: M)(implicit conv: M => StochModel) {
+  implicit class StochModelSyntax[M](m: M)(implicit conv: M => StochModel) {
     private def update(model: ModelWithData): StochModel = (m: StochModel) match {
       case m: TwoStageStochModel => m.copy(model = model)
       case m: MultiStageStochModel => m.copy(model = model)

@@ -8,17 +8,21 @@ object collect {
 
   @implicitNotFound("Collect is not defined for ${A}")
   trait Collect[A] {
-    def collect[B](in: A, matching: PartialFunction[Any, B]): List[B]
+    /**
+     * `visited` Protects against recursive statements definitions
+     */
+    def collect[B](in: A, matching: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B]
   }
 
-  def apply[A, B](in: A, matching: PartialFunction[Any, B])(implicit Collect: Collect[A]): List[B] = Collect.collect(in, matching)
+  def apply[A, B](in: A, matching: PartialFunction[Any, B])(implicit Collect: Collect[A]): List[B] = Collect.collect(in, matching)(Set.empty)
 
-  private[this] val collect_ = amphip.model.collect // to disambiguate with Collect#collect method
+  private[this] def collect_[A, B](in: A, matching: PartialFunction[Any, B])(implicit visited: Set[Stat], Collect: Collect[A]): List[B] = Collect.collect(in, matching)
+  private[this] def collect_[A, B](in: A, matching: PartialFunction[Any, B], visited: => Set[Stat])(implicit Collect: Collect[A]): List[B] = Collect.collect(in, matching)(visited)
 
   // MODEL
 
   implicit val ModelCollect: Collect[Model] = new Collect[Model] {
-    def collect[B](x: Model, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: Model, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case x @ Model(statements) => statements.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
 
@@ -27,7 +31,7 @@ object collect {
 
   // STATEMENTS
   implicit val StatCollect: Collect[Stat] = new Collect[Stat] {
-    def collect[B](x: Stat, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: Stat, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case x: SetStat => collect_(x, pf)
 
@@ -42,34 +46,37 @@ object collect {
   }
 
   implicit val SetStatCollect: Collect[SetStat] = new Collect[SetStat] {
-    def collect[B](x: SetStat, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: SetStat, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case SetStat(_, _, domain, atts) =>
-        domain.toList.flatMap(collect_(_, pf)) ++ atts.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
+        val newVisited = visited + x
+        domain.toList.flatMap(collect_(_, pf, newVisited)) ++ atts.flatMap(collect_(_, pf, newVisited)) ++ pf.lift(x).toList
 
     }
   }
 
   implicit val ParamStatCollect: Collect[ParamStat] = new Collect[ParamStat] {
-    def collect[B](x: ParamStat, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: ParamStat, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case ParamStat(_, _, domain, atts) =>
-        domain.toList.flatMap(collect_(_, pf)) ++ atts.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
+        val newVisited = visited + x
+        domain.toList.flatMap(collect_(_, pf, newVisited)) ++ atts.flatMap(collect_(_, pf, newVisited)) ++ pf.lift(x).toList
 
     }
   }
 
   implicit val VarStatCollect: Collect[VarStat] = new Collect[VarStat] {
-    def collect[B](x: VarStat, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: VarStat, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case VarStat(_, _, domain, atts) =>
-        domain.toList.flatMap(collect_(_, pf)) ++ atts.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
+        val newVisited = visited + x
+        domain.toList.flatMap(collect_(_, pf, newVisited)) ++ atts.flatMap(collect_(_, pf, newVisited)) ++ pf.lift(x).toList
 
     }
   }
 
   implicit val ConstraintStatCollect: Collect[ConstraintStat] = new Collect[ConstraintStat] {
-    def collect[B](x: ConstraintStat, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: ConstraintStat, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case EqConstraintStat(_, _, domain, left, right) =>
         domain.toList.flatMap(collect_(_, pf)) ++
@@ -107,7 +114,7 @@ object collect {
   }
 
   implicit val ObjectiveStatCollect: Collect[ObjectiveStat] = new Collect[ObjectiveStat] {
-    def collect[B](x: ObjectiveStat, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: ObjectiveStat, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case Minimize(_, _, domain, expr) =>
         domain.toList.flatMap(collect_(_, pf)) ++
@@ -123,7 +130,7 @@ object collect {
   }
 
   implicit val SetAttCollect: Collect[SetAtt] = new Collect[SetAtt] {
-    def collect[B](x: SetAtt, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: SetAtt, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case SetDimen(n) => pf.lift(n).toList ++ pf.lift(x).toList
 
@@ -137,7 +144,7 @@ object collect {
   }
 
   implicit val ParamAttCollect: Collect[ParamAtt] = new Collect[ParamAtt] {
-    def collect[B](x: ParamAtt, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: ParamAtt, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case ParamLT(expr) => collect_(expr, pf) ++ pf.lift(x).toList
 
@@ -167,7 +174,7 @@ object collect {
   }
 
   implicit val VarAttCollect: Collect[VarAtt] = new Collect[VarAtt] {
-    def collect[B](x: VarAtt, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: VarAtt, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case VarLTE(expr) => collect_(expr, pf) ++ pf.lift(x).toList
 
@@ -184,7 +191,7 @@ object collect {
 
   // EXPRESSIONS
   implicit val ExprCollect: Collect[Expr] = new Collect[Expr] {
-    def collect[B](x: Expr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: Expr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case x: SimpleExpr => collect_(x, pf)
 
@@ -199,7 +206,7 @@ object collect {
 
   // SIMPLE
   implicit val SimpleExprCollect: Collect[SimpleExpr] = new Collect[SimpleExpr] {
-    def collect[B](x: SimpleExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: SimpleExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case x: NumExpr => collect_(x, pf)
 
@@ -209,21 +216,24 @@ object collect {
   }
 
   implicit val ParamRefCollect: Collect[ParamRef] = new Collect[ParamRef] {
-    def collect[B](x: ParamRef, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: ParamRef, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case ParamRef(param, subscript) =>
-        collect_(param, pf) ++ subscript.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
+        val base = 
+          if (visited.contains(param)) Nil else collect_(param, pf)
+        
+        base ++ subscript.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
 
     }
   }
 
   implicit val DummyIndRefCollect: Collect[DummyIndRef] = new Collect[DummyIndRef] {
-    def collect[B](x: DummyIndRef, pf: PartialFunction[Any, B]): List[B] = collect_(x.dummyInd, pf) ++ pf.lift(x).toList
+    def collect[B](x: DummyIndRef, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = collect_(x.dummyInd, pf) ++ pf.lift(x).toList
   }
 
   // NUMERIC
   implicit val NumExprCollect: Collect[NumExpr] = new Collect[NumExpr] {
-    def collect[B](x: NumExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: NumExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case CondNumExpr(test, ifTrue, otherwise) =>
         collect_(test, pf) ++ collect_(ifTrue, pf) ++ otherwise.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
@@ -268,7 +278,7 @@ object collect {
   }
 
   implicit val NumFuncRefCollect: Collect[NumFuncRef] = new Collect[NumFuncRef] {
-    def collect[B](x: NumFuncRef, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: NumFuncRef, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case Abs(expr) => collect_(expr, pf) ++ pf.lift(x).toList
 
@@ -317,7 +327,7 @@ object collect {
 
   // SYMBOLIC
   implicit val SymExprCollect: Collect[SymExpr] = new Collect[SymExpr] {
-    def collect[B](x: SymExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: SymExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case CondSymExpr(test, ifTrue, otherwise) =>
         collect_(test, pf) ++ collect_(ifTrue, pf) ++ otherwise.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
@@ -338,7 +348,7 @@ object collect {
   }
 
   implicit val SymFuncRefCollect: Collect[SymFuncRef] = new Collect[SymFuncRef] {
-    def collect[B](x: SymFuncRef, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: SymFuncRef, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case Substr(expr, from, length) =>
         collect_(expr, pf) ++ collect_(from, pf) ++ length.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
@@ -350,7 +360,7 @@ object collect {
 
   // SET
   implicit val SetExprCollect: Collect[SetExpr] = new Collect[SetExpr] {
-    def collect[B](x: SetExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: SetExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case CondSetExpr(test, ifTrue, otherwise) =>
         collect_(test, pf) ++ collect_(ifTrue, pf) ++ collect_(otherwise, pf) ++ pf.lift(x).toList
@@ -369,7 +379,11 @@ object collect {
 
       case ArithSet(t0, tf, deltaT) => collect_(t0, pf) ++ collect_(tf, pf) ++ deltaT.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
 
-      case SetRef(set, subscript) => collect_(set, pf) ++ subscript.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
+      case SetRef(set, subscript) => 
+        val base =
+          if (visited.contains(set)) Nil else collect_(set, pf)
+
+        base ++ subscript.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
 
       case SetLit(values @ _*) => values.toList.flatMap(_.flatMap(collect_(_, pf))) ++ pf.lift(x).toList
 
@@ -380,14 +394,14 @@ object collect {
 
   //INDEXING
   implicit val IndExprCollect: Collect[IndExpr] = new Collect[IndExpr] {
-    def collect[B](x: IndExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: IndExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
       case IndExpr(entries, predicate) =>
         entries.flatMap(collect_(_, pf)) ++ predicate.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
     }
   }
 
   implicit val IndEntryCollect: Collect[IndEntry] = new Collect[IndEntry] {
-    def collect[B](x: IndEntry, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: IndEntry, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case IndEntry(indices, expr, filter) =>
         indices.flatMap(collect_(_, pf)) ++ collect_(expr, pf) ++ filter.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
@@ -395,7 +409,7 @@ object collect {
   }
 
   implicit val DummyIndDeclCollect: Collect[DummyIndDecl] = new Collect[DummyIndDecl] {
-    def collect[B](x: DummyIndDecl, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: DummyIndDecl, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case DummyIndDecl(_, _) => pf.lift(x).toList
 
@@ -404,7 +418,7 @@ object collect {
 
   // LOGIC
   implicit val LogicExprCollect: Collect[LogicExpr] = new Collect[LogicExpr] {
-    def collect[B](x: LogicExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: LogicExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case Disj(left, right) => collect_(left, pf) ++ collect_(right, pf) ++ pf.lift(x).toList
 
@@ -445,7 +459,7 @@ object collect {
 
   // LINEAR
   implicit val LinExprCollect: Collect[LinExpr] = new Collect[LinExpr] {
-    def collect[B](x: LinExpr, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: LinExpr, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case CondLinExpr(test, ifTrue, otherwise) =>
         collect_(test, pf) ++ collect_(ifTrue, pf) ++ otherwise.toList.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
@@ -473,10 +487,13 @@ object collect {
   }
 
   implicit val VarRefCollect: Collect[VarRef] = new Collect[VarRef] {
-    def collect[B](x: VarRef, pf: PartialFunction[Any, B]): List[B] = x match {
+    def collect[B](x: VarRef, pf: PartialFunction[Any, B])(implicit visited: Set[Stat]): List[B] = x match {
 
       case VarRef(xvar, subscript) =>
-        collect_(xvar, pf) ++ subscript.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
+        val base = 
+          if (visited.contains(xvar)) Nil else collect_(xvar, pf)
+
+        base ++ subscript.flatMap(collect_(_, pf)) ++ pf.lift(x).toList
 
     }
   }

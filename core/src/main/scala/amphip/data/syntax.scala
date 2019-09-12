@@ -16,7 +16,7 @@ trait AllSyntax {
 
   implicit def ModelAsModelWithData(m: Model): ModelWithData = ModelWithData(m, ModelData())
 
-  implicit class ModelWithDataSyntax[M](val m: M)(implicit conv: M => ModelWithData) {
+  implicit class ModelWithDataSyntax[M](m: M)(implicit conv: M => ModelWithData) {
     private def update(model: Model): ModelWithData = m.copy(model = model)
 
     def relax(xvar: VarStat): ModelWithData = update(m.model.relax(xvar))

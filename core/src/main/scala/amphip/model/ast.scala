@@ -156,7 +156,39 @@ object ast {
 
   sealed trait SymExpr extends SimpleExpr
 
-  case class ParamRef(param: ParamStat, subscript: List[SimpleExpr] = Nil) extends NumExpr with SymExpr with StatRef
+  /*
+   * ParamStat reference with lazy semantic to allow recursive definitions.
+   * Overrides `hashCode`, `equals` and `Product` methods to only consider the 
+   * name of the ParamStat and avoid infinite loops.
+   */
+  class ParamRef(paramThunk: () => ParamStat, val subscript: List[SimpleExpr] = Nil) extends NumExpr with SymExpr with StatRef with Product with Serializable {
+    lazy val param: ParamStat = paramThunk()
+
+    def copy(paramThunk: () => ParamStat = paramThunk, subscript: List[SimpleExpr] = subscript) = 
+      new ParamRef(paramThunk, subscript)
+
+    lazy private val product = (param.name, subscript)
+
+    override def equals(obj: Any): Boolean = obj match {
+      case that: ParamRef => this.product.equals(that.product)
+      case _ => false 
+    }
+    override def hashCode(): Int = this.product.hashCode()
+
+    override def toString(): String = productPrefix + product
+
+    // from Product
+    override def canEqual(that: Any): Boolean = that.isInstanceOf[ParamRef]
+    override def productArity: Int = product.productArity
+    override def productElement(n: Int): Any = product.productElement(n)
+    override def productPrefix: String = "ParamRef"
+  }
+  object ParamRef {
+    def apply(param: => ParamStat, subscript: List[SimpleExpr] = Nil) = new ParamRef(() => param, subscript)
+
+    def unapply(x: ParamRef): Option[(ParamStat, List[SimpleExpr])] =
+      Some((x.param, x.subscript))
+  } 
 
   case class DummyIndRef(dummyInd: DummyIndDecl) extends NumExpr with SymExpr
 
@@ -288,7 +320,39 @@ object ast {
 
   case class ArithSet(t0: NumExpr, tf: NumExpr, deltaT: Option[NumExpr] = None) extends SetExpr
 
-  case class SetRef(set: SetStat, subscript: List[SimpleExpr] = Nil) extends SetExpr with StatRef
+  /*
+   * SetStat reference with lazy semantic to allow recursive definitions.
+   * Overrides `hashCode`, `equals` and `Product` methods to only consider the 
+   * name of the SetStat and avoid infinite loops.
+   */
+  class SetRef(setThunk: () => SetStat, val subscript: List[SimpleExpr] = Nil) extends SetExpr with StatRef with Product with Serializable {
+    lazy val set: SetStat = setThunk()
+
+    def copy(setThunk: () => SetStat = setThunk, subscript: List[SimpleExpr] = subscript) = 
+      new SetRef(setThunk, subscript)
+
+    lazy private val product = (set.name, subscript)
+
+    override def equals(obj: Any): Boolean = obj match {
+      case that: SetRef => this.product.equals(that.product)
+      case _ => false 
+    }
+    override def hashCode(): Int = this.product.hashCode()
+
+    override def toString(): String = productPrefix + product
+
+    // from Product
+    override def canEqual(that: Any): Boolean = that.isInstanceOf[SetRef]
+    override def productArity: Int = product.productArity
+    override def productElement(n: Int): Any = product.productElement(n)
+    override def productPrefix: String = "SetRef"
+  }
+  object SetRef {
+    def apply(set: => SetStat, subscript: List[SimpleExpr] = Nil) = new SetRef(() => set, subscript)
+
+    def unapply(x: SetRef): Option[(SetStat, List[SimpleExpr])] =
+      Some((x.set, x.subscript))
+  } 
 
   case class SetLit(values: Tuple*) extends SetExpr
 
@@ -363,7 +427,39 @@ object ast {
 
   case class LinUnaryMinus(x: LinExpr) extends LinExpr
 
-  case class VarRef(xvar: VarStat, subscript: List[SimpleExpr] = Nil) extends LinExpr with StatRef
+  /*
+   * VarStat reference with lazy semantic to allow recursive definitions.
+   * Overrides `hashCode`, `equals` and `Product` methods to only consider the 
+   * name of the VarStat and avoid infinite loops.
+   */
+  class VarRef(varThunk: () => VarStat, val subscript: List[SimpleExpr] = Nil) extends LinExpr with StatRef with Product with Serializable {
+    lazy val xvar: VarStat = varThunk()
+
+    def copy(varThunk: () => VarStat = varThunk, subscript: List[SimpleExpr] = subscript) = 
+      new VarRef(varThunk, subscript)
+
+    lazy private val product = (xvar.name, subscript)
+
+    override def equals(obj: Any): Boolean = obj match {
+      case that: VarRef => this.product.equals(that.product)
+      case _ => false 
+    }
+    override def hashCode(): Int = this.product.hashCode()
+
+    override def toString(): String = productPrefix + product
+
+    // from Product
+    override def canEqual(that: Any): Boolean = that.isInstanceOf[VarRef]
+    override def productArity: Int = product.productArity
+    override def productElement(n: Int): Any = product.productElement(n)
+    override def productPrefix: String = "VarRef"
+  }
+  object VarRef {
+    def apply(xvar: => VarStat, subscript: List[SimpleExpr] = Nil) = new VarRef(() => xvar, subscript)
+
+    def unapply(x: VarRef): Option[(VarStat, List[SimpleExpr])] =
+      Some((x.xvar, x.subscript))
+  } 
 
   /*
    * STAT

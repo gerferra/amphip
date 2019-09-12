@@ -6,7 +6,7 @@ object ops {
 
   @implicitNotFound("Ref is not defined for ${A}")
   trait RefOp[A, B, C] {
-    def apply(a: A, expr: List[B]): C
+    def apply(a: => A, expr: List[B]): C
   }
 
   @implicitNotFound("=== is not defined for ${A}, ${B}")

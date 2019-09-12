@@ -26,10 +26,10 @@ trait AllSyntax {
    * The second version, `AnyRefToSyntax', is needed to permit expressions of the from:
    * `p to 3', being `p' a parameter.
    */
-  implicit class ToAnyRefSyntax[A](val a: A) {
+  implicit class ToAnyRefSyntax[A](a: A) {
     def to[B <: AnyRef, C](tf: B)(implicit ToOp: ToOp[A, B, C]): C = ToOp.to(a, tf)
   }
-  implicit class AnyRefToSyntax[A <: AnyRef](val a: A) {
+  implicit class AnyRefToSyntax[A <: AnyRef](a: A) {
     def to[B, C](tf: B)(implicit ToOp: ToOp[A, B, C]): C = ToOp.to(a, tf)
   }
   implicit def ToSyntaxInt(a: Int): ToAnyRefSyntax[Int] = ToAnyRefSyntax(a)
