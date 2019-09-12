@@ -12,7 +12,7 @@ lazy val commonSettings = Seq(
   ),
 
   // Compilation
-  scalaVersion       := "2.12.8",
+  scalaVersion       := "2.12.9",
   scalacOptions     ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
     "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -61,8 +61,9 @@ lazy val commonSettings = Seq(
     "-Ywarn-macros:before",              // via som
     "-Yrangepos"                         // for longer squiggles
   ),
-  console / scalacOptions --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
-  doc     / scalacOptions --= Seq("-Xfatal-warnings"),
+  Compile / console / scalacOptions --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
+  Compile / doc     / scalacOptions --= Seq("-Xfatal-warnings"),
+  Test    / console / scalacOptions  := (Compile / console / scalacOptions).value,
   
   // Running
   fork := true,
@@ -80,8 +81,8 @@ lazy val amphip = project
   .in(file("."))
   .settings(commonSettings)
   .settings(publish / skip := true)
-  .dependsOn(core, docs, bench)
-  .aggregate(core, docs, bench)
+  .dependsOn(core, bench, example, docs)
+  .aggregate(core, bench, example, docs)
 
 lazy val core = project
   .settings(commonSettings)
@@ -122,6 +123,17 @@ lazy val bench = project
     run / fork := true,
     javaOptions ++= Seq(
       "-Xmx4G"
+    )
+  )
+
+lazy val example = project
+  .dependsOn(core)
+  .settings(commonSettings)
+  .settings(
+    name := "amphip-example",
+    publish / skip := true,
+    libraryDependencies ++= Seq(
+      "org.scalanlp" %% "breeze" % "0.13.2"
     )
   )
 
