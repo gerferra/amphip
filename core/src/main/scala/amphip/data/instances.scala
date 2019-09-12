@@ -164,9 +164,8 @@ trait SetDataInstances {
       SetStatExtensiveDataOp[SetStat, List[SetData]].data(decl, values.flatten)
   }
 
-  implicit def SetStatIndexedDataOp[A, B](
-    implicit convA: A => SetStat,
-    convB: B => (List[SimpleData], List[SetData])): DataOp[A, B] = new DataOp[A, B] {
+  implicit def SetStatIndexedDataOp[A, B](implicit convA: A => SetStat,
+                                                   convB: B => (List[SimpleData], List[SetData])): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => ModelData()
@@ -180,9 +179,8 @@ trait SetDataInstances {
     }
   }
   
-  implicit def SetStatIndexedDataOp1[A, B](
-    implicit convA: A => SetStat,
-    convB: B => (SimpleData, List[SetData])): DataOp[A, B] = new DataOp[A, B] {
+  implicit def SetStatIndexedDataOp1[A, B](implicit convA: A => SetStat,
+                                                    convB: B => (SimpleData, List[SetData])): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => ModelData()
