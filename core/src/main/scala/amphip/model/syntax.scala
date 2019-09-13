@@ -10,6 +10,7 @@ import spire.math._
 import amphip.model.ast._
 import amphip.model.ops._
 import amphip.model.instances._
+import amphip.model.collect.Collect
 
 object syntax extends AllSyntax
 
@@ -62,12 +63,21 @@ trait AllSyntax {
   }
 
   def model(obj: ObjectiveStat, constr: ConstraintStat*): Model = {
-    val pf: PartialFunction[Any, Stat] = {case s: Stat => s}
-    val refs = constr.flatMap(collect(_, pf)) ++ collect(obj, pf)
+    val refs = constr.flatMap(collectStat(_)) ++ collectStat(obj)
     val distinctRefs = refs.distinct.toList
 
-    // sorting of elements
-    val (setOrParam, rest) = distinctRefs.partition {
+    val (setOrParam, vars, ctrs) = group(distinctRefs)
+
+    Model(setOrParam ::: vars ::: ctrs)
+  }
+
+  private[this] def collectStat[A](in: A)(implicit Collect: Collect[A]): List[Stat] = {
+    val pf: PartialFunction[Any, Stat] = {case s: Stat => s}
+    collect(in, pf)
+  }
+
+  private[this] def group(stat: List[Stat]): (List[Stat], List[Stat], List[Stat]) = {
+    val (setOrParam, rest) = stat.partition {
       case _: SetStat | _: ParamStat => true
       case _ => false
     }
@@ -77,7 +87,7 @@ trait AllSyntax {
       case _ => false
     }
 
-    Model(setOrParam ::: vars ::: ctrs)
+    (setOrParam, vars, ctrs)
   }
 
   def dummy(name: String, synthetic: Boolean = false): DummyIndDecl = DummyIndDecl(name, synthetic)
@@ -361,25 +371,25 @@ trait AllSyntax {
     def ctr(name: String): ConstraintStat = constraints.find(_.name == name).err(s"Constraint `$name' not defined")
 
     def +:(stat: Stat): Model = {
-      val refs = collect(stat, { case s: Stat => s })
+      val refs = collectStat(stat)
       val newStatements = refs ++ model.statements
       Model(newStatements.distinct)
     }
 
     def :+(stat: Stat): Model = {
-      val refs = collect(stat, { case s: Stat => s })
+      val refs = collectStat(stat)
       val newStatements = model.statements ++ refs
       Model(newStatements.distinct)
     }
 
     def :++(stats: List[Stat]): Model = {
-      val refs = stats.flatMap(collect(_, { case s: Stat => s }))
+      val refs = stats.flatMap(collectStat(_))
       val newStatements = model.statements ++ refs
       Model(newStatements.distinct)
     }
 
     def ++:(stats: List[Stat]): Model = {
-      val refs = stats.flatMap(collect(_, { case s: Stat => s }))
+      val refs = stats.flatMap(collectStat(_))
       val newStatements = refs ++ model.statements
       Model(newStatements.distinct)
     }
