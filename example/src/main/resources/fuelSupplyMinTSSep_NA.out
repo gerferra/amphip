@@ -1,0 +1,345 @@
+Problem:    fuelSupplyMinTSSep_NA
+Rows:       121
+Columns:    92 (49 integer, 49 binary)
+Non-zeros:  296
+Status:     INTEGER OPTIMAL
+Objective:  cost = 5934.96875 (MINimum)
+
+   No.   Row name        Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 balance0[1]               -23           -23             = 
+     2 balance0[2]               -23           -23             = 
+     3 balance0[3]               -23           -23             = 
+     4 balance0[4]               -23           -23             = 
+     5 balance[2,1]               16            16             = 
+     6 balance[2,2]               16            16             = 
+     7 balance[2,3]               -5            -5             = 
+     8 balance[2,4]               -5            -5             = 
+     9 balance[3,1]               43            43             = 
+    10 balance[3,2]               24            24             = 
+    11 balance[3,3]               34            34             = 
+    12 balance[3,4]               44            44             = 
+    13 inventory[1,1]
+                                  23             0            80 
+    14 inventory[1,2]
+                                  23             0            80 
+    15 inventory[1,3]
+                                  23             0            80 
+    16 inventory[1,4]
+                                  23             0            80 
+    17 inventory[2,1]
+                                  25             0            80 
+    18 inventory[2,2]
+                                  25             0            80 
+    19 inventory[2,3]
+                                  46             0            80 
+    20 inventory[2,4]
+                                  46             0            80 
+    21 inventory[3,1]
+                                  21             0            80 
+    22 inventory[3,2]
+                                  40             0            80 
+    23 inventory[3,3]
+                                  12             0            80 
+    24 inventory[3,4]
+                                   2             0            80 
+    25 singleAcquisition[P1,1]
+                                   0                           1 
+    26 singleAcquisition[P1,2]
+                                   0                           1 
+    27 singleAcquisition[P1,3]
+                                   0                           1 
+    28 singleAcquisition[P1,4]
+                                   0                           1 
+    29 singleAcquisition[P2,1]
+                                   0                           1 
+    30 singleAcquisition[P2,2]
+                                   0                           1 
+    31 singleAcquisition[P2,3]
+                                   0                           1 
+    32 singleAcquisition[P2,4]
+                                   0                           1 
+    33 singleAcquisition[P3,1]
+                                   1                           1 
+    34 singleAcquisition[P3,2]
+                                   1                           1 
+    35 singleAcquisition[P3,3]
+                                   0                           1 
+    36 singleAcquisition[P3,4]
+                                   0                           1 
+    37 singleAcquisition[P4,1]
+                                   1                           1 
+    38 singleAcquisition[P4,2]
+                                   1                           1 
+    39 singleAcquisition[P4,3]
+                                   1                           1 
+    40 singleAcquisition[P4,4]
+                                   1                           1 
+    41 singleCancellation[A1,1]
+                                   0                           1 
+    42 singleCancellation[A1,2]
+                                   0                           1 
+    43 singleCancellation[A1,3]
+                                   0                           1 
+    44 singleCancellation[A1,4]
+                                   0                           1 
+    45 singleCancellation[A2,1]
+                                   1                           1 
+    46 singleCancellation[A2,2]
+                                   1                           1 
+    47 singleCancellation[A2,3]
+                                   1                           1 
+    48 singleCancellation[A2,4]
+                                   1                           1 
+    49 acquiredFuel[1,1]
+                                   0            -0             = 
+    50 acquiredFuel[1,2]
+                                   0            -0             = 
+    51 acquiredFuel[1,3]
+                                   0            -0             = 
+    52 acquiredFuel[1,4]
+                                   0            -0             = 
+    53 acquiredFuel[2,1]
+                                   0            -0             = 
+    54 acquiredFuel[2,2]
+                                   0            -0             = 
+    55 acquiredFuel[2,3]
+                                   0            -0             = 
+    56 acquiredFuel[2,4]
+                                   0            -0             = 
+    57 acquiredFuel[3,1]
+                                   0            -0             = 
+    58 acquiredFuel[3,2]
+                                   0            -0             = 
+    59 acquiredFuel[3,3]
+                                   0            -0             = 
+    60 acquiredFuel[3,4]
+                                   0            -0             = 
+    61 cancelledFuel[1,1]
+                                   0            -0             = 
+    62 cancelledFuel[1,2]
+                                   0            -0             = 
+    63 cancelledFuel[1,3]
+                                   0            -0             = 
+    64 cancelledFuel[1,4]
+                                   0            -0             = 
+    65 cancelledFuel[2,1]
+                                   0            -0             = 
+    66 cancelledFuel[2,2]
+                                   0            -0             = 
+    67 cancelledFuel[2,3]
+                                   0            -0             = 
+    68 cancelledFuel[2,4]
+                                   0            -0             = 
+    69 cancelledFuel[3,1]
+                                   0            -0             = 
+    70 cancelledFuel[3,2]
+                                   0            -0             = 
+    71 cancelledFuel[3,3]
+                                   0            -0             = 
+    72 cancelledFuel[3,4]
+                                   0            -0             = 
+    73 cost                  5934.97                             
+    74 NA_inv_ctr[1,1]
+                                   0            -0             = 
+    75 NA_inv_ctr[1,2]
+                                   0            -0             = 
+    76 NA_inv_ctr[1,3]
+                                   0            -0             = 
+    77 NA_inv_ctr[1,4]
+                                   0            -0             = 
+    78 NA_inv_ctr[2,1]
+                                   0            -0             = 
+    79 NA_inv_ctr[2,2]
+                                   0            -0             = 
+    80 NA_inv_ctr[2,3]
+                                   0            -0             = 
+    81 NA_inv_ctr[2,4]
+                                   0            -0             = 
+    82 NA_inv_ctr[3,1]
+                                   0            -0             = 
+    83 NA_inv_ctr[3,2]
+                                   0            -0             = 
+    84 NA_inv_ctr[3,3]
+                                   0            -0             = 
+    85 NA_inv_ctr[3,4]
+                                   0            -0             = 
+    86 NA_v_ctr[P1,1,1]
+                                   0            -0             = 
+    87 NA_v_ctr[P1,1,2]
+                                   0            -0             = 
+    88 NA_v_ctr[P1,1,3]
+                                   0            -0             = 
+    89 NA_v_ctr[P1,1,4]
+                                   0            -0             = 
+    90 NA_v_ctr[P1,2,1]
+                                   0            -0             = 
+    91 NA_v_ctr[P1,2,2]
+                                   0            -0             = 
+    92 NA_v_ctr[P1,2,3]
+                                   0            -0             = 
+    93 NA_v_ctr[P1,2,4]
+                                   0            -0             = 
+    94 NA_v_ctr[P2,1,1]
+                                   0            -0             = 
+    95 NA_v_ctr[P2,1,2]
+                                   0            -0             = 
+    96 NA_v_ctr[P2,1,3]
+                                   0            -0             = 
+    97 NA_v_ctr[P2,1,4]
+                                   0            -0             = 
+    98 NA_v_ctr[P2,2,1]
+                                   0            -0             = 
+    99 NA_v_ctr[P2,2,2]
+                                   0            -0             = 
+   100 NA_v_ctr[P2,2,3]
+                                   0            -0             = 
+   101 NA_v_ctr[P2,2,4]
+                                   0            -0             = 
+   102 NA_v_ctr[P3,1,1]
+                                   0            -0             = 
+   103 NA_v_ctr[P3,1,2]
+                                   0            -0             = 
+   104 NA_v_ctr[P3,1,3]
+                                   0            -0             = 
+   105 NA_v_ctr[P3,1,4]
+                                   0            -0             = 
+   106 NA_v_ctr[P3,2,1]
+                                   0            -0             = 
+   107 NA_v_ctr[P3,2,2]
+                                   0            -0             = 
+   108 NA_v_ctr[P3,2,3]
+                                   0            -0             = 
+   109 NA_v_ctr[P3,2,4]
+                                   0            -0             = 
+   110 NA_v_ctr[P4,1,1]
+                                   0            -0             = 
+   111 NA_v_ctr[P4,1,2]
+                                   0            -0             = 
+   112 NA_v_ctr[P4,1,3]
+                                   0            -0             = 
+   113 NA_v_ctr[P4,1,4]
+                                   0            -0             = 
+   114 NA_v_ctr[P4,2,1]
+                                   0            -0             = 
+   115 NA_v_ctr[P4,2,2]
+                                   0            -0             = 
+   116 NA_v_ctr[P4,2,3]
+                                   0            -0             = 
+   117 NA_v_ctr[P4,2,4]
+                                   0            -0             = 
+   118 NA_x_ctr[A2,1,1]
+                                   0            -0             = 
+   119 NA_x_ctr[A2,1,2]
+                                   0            -0             = 
+   120 NA_x_ctr[A2,1,3]
+                                   0            -0             = 
+   121 NA_x_ctr[A2,1,4]
+                                   0            -0             = 
+
+   No. Column name       Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 u[1,1]                      0             0               
+     2 u[1,2]                      0             0               
+     3 u[1,3]                      0             0               
+     4 u[1,4]                      0             0               
+     5 u[2,1]                     40             0               
+     6 u[2,2]                     40             0               
+     7 u[2,3]                     40             0               
+     8 u[2,4]                     40             0               
+     9 u[3,1]                     39             0               
+    10 u[3,2]                     39             0               
+    11 u[3,3]                      0             0               
+    12 u[3,4]                      0             0               
+    13 w[1,1]                      0             0               
+    14 w[1,2]                      0             0               
+    15 w[1,3]                      0             0               
+    16 w[1,4]                      0             0               
+    17 w[2,1]                     22             0               
+    18 w[2,2]                     22             0               
+    19 w[2,3]                     22             0               
+    20 w[2,4]                     22             0               
+    21 w[3,1]                      0             0               
+    22 w[3,2]                      0             0               
+    23 w[3,3]                      0             0               
+    24 w[3,4]                      0             0               
+    25 inv[1,1]                   23             0               
+    26 inv[1,2]                   23             0               
+    27 inv[1,3]                   23             0               
+    28 inv[1,4]                   23             0               
+    29 inv[2,1]                   25             0               
+    30 inv[2,2]                   25             0               
+    31 inv[2,3]                   46             0               
+    32 inv[2,4]                   46             0               
+    33 inv[3,1]                   21             0               
+    34 inv[3,2]                   40             0               
+    35 inv[3,3]                   12             0               
+    36 inv[3,4]                    2             0               
+    37 v[P1,1,1]    *              0             0             1 
+    38 v[P1,2,1]    *              0             0             1 
+    39 v[P1,1,2]    *              0             0             1 
+    40 v[P1,2,2]    *              0             0             1 
+    41 v[P1,1,3]    *              0             0             1 
+    42 v[P1,2,3]    *              0             0             1 
+    43 v[P1,1,4]    *              0             0             1 
+    44 v[P1,2,4]    *              0             0             1 
+    45 v[P2,1,1]    *              0             0             1 
+    46 v[P2,2,1]    *              0             0             1 
+    47 v[P2,1,2]    *              0             0             1 
+    48 v[P2,2,2]    *              0             0             1 
+    49 v[P2,1,3]    *              0             0             1 
+    50 v[P2,2,3]    *              0             0             1 
+    51 v[P2,1,4]    *              0             0             1 
+    52 v[P2,2,4]    *              0             0             1 
+    53 v[P3,1,1]    *              0             0             1 
+    54 v[P3,2,1]    *              1             0             1 
+    55 v[P3,1,2]    *              0             0             1 
+    56 v[P3,2,2]    *              1             0             1 
+    57 v[P3,1,3]    *              0             0             1 
+    58 v[P3,2,3]    *              0             0             1 
+    59 v[P3,1,4]    *              0             0             1 
+    60 v[P3,2,4]    *              0             0             1 
+    61 v[P4,1,1]    *              1             0             1 
+    62 v[P4,2,1]    *              0             0             1 
+    63 v[P4,1,2]    *              1             0             1 
+    64 v[P4,2,2]    *              0             0             1 
+    65 v[P4,1,3]    *              1             0             1 
+    66 v[P4,2,3]    *              0             0             1 
+    67 v[P4,1,4]    *              1             0             1 
+    68 v[P4,2,4]    *              0             0             1 
+    69 x[A2,1,1]    *              1             0             1 
+    70 x[A2,1,2]    *              1             0             1 
+    71 x[A2,1,3]    *              1             0             1 
+    72 x[A2,1,4]    *              1             0             1 
+    73 NA_inv[1,1]                23             0               
+    74 NA_inv[2,1]                25             0               
+    75 NA_inv[2,2]                46             0               
+    76 NA_inv[3,1]                21             0               
+    77 NA_inv[3,2]                40             0               
+    78 NA_inv[3,3]                12             0               
+    79 NA_inv[3,4]                 2             0               
+    80 NA_v[P1,1,1] *              0             0             1 
+    81 NA_v[P1,2,1] *              0             0             1 
+    82 NA_v[P1,2,2] *              0             0             1 
+    83 NA_v[P2,1,1] *              0             0             1 
+    84 NA_v[P2,2,1] *              0             0             1 
+    85 NA_v[P2,2,2] *              0             0             1 
+    86 NA_v[P3,1,1] *              0             0             1 
+    87 NA_v[P3,2,1] *              1             0             1 
+    88 NA_v[P3,2,2] *              0             0             1 
+    89 NA_v[P4,1,1] *              1             0             1 
+    90 NA_v[P4,2,1] *              0             0             1 
+    91 NA_v[P4,2,2] *              0             0             1 
+    92 NA_x[A2,1,1] *              1             0             1 
+
+Integer feasibility conditions:
+
+KKT.PE: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+KKT.PB: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+End of output

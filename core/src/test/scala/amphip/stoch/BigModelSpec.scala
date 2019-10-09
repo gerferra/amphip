@@ -120,7 +120,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
 
     val gen = millis
 
-    val baseModel = model(obj).stochastic(S, T, prob, ST)
+    val baseModel = model(obj).stochastic(T, S, prob, ST)
       .stochDefault(p1, 1.1)
       .stochStages(stages: _*)
 

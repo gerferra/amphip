@@ -49,7 +49,7 @@ class StochDataBench {
     val x1 = xvar(S, T)
     val obj = minimize(p1 * x1)
     val mipModel = model(obj)
-    val stochModel = mipModel.stochastic(S, T, prob, ST)
+    val stochModel = mipModel.stochastic(T, S, prob, ST)
 
     val stages = (1 to totalStages).map(i => Stage(s"s$i"))
     val (a, b) = (BS("a"), BS("b"))

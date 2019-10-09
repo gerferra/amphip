@@ -93,7 +93,8 @@ lazy val core = project
       
       // transitioning ...
       "org.scalaz"             %% "scalaz-core"  % "7.2.20",
-      "org.typelevel"          %% "cats-core"    % "1.0.1",
+      "org.typelevel"          %% "cats-core"    % "1.1.0",
+      "org.typelevel"          %% "mouse"        % "0.17",
       //
 
       "org.typelevel"          %% "spire"        % "0.15.0",

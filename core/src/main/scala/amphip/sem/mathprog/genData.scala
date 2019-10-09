@@ -12,7 +12,7 @@ object genData {
 
   def apply(modelData: ModelData): String = modelData match {
     case ModelData(params, sets, _, _, _) =>
-      getSetData(sets) + "\n\n" + getParamData(params) + "\nend;\n"
+      getSetData(sets) + "\n" + getParamData(params) + "\nend;\n"
   }
 
   /**

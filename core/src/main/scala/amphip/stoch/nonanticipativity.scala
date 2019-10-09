@@ -23,7 +23,7 @@ object nonanticipativity {
   }
 
   /* calculate the indices needed for each set expression in the entries */
-  def assignIndices(entries0: List[IndEntry], S: SetStat, T: SetStat, sIdeal: DummyIndDecl, tIdeal: DummyIndDecl): List[IndEntry] = {
+  def assignIndices(entries0: List[IndEntry], T: SetStat, S: SetStat, sIdeal: DummyIndDecl, tIdeal: DummyIndDecl): List[IndEntry] = {
     val gen = newGen
 
     for {
@@ -31,8 +31,8 @@ object nonanticipativity {
       indices = entry.indices
     } yield {
 
-      val SExpr = S()
       val TExpr = T()
+      val SExpr = S()
 
       val effInd0 =
         if (indices.isEmpty) {
@@ -43,8 +43,8 @@ object nonanticipativity {
         }
 
       val effInd = (entry.set, effInd0) match {
-        case (SExpr, List(s)) if s.synthetic => List(sIdeal)
         case (TExpr, List(t)) if t.synthetic => List(tIdeal)
+        case (SExpr, List(s)) if s.synthetic => List(sIdeal)
         case _ => effInd0
       }
 
@@ -52,22 +52,22 @@ object nonanticipativity {
     }
   }
 
-  def apply(xvar: VarStat, S: SetStat, T: SetStat, link: SetStat): Option[ConstraintStat] = {
+  def apply(xvar: VarStat, T: SetStat, S: SetStat, link: SetStat): Option[ConstraintStat] = {
 
     for {
       IndExpr(entries0, predicate) <- xvar.domain
     } yield {
 
-      val SExpr = S()
       val TExpr = T()
+      val SExpr = S()
 
-      val sIdeal = dummy("s")
       val tIdeal = dummy("t")
+      val sIdeal = dummy("s")
 
-      val entries = assignIndices(entries0, S, T, sIdeal, tIdeal)
+      val entries = assignIndices(entries0, T, S, sIdeal, tIdeal)
       val subscript = entries.flatMap(_.indices)
-      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption | sIdeal // `sIdeal' shouldn't be needed here ...
       val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption | tIdeal // `tIdeal' shouldn't be needed here ...
+      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption | sIdeal // `sIdeal' shouldn't be needed here ...
 
       val s1 = dummy(maxStartingWith(subscript, s"${s.name}1", s.name) + "1")
       val s2 = dummy(maxStartingWith(subscript, s"${s.name}2", s.name) + "2")
@@ -87,10 +87,47 @@ object nonanticipativity {
         xvar(subscript) === xvar(subscript1)
       }
     }
-
   }
 
-  def nonanticipativityTemplate(xvar: VarStat, S: SetStat, T: SetStat, link: ParamStat,
+  def apply(xvar: VarStat, T: SetStat, S: SetStat, na: AdaptedNAMode): Option[ConstraintStat] = {
+
+    for {
+      IndExpr(entries0, predicate) <- xvar.domain
+    } yield {
+
+      val TExpr = T()
+      val SExpr = S()
+
+      val tIdeal = dummy("t")
+      val sIdeal = dummy("s")
+
+      val entries = assignIndices(entries0, T, S, sIdeal, tIdeal)
+      val subscript = entries.flatMap(_.indices)
+      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption | tIdeal // `tIdeal' shouldn't be needed here ...
+      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption | sIdeal // `sIdeal' shouldn't be needed here ...
+
+      val s1 = dummy(maxStartingWith(subscript, s"${s.name}1", s.name) + "1")
+      val s2 = dummy(maxStartingWith(subscript, s"${s.name}2", s.name) + "2")
+
+      val subscript1 = subscript.map(x => if (x == s) s1 else x)
+      val subscript2 = subscript.map(x => if (x == s) s2 else x)
+
+      val naPred = na.ancf(s1, t) === na.ancf(s2, t)
+
+      val indexing = IndExpr(
+          (t in TExpr) :: 
+          (s1 in SExpr) :: 
+          (s2 in SExpr) :: 
+          entries.filterNot(e => List(SExpr, TExpr).contains(e.set)), 
+          predicate.cata(naPred && _, naPred).some)
+
+      st(s"NA_${xvar.name}_ctr", indexing) {
+        xvar(subscript1) === xvar(subscript2)
+      }
+    }
+  }
+
+  def nonanticipativityTemplate(xvar: VarStat, T: SetStat, S: SetStat, link: ParamStat,
                                 func: (VarStat, IndExpr, DummyIndDecl, DummyIndDecl, SetStat, ParamStat, DummyIndDecl, DummyIndDecl, List[DummyIndDecl], List[DummyIndDecl]) => ConstraintStat): Option[ConstraintStat] = {
 
     for {

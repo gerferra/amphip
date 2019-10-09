@@ -2,7 +2,7 @@ package amphip.stoch
 
 import scalaz.std.option._, optionSyntax._
 
-import spire.math._
+import spire.math._, spire.implicits._
 
 import amphip.model.ast._
 import amphip.model.dsl._
@@ -11,6 +11,7 @@ import amphip.data.dsl._
 import amphip.data.ops._
 import amphip.model.collect
 import amphip.solver
+import amphip.base.implicits._
 
 object syntax extends AllSyntax
 
@@ -19,16 +20,25 @@ trait AllSyntax {
   implicit class ModelWithDataStochSyntax[M](m: M)(implicit conv: M => ModelWithData) {
     private def update(model: Model): ModelWithData = m.copy(model = model)
 
-    def stochastic(S: SetStat, T: SetStat, prob: ParamStat, link: SetStat): StochModel = {
-      val prevStat = List[Stat](S, T, prob, link).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), S, T, prob, CompressedNAMode(link))
+    def stochastic(T: SetStat, S: SetStat, prob: ParamStat): StochModel = {
+      val prevStat = List[Stat](S, T, prob).flatMap(collect(_, { case s: Stat => s }))
+      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, AdaptedNAMode(T))
     }
 
-    def stochastic(S: SetStat, T: SetStat, prob: ParamStat, link: ParamStat, naForm: NAForm): StochModel = {
+    def stochastic(T: SetStat, S: SetStat, prob: ParamStat, link: SetStat): StochModel = {
       val prevStat = List[Stat](S, T, prob, link).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), S, T, prob, DenseNAMode(link, naForm))
+      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, CompressedNAMode(link))
     }
 
+    def stochastic(T: SetStat, S: SetStat, prob: ParamStat, link: ParamStat, naForm: NAForm): StochModel = {
+      val prevStat = List[Stat](S, T, prob, link).flatMap(collect(_, { case s: Stat => s }))
+      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, DenseNAMode(link, naForm))
+    }
+
+    /**
+     * Specifies that the model is a two-stage stochastic model with the 
+     * scenarios set `S` and the probabilities parameter `prob`.
+     */
     def stochastic(S: SetStat, prob: ParamStat): StochModel = {
       val prevStat = List[Stat](S, prob).flatMap(collect(_, { case s: Stat => s }))
       TwoStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), S, prob)
@@ -135,9 +145,10 @@ trait AllSyntax {
       import amphip.stoch.nonanticipativity._
       (m: StochModel) match {          
         case m: MultiStageStochModel => m.naMode match {
-          case CompressedNAMode(link) => amphip.stoch.nonanticipativity(xvar, m.S, m.T, link)
-          case DenseNAMode(link, NAForm.X) => nonanticipativityTemplate(xvar, m.S, m.T, link, nonanticipativityXFunc)
-          case DenseNAMode(link, NAForm.Z) => nonanticipativityTemplate(xvar, m.S, m.T, link, nonanticipativityZFunc)
+          case na: AdaptedNAMode => amphip.stoch.nonanticipativity(xvar, m.T, m.S, na)
+          case CompressedNAMode(link) => amphip.stoch.nonanticipativity(xvar, m.T, m.S, link)
+          case DenseNAMode(link, NAForm.X) => nonanticipativityTemplate(xvar, m.T, m.S, link, nonanticipativityXFunc)
+          case DenseNAMode(link, NAForm.Z) => nonanticipativityTemplate(xvar, m.T, m.S, link, nonanticipativityZFunc)
         }
         case _ => none
       }
@@ -161,6 +172,55 @@ trait AllSyntax {
 
     def stochCustomScenarios(history: Scenario, changes: (BasicScenario, Rational)*): StochModel = {
       update(m.stochData.customScenarios(history, changes: _*))
+    }
+
+    def scenarios: List[Scenario] = m.stochData.scenarios
+    def probabilities: List[List[Rational]] = m.stochData.probabilities
+
+    /*
+      Defines the path probabilities of the scenarios.
+      Uses `stochCustomScenarios` accordingly to match the specified path probability
+      of each scenario. 
+     */
+    def stochProbabilities(sp: Iterable[(Scenario, Rational)]): StochModel = {
+      // history size on each stage
+      val hSize = m.stochStages.indices
+
+      // StochData after assignig custom probabilities to every possible history
+      // and basic scenarios 
+      val newStochData = 
+        hSize.foldLeft(m.stochData) { (stochData, th) =>
+          // groups scenarios based on the current `history size`
+          val hGroup = sp.groupByLinked { case (scen, _) => scen.take(th) }
+
+          // StochData after assigning custom probabilities to every history on 
+          // this stage
+          val newStochData = 
+           hGroup.foldLeft(stochData) { case (stochData, (history, group)) =>
+              val historyProb = group.unzip._2.qsum
+
+              // computes basic scenarios corresponding to `history`.
+              // all this groups have the same `history` and only differ on the last
+              // basic scenario.
+              val onStage = group.groupByLinked { case (scen, _) => scen.take(th+1) }
+              val onStageProbs = onStage.mapValues(_.unzip._2.qsum)
+              
+              // divides between the `historyProb` to transform the `path probability`
+              // to the basic scenario probability
+              val bssProbs = 
+                for {
+                  (scen, prob) <- onStageProbs
+                  bs           <- scen.lastOption
+                } yield {
+                  bs -> prob / historyProb
+                }
+
+              stochData.customScenarios(history, bssProbs.toSeq:_*)
+            }
+          newStochData
+        }
+
+      update(newStochData)
     }
 
     def stochDefault[B](p: ParamStat, values: B*)(implicit ev: DataOp[ParamStat, B]): StochModel = {
@@ -202,6 +262,8 @@ trait AllSyntax {
             val m = model1.setData(T, stochData.TData)
 
             naMode match {
+              case _: AdaptedNAMode =>
+                m
               case CompressedNAMode(link) => 
                 m.setData(link, stochData.linkSetDataBounds.map {
                   case (t, tupList) => t -> tupList.map(tup => List(tup._1, tup._2))

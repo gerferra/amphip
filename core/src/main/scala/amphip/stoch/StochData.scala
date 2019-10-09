@@ -24,11 +24,11 @@ import amphip.data.ModelData._
 
 import StochData._
 
-// TODO handle deleted scenarios ...
 case class StochData private (
     stages: List[Stage],
     basicScenarios: LinkedMap[Stage, LinkedMap[BasicScenario, Rational]],
     customScenarios: LinkedMap[Scenario, LinkedMap[BasicScenario, Rational]],
+    deletedScenarios: LinkedMap[Scenario, Set[BasicScenario]],
     defaults: LinkedMap[ParamStat, ParamStatData],
     basicData: LinkedMap[Stage, LinkedMap[BasicScenario, LinkedMap[ParamStat, ParamStatData]]],
     scenarioData: LinkedMap[Scenario, LinkedMap[ParamStat, ParamStatData]],
@@ -36,7 +36,7 @@ case class StochData private (
 
   def stages(ts: Stage*): StochData = copy(stages = ts.toList)
 
-  /* always normalize probabilities to 1 */
+  /* always normalizes probabilities to 1 */
   def basicScenarios(t: Stage, bss: (BasicScenario, Rational)*): StochData = {
     val bssMap = LinkedMap(bss: _*)
     val totProb = bssMap.unzip._2.qsum
@@ -45,42 +45,38 @@ case class StochData private (
     copy(basicScenarios = basicScenarios + (t -> normalize(bssMap)))
   }
 
-  /* probabilities are normalized later (in general) */
-  def customScenarios(history: Scenario, changes: (BasicScenario, Rational)*): StochData = {
-    val changesMap = LinkedMap(changes: _*)
-    require(changesMap.unzip._2.qsum <= 1, "sum of probabilities above one")
+  /* 
+    Replaces the `BasicScenario`s at `history` with the specified `replacement`.
+    The basic scenarios not included in the replacement list are marked as deleted.
+    The probabilities are always normalized to 1.
+  */
+  def customScenarios(history: Scenario, replacement: (BasicScenario, Rational)*): StochData = {
+    val replacementMap = LinkedMap(replacement: _*)
+    require(replacementMap.unzip._2.qsum != 0, "sum of probabilities equals zero")
 
-    val checked =
-      for {
+    val deletedBS = 
+      (for {
         t        <- stages.lift(history.size)
         bss      <- basicScenarios.get(t)
-        cbssBS    = changesMap.unzip._1.toList
-        cbssProb  = changesMap.unzip._2
-        rbss      = bss.filter { case (k, _) => !cbssBS.contains(k) }
-        csum      = cbssProb.qsum
-        rsum      = rbss.unzip._2.qsum
+        cbssBS    = replacementMap.unzip._1.toList
+        dbss      = bss.unzip._1.filter { !cbssBS.contains(_) }.toSet
       } yield {
-        /* 
-          if the custom scenarios will replace all the basic scenarios
-          (`rsum == 0`) the they must be normalized now
-        */
-        if (rsum == 0 && csum != 1) {
-          normalize(changesMap)
-        } else {
-          changesMap
-        }
-      }
+        dbss
+      }) | Set.empty
 
-    val normalized = checked | normalize(changesMap) // the only data for these scenarios will come from custom scenarios -> must sum 1
+    val currDS = deletedScenarios.getOrElse(history, Set.empty)
+    val normalized = normalize(replacementMap) 
 
-    copy(customScenarios = customScenarios + (history -> normalized))
+    copy(
+      customScenarios = customScenarios + (history -> normalized),
+      deletedScenarios = deletedScenarios + (history -> (currDS ++ deletedBS)))
   }
 
-  def default[B](p: ParamStat, values: ParamStatData): StochData = {
+  def default(p: ParamStat, values: ParamStatData): StochData = {
     copy(defaults = defaults + (p -> values))
   }
 
-  def basicData[B](t: Stage, bs: BasicScenario, p: ParamStat, values: ParamStatData): StochData = {
+  def basicData(t: Stage, bs: BasicScenario, p: ParamStat, values: ParamStatData): StochData = {
     val valuesByStage = basicData.getOrElse(t, LinkedMap.empty)
     val valuesByBS = valuesByStage.getOrElse(bs, LinkedMap.empty)
 
@@ -91,7 +87,7 @@ case class StochData private (
     copy(basicData = newBasicData)
   }
 
-  def scenarioData[B](scen: Scenario, p: ParamStat, values: ParamStatData): StochData = {
+  def scenarioData(scen: Scenario, p: ParamStat, values: ParamStatData): StochData = {
     val valuesByScen = scenarioData.getOrElse(scen, LinkedMap.empty)
     val newValuesByScen = valuesByScen + (p -> values)
     val newScenarioData = scenarioData + (scen -> newValuesByScen)
@@ -104,6 +100,14 @@ case class StochData private (
   lazy private[this] val balancedTreeIdent: List[List[(BasicScenario, Rational)]] = balancedTree(List.empty, identity)
 
   lazy val balancedTree: List[Scenario] = balancedTreeIdent.map(_.map(_._1)) //balancedTree(List.empty, _._1)
+
+  lazy val deletedScenariosList: List[Scenario] = 
+    for {
+      (history, bss) <- deletedScenarios.toList
+      deleted        <- bss.map(bs => history :+ bs)
+    } yield {
+      deleted
+    }
 
   def balancedTree[T](seed: List[T], ext: ((BasicScenario, Rational)) => T): List[List[T]] = {
     val rstages = stages.drop(seed.size)
@@ -131,12 +135,19 @@ case class StochData private (
       for {
         (history, bss) <- customScenarios.toList
         scen           <- bss.map(p => history :+ p._1)
-        scenTree       <- balancedTree(scen, _._1)
+        scenTree       <- balancedTree(scen, _._1) 
+          // avoids generating scenarios shorter than `stages.size` if there are 
+          // no basic scenarios, ie, `balancedTree` generates nothing.
+          if scenTree.size == stages.size 
       } yield {
         scenTree
       }
 
-    val target = (customTree ::: balancedTree).distinct
+    val base = (customTree ::: balancedTree).distinct
+      
+    val target = base.filter { ss => 
+      deletedScenariosList.forall(!ss.startsWith(_))
+    }
 
     // TODO check why scala is faster than using spire sorting ...
     
@@ -162,25 +173,7 @@ case class StochData private (
 
   lazy val probabilities: List[List[Rational]] = {
 
-    val customProbs =
-      customScenarios.foldLeft(LinkedMap.empty[Stage, LinkedMap[Scenario, LinkedMap[BasicScenario, Rational]]]) {
-        case (customProbs, (history, cbss)) =>
-          val change =
-            for {
-              t       <- stages.lift(history.size)
-              bss     <- basicScenarios.get(t)
-              cbssBS   = cbss.unzip._1.toList
-              cbssProb = cbss.unzip._2
-              rbss     = bss.filterNot { case (k, _) => cbssBS.contains(k) }
-              csum     = cbssProb.qsum
-              newBSS   = normalize(rbss, target = 1 - csum)
-            } yield {
-              customProbs + (t -> LinkedMap(history -> (newBSS ++ cbss)))
-            }
-
-          change | customProbs
-      }
-
+    /* probabilities of basic scenarios tree taking into account deleted scenarios */
     val balancedProbs        = balancedTreeIdent
     val balancedProbsByStage =
       for {
@@ -188,15 +181,18 @@ case class StochData private (
       } yield {
         stage ->
           (for {
-            (history, bss) <- bTree
+            (historyP, bss) <- bTree
+            history          = historyP.unzip._1
+            usedBS           = 
+              bss.filter { case (bs, _) =>
+                val ss = history :+ bs
+                deletedScenariosList.forall(!ss.startsWith(_))
+              }
+            if usedBS.nonEmpty
           } yield {
-            history.unzip._1 -> (LinkedMap() ++ bss)
-          })
+            history -> (LinkedMap() ++ usedBS)
+          }).toMap
       }
-
-    val probsByStage = balancedProbsByStage ++ customProbs.map {
-      case (k, v) => k -> (balancedProbsByStage.getOrElse(k, LinkedMap.empty) ++ v)
-    }
 
     val probs =
       for {
@@ -205,20 +201,22 @@ case class StochData private (
         for {
           p <- scen.zipWithIndex
           history = scen.take(p._2)
-          customProb = for {
-            cbss  <- customScenarios.get(history)
-            cprob <- cbss.get(p._1)
-          } yield {
-            cprob
-          }
-          basicProb = for {
-            t     <- stages.lift(p._2)
-            bTree <- probsByStage.get(t)
-            bss   <- bTree.get(history)
-            prob  <- bss.get(p._1)
-          } yield {
-            prob
-          }
+          customProb = 
+            for {
+              cbss  <- customScenarios.get(history)
+              cprob <- cbss.get(p._1)
+            } yield {
+              cprob
+            }
+          basicProb = 
+            for {
+              t     <- stages.lift(p._2)
+              bTree <- balancedProbsByStage.get(t)
+              bss   <- bTree.get(history)
+              prob  <- bss.get(p._1)
+            } yield {
+              prob
+            }
           prob <- customProb.orElse(basicProb)
         } yield {
           prob
@@ -349,7 +347,7 @@ case class StochData private (
   def initMatrix(): Unit = {matrix; ()}
 
 
-  // TODO take into account already sepparated models
+  // TODO take into account already separated models
   def linkSetDataBounds: List[(Int, List[(Int, Int)])] = 
     linkSetDataBounds(false)
 
@@ -438,7 +436,7 @@ case class StochData private (
         pData <- cData.orElse(bData).orElse(defaultData).toList
         (key, value) <- pData
       } yield {
-        (List[SimpleData](s, t) ::: key.subscript) -> value
+        (List[SimpleData](t, s) ::: key.subscript) -> value
       }
 
     scenariosData.toList
@@ -486,8 +484,8 @@ case class StochData private (
     val sum = map.unzip._2.qsum
     require(sum != 0 || target == 0, "sum of probabilities equals zero")
     val coef = if (target == 0) Rational.zero else sum / target
-    // TODO move `if (coef == 0)...` outside the loop
-    map.map { case (k, v) => k -> (if (coef == 0) Rational.zero else v / coef) }
+    val updFunc: Rational => Rational = if (coef == 0) { _ => Rational.zero } else { _ / coef }
+    map.map { case (k, v) => k -> updFunc(v) }
   }
 
   private[this] def bsIndex(scen: Scenario): List[Int] = {
@@ -504,9 +502,18 @@ case class StochData private (
 }
 
 object StochData {
+  // XXX should be `amphip.stoch.Scenario`
   type Scenario = List[BasicScenario]
 
-  def apply(): StochData = new StochData(Nil, LinkedMap.empty, LinkedMap.empty, LinkedMap.empty, LinkedMap.empty, LinkedMap.empty, false)
+  def apply(): StochData = new StochData(
+    stages = Nil, 
+    basicScenarios = LinkedMap.empty, 
+    customScenarios = LinkedMap.empty, 
+    deletedScenarios = LinkedMap.empty, 
+    defaults = LinkedMap.empty, 
+    basicData = LinkedMap.empty, 
+    scenarioData = LinkedMap.empty, 
+    separated = false)
 
   def filter(modelData: ModelData, p: ParamStat): ModelData =
     modelData.filterParams(_.name == p.name)
@@ -534,7 +541,7 @@ object StochData {
   def stochIndices(model: StochModel): List[IndEntry] =
     model match {
       case m: TwoStageStochModel => List(m.S())
-      case m: MultiStageStochModel => List(m.S(), m.T())
+      case m: MultiStageStochModel => List(m.T(), m.S())
     }
 
   def asDet(p: ParamStat, model: StochModel): ParamStat = p match {

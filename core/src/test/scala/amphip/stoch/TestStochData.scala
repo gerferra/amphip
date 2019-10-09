@@ -19,11 +19,11 @@ class TestStochData {
     val prob = param("prob", S)
     //val link = param("link", S, S, T)
     val link = set("link", T)
-    val p1 = param("p1", S, T)
-    val p2 = param("p2", S, T)
-    val p3 = param("p3", S, T)
+    val p1 = param("p1", T, S)
+    val p2 = param("p2", T, S)
+    val p3 = param("p3", T, S)
 
-    val model = Model(List(p1, p2, p3)).stochastic(S, T, prob, link)
+    val model = Model(List(p1, p2, p3)).stochastic(T, S, prob, link)
 
     val model1 = model
       .stochDefault(p1, 1)
@@ -42,9 +42,9 @@ class TestStochData {
 
     // 3 * 2 * 2 = 12 scenarios
     val model3 = model2
-      .stochBasicScenarios(t1, low1 -> r"0.1", med1  -> r"0.5", high1 -> r"0.3")
-      .stochBasicScenarios(t2, low2 -> r"0.5", high2 -> r"0.3")
-      .stochBasicScenarios(t3, low3 -> r"0.2", high3 -> r"0.5")
+      .stochBasicScenarios(t1, low1 -> r"1/6", med1  -> r"1/2", high1 -> r"1/3")
+      .stochBasicScenarios(t2, low2 -> r"2/3", high2 -> r"1/3")
+      .stochBasicScenarios(t3, low3 -> r"1/3", high3 -> r"2/3")
 
     val model4 = model3
       .stochBasicData(t1, low1,              p1, 0)
@@ -53,9 +53,14 @@ class TestStochData {
       .stochBasicData(t2, low2,              p2, 0.5)
       .stochBasicData(t2, BS("nonexistant"), p2, 0.5)
 
-    // changes probability of (low1, low2, high3), adds (low1, low2, new3). total = 13 scenarios 
+    /* 
+      changes probability of (low1, low2, high3), 
+      adds (low1, low2, new3),
+      removes (low1, low2, low3)
+      total = 12 scenarios 
+    */
     val model5 = model4
-      .stochCustomScenarios(List(low1, low2), high3 -> r"0.6", BS("New3") -> r"0.1")
+      .stochCustomScenarios(List(low1, low2), high3 -> r"4/5", BS("New3") -> r"1/5")
 
     val model6 = model5
       .stochScenarioData(List(low1, low2,  high3),        p1, 2.5)
@@ -82,7 +87,7 @@ class TestStochData {
 
     println()
     println("mix:")
-    val mix = scenarios.zip(probabilities).map { case (ss, ps) => ss.zip(ps.map(_.toDouble)) }
+    val mix = scenarios.zip(probabilities).map { case (ss, ps) => ss.zip(ps) }
     println(mix.mkString("", "\n", "\n"))
 
     val probData = stochData.probabilityData
@@ -91,8 +96,13 @@ class TestStochData {
     println()
 
     val p1Data = stochData.paramData(p1).toMap
-    val p1Val = p1Data(List(2, 3))
-    assertEquals(p1Val, SimpleNum(2.5))
+    assertEquals(SimpleNum(0)  , p1Data(List(1, 1))) // stage 1, "low1"
+    assertEquals(SimpleNum(1)  , p1Data(List(1, 5))) // stage 1, "med1"
+    assertEquals(SimpleNum(2)  , p1Data(List(1, 9))) // stage 1, "high1"
+    assertEquals(SimpleNum(1)  , p1Data(List(2, 1))) // stage 2, "low2"
+    assertEquals(SimpleNum(0.3), p1Data(List(2, 3))) // stage 2, "high2"
+    assertEquals(SimpleNum(2.5), p1Data(List(3, 1))) // stage 3, "high3"
+    assertEquals(SimpleNum(1)  , p1Data(List(3, 2))) // stage 3, "new3"
         
     val p1ModelData = StochData.filter(model6.data, p1).params
     println("p1ModelData:")
@@ -161,7 +171,7 @@ class TestStochData {
 
     val HVal = 3
 
-    val financeStoch = financeMIP.stochastic(S, T, p, link)
+    val financeStoch = financeMIP.stochastic(T, S, p, link)
       .paramData(H, HVal)
       .paramData(b, 55000)
       .paramData(G, 80000)
