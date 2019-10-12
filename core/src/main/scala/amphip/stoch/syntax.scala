@@ -11,6 +11,7 @@ import amphip.data.dsl._
 import amphip.data.ops._
 import amphip.model.collect
 import amphip.solver
+import amphip.base.LinkedMap
 import amphip.base.implicits._
 
 object syntax extends AllSyntax
@@ -22,7 +23,7 @@ trait AllSyntax {
 
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat): StochModel = {
       val prevStat = List[Stat](S, T, prob).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, AdaptedNAMode(T))
+      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, AdaptedNAMode(T, S))
     }
 
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat, link: SetStat): StochModel = {
@@ -174,11 +175,14 @@ trait AllSyntax {
       update(m.stochData.customScenarios(history, changes: _*))
     }
 
+    def finalScenarios: List[Scenario] = m.stochData.finalScenarios
+    def scenariosByStage: LinkedMap[Stage, List[Scenario]] = m.stochData.scenariosByStage
     def scenarios: List[Scenario] = m.stochData.scenarios
-    def probabilities: List[List[Rational]] = m.stochData.probabilities
+
+    def finalProbabilities: List[List[Rational]] = m.stochData.finalProbabilities
 
     /*
-      Defines the path probabilities of the scenarios.
+      Defines the path probabilities of the final scenarios.
       Uses `stochCustomScenarios` accordingly to match the specified path probability
       of each scenario. 
      */
@@ -230,65 +234,102 @@ trait AllSyntax {
       update(m.stochData.default(p, pData))
     }
 
-    def stochBasicData[B](t: Stage, bs: BasicScenario, p: ParamStat, values: B*)(implicit ev: DataOp[ParamStat, B]): StochModel = {
+    def stochBasicData[B](p: ParamStat, t: Stage, bs: BasicScenario, values: B*)(implicit ev: DataOp[ParamStat, B]): StochModel = {
       requireStochastic(p, m)
       val newData = ev.data(asDet(p, m), values.toList)(m.model.data)
       val pData = filter(newData, p).params
       update(m.stochData.basicData(t, bs, p, pData))
     }
 
-    def stochScenarioData[B](scen: Scenario, p: ParamStat, values: B*)(implicit ev: DataOp[ParamStat, B]): StochModel = {
+    def stochScenarioData[B](p: ParamStat, scen: Scenario, values: B*)(implicit ev: DataOp[ParamStat, B]): StochModel = {
       requireStochastic(p, m)
       val newData = ev.data(asDet(p, m), values.toList)(m.model.data)
       val pData = filter(newData, p).params
       update(m.stochData.scenarioData(scen, p, pData))
     }
 
+    def stochScenarioData[B](p: ParamStat, list: Iterable[(Scenario, Seq[B])])(implicit ev: DataOp[ParamStat, B]): StochModel = {
+      list.foldLeft(m: StochModel) { case (model, (scen, values)) =>
+        model.stochScenarioData(p, scen, values: _*)
+      }
+    }
+
     def alreadySeparated: StochModel = update(m.stochData.separated(true))
+    
+    def mip: ModelWithData = {
+      val model0 = m: StochModel
 
-    def data: ModelData = {
-      val baseModel = m: StochModel
+      import model0.{stochData, S, p}
 
-      import baseModel.{stochData, S, p}
+      val model1 =
+        model0 match {
+          case model0: TwoStageStochModel =>
+            model0.setData(S, stochData.SData)
 
-      // TODO handle the case when the values are specified without using the stochastic data api?
-      val model1 = baseModel.setData(S, stochData.SData)
+          case model0: MultiStageStochModel =>
+            import model0.{T, naMode}
 
-      val model2 =
-        model1 match {
-          case model1: MultiStageStochModel =>
-            import model1.{T, naMode}
-
-            val m = model1.setData(T, stochData.TData)
+            val model01 = (model0 :++ nonanticipativityConstraints)
+              .setData(T, stochData.TData)
 
             naMode match {
-              case _: AdaptedNAMode =>
-                m
-              case CompressedNAMode(link) => 
-                m.setData(link, stochData.linkSetDataBounds.map {
-                  case (t, tupList) => t -> tupList.map(tup => List(tup._1, tup._2))
-                })
               case DenseNAMode(link, _) => 
-                m.paramData(link, stochData.linkData)
-            }
+                model01
+                  .setData(S, stochData.SData)
+                  .paramData(p, stochData.probabilityData) 
+                  .paramData(link, stochData.linkData)
+                  .paramDataList(stochData.parametersData)
 
-          case _ => model1
+              case CompressedNAMode(link) => 
+                model01
+                  .setData(S, stochData.SData)
+                  .paramData(p, stochData.probabilityData) 
+                  .setData(link, stochData.linkSetDataBounds.map {
+                    case (t, tupList) => t -> tupList.map(tup => List(tup._1, tup._2))
+                  })
+                  .paramDataList(stochData.parametersData)
+
+              case naMode: AdaptedNAMode =>
+                import naMode.{ST, pred, H, ancf}
+
+                val adaptedParams = 
+                  model01.stochasticParameters.flatMap(naMode.adaptParam)
+                val (_, st_params) = adaptedParams.unzip
+                  
+                val model02 =
+                  (ancf :: st_params) ++: model01
+
+                val S_ = S default ST(H)
+                val p_ = amphip.model.replace(p, S, S_)
+
+                val model03 = 
+                  model02
+                    .replace(S, S_)
+                    .setData(ST, stochData.STData)
+                    .paramData(pred, stochData.predecessorsData)
+                    .paramData(p_, stochData.probabilityData)
+
+                /* 
+                  Replaces parameter with version which defaults to adaptation 
+                  without separated scenarios, and specify the parameter values
+                  only on adapted version.
+                 */
+                val model04 = 
+                  model03.stochasticParameters.zip(adaptedParams)
+                    .foldLeft(model03) { case (model, (param, (param_, st_param))) =>
+                      model
+                        .replace(param, param_)
+                        .paramData(st_param, stochData.paramDataST(param))
+                    }                
+
+                model04
+            }
         }
 
-      val model3 = model2
-        .paramData(p, stochData.probabilityData)
-        .paramDataList(stochData.parametersData)
-
-      model3.model.data
+      model1.model
     }
 
-    def mip: ModelWithData = {
-      val basicModel = m.model.model
-      val data       = m.data
-      val after      = nonanticipativityConstraints
-      val stochModel = Model(basicModel.statements ::: after)
-      ModelWithData(stochModel, data)
-    }
+    def data = mip.data
   }
 
 }

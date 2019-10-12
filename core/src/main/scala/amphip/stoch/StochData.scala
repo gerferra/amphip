@@ -130,7 +130,7 @@ case class StochData private (
     tree.map(_.reverse)
   }
 
-  lazy val scenarios: List[Scenario] = {
+  lazy val finalScenarios: List[Scenario] = {
     val customTree =
       for {
         (history, bss) <- customScenarios.toList
@@ -155,9 +155,6 @@ case class StochData private (
     target.sortBy(bsIndex)
   }
 
-  lazy val numScenarios: Int = scenarios.size
-  lazy val numStages   : Int = stages.size
-
   def byStage[T](scenarios: List[List[T]]): LinkedMap[Stage, LinkedMap[List[T], List[T]]] = {
     LinkedMap() ++ stages.map(x => x -> onStage(scenarios, x))
   }
@@ -168,10 +165,64 @@ case class StochData private (
     group.map { case (k, v) => k -> v.map(x => x(ind)).distinct }
   }
 
+  lazy val scenariosByStage: LinkedMap[Stage, List[Scenario]] =
+    for {
+      (stage, values) <- byStage(finalScenarios)
+      scenarios = values.flatMap { case (history, bss) => bss.map(history :+ _) }.toList
+    } yield {
+      stage -> scenarios
+    }
+
+  lazy val scenarios: List[Scenario] = scenariosByStage.values.flatten.toList
+
+  lazy val numScenarios: Int = finalScenarios.size
+  lazy val numStages   : Int = stages.size
+
   def TData: Range = 1 to numStages
   def SData: Range = 1 to numScenarios
 
-  lazy val probabilities: List[List[Rational]] = {
+  def STData: List[(Int, Range)] = {
+    for {
+      (stage, t_) <- stages.zipWithIndex
+      sts         <- scenariosByStage.get(stage)
+    } yield {
+      (t_ + 1) -> (1 to sts.size)
+    }
+  }
+
+  lazy val predecessorsData: List[(List[Int], Int)] = {
+    for {
+      (stage, t_) <- stages.zipWithIndex
+      sts         <- scenariosByStage.get(stage).toList
+      (scen, s_)  <- sts.zipWithIndex
+      t            = t_ + 1
+      s            = s_ + 1
+      sPred       <- predecesor(t, s)
+    } yield {
+      List(t, s) -> sPred
+    }
+  }
+
+  def predecesor(t: Int, s: Int): Option[Int] = 
+    for {
+      stage       <- stages.lift(t - 1)
+      sts         <- scenariosByStage.get(stage)
+      (scen, _)   <- sts.zipWithIndex
+                      .find { 
+                        case (_, s_) => s_ == s - 1
+                      }
+      pred         = scen.take(t - 1)
+      stagePred   <- stages.lift(t - 2) 
+      stsPred     <- scenariosByStage.get(stagePred)
+      (_, sPred_) <- stsPred.zipWithIndex
+                      .find { 
+                        case (scen, _) => scen == pred
+                      }
+    } yield {
+      sPred_ + 1
+    }
+
+  lazy val finalProbabilities: List[List[Rational]] = {
 
     /* probabilities of basic scenarios tree taking into account deleted scenarios */
     val balancedProbs        = balancedTreeIdent
@@ -196,7 +247,7 @@ case class StochData private (
 
     val probs =
       for {
-        scen <- scenarios
+        scen <- finalScenarios
       } yield {
         for {
           p <- scen.zipWithIndex
@@ -228,7 +279,7 @@ case class StochData private (
 
   def probabilityData: List[Double] = {
     for {
-      path <- probabilities
+      path <- finalProbabilities
     } yield {
       path.map(_.toDouble).product
     }
@@ -236,7 +287,7 @@ case class StochData private (
 
   def probabilityData2: List[Double] = {
     for {
-      path <- probabilities
+      path <- finalProbabilities
     } yield {
       //path.map(_.toDouble).product
       path.qproduct.toDouble
@@ -248,16 +299,23 @@ case class StochData private (
    */
   def probabilityDataExact: List[Rational] = {
     for {
-      path <- probabilities
+      path <- finalProbabilities
     } yield {
       path.qproduct
     }
   }
 
+
+  // Non-anticipativity handling
+
+  /*
+    Scenarios (including non-final) corresponding to each pair of final 
+    scenario index and stage index, with sparated scenarios.
+   */
   lazy private[stoch] val prefix: Array[Array[Scenario]] = {
     val res = Array.ofDim[Scenario](numScenarios, numStages)
     for {
-      (scen, s) <- scenarios.zipWithIndex
+      (scen, s) <- finalScenarios.zipWithIndex
     } {
       cfor(0)(_ < numStages, _ + 1) { t =>
         res(s)(t) = scen.take(t + 1)
@@ -333,10 +391,14 @@ case class StochData private (
 
   def linkData: List[(List[Int], Int)] = linkDataFull
 
+  /* 
+    BasicScenario corresponding to each combination of final scenario index
+    and stage index, with sparated scenarios.
+   */
   lazy private[stoch] val matrix: Array[Array[BasicScenario]] = {
     val res = Array.ofDim[BasicScenario](numScenarios, numStages)
     for {
-      (scen, s) <- scenarios.zipWithIndex
+      (scen, s) <- finalScenarios.zipWithIndex
       (bs, t) <- scen.zipWithIndex
     } {
       res(s)(t) = bs
@@ -387,6 +449,9 @@ case class StochData private (
     res.toList
   }
 
+
+  // Parameters
+
   def parameters: List[ParamStat] = {
     val defP = defaults.keys
 
@@ -434,6 +499,41 @@ case class StochData private (
         }
         defaultData = defaults.get(param)
         pData <- cData.orElse(bData).orElse(defaultData).toList
+        (key, value) <- pData
+      } yield {
+        (List[SimpleData](t, s) ::: key.subscript) -> value
+      }
+
+    scenariosData.toList
+  }
+
+
+  def paramDataST(param: ParamStat): List[(List[SimpleData], SimpleData)] = {
+    val scenariosData =
+      for {
+        (stage, t_) <- stages.zipWithIndex
+        sts         <- scenariosByStage.get(stage).toList
+        (scen, s_)  <- sts.zipWithIndex
+        cData = 
+          for {
+            cbss <- scenarioData.get(scen)
+            data <- cbss.get(param)
+          } yield {
+            data
+          }
+        bs          <- scen.lastOption.toList
+        bData = 
+          for {
+            bss  <- basicData.get(stage)
+            ds   <- bss.get(bs)
+            data <- ds.get(param)
+          } yield {
+            data
+          }
+        defaultData   = defaults.get(param)
+        pData        <- cData.orElse(bData).orElse(defaultData).toList
+        t             = t_ + 1
+        s             = s_ + 1
         (key, value) <- pData
       } yield {
         (List[SimpleData](t, s) ::: key.subscript) -> value

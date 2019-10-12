@@ -1,18 +1,20 @@
-param H;
+set T;
 
-set T := 1 .. H;
+set NA_ST{T};
 
-set NA_S{T};
+param NA_H := (max{t in T} t);
 
-param NA_p{t in (T diff {1}), NA_S[t]} in NA_S[(t - 1)];
+param NA_pred{t in (T diff {1}), NA_ST[t]} in NA_ST[(t - 1)];
 
-param NA_pt{t in T, s in NA_S[t], tp in T : (tp <= t)} in NA_S[tp], := (if (tp = t) then s else NA_pt[(t - 1), NA_p[t, s], tp]);
+param NA_anc{t in T, s in NA_ST[t], tp in T : (tp <= t)} in NA_ST[tp], := (if (tp = t) then s else NA_anc[(t - 1), NA_pred[t, s], tp]);
 
-param NA_ptf{s in NA_S[H], t in T} in NA_S[t], := NA_pt[H, s, t];
+param NA_ancf{s in NA_ST[NA_H], t in T} in NA_ST[t], := NA_anc[NA_H, s, t];
 
-param NA_d{t in T, NA_S[t]};
+param NA_d{t in T, s in NA_ST[t]};
 
-set S default NA_S[H];
+set S default NA_ST[NA_H];
+
+param pi{S};
 
 param inv0;
 
@@ -28,15 +30,15 @@ param q{C};
 
 param a{t in T} := (sum{c in A : (tau[c] = t)} q[c]);
 
-param d{t in T, s in S} default NA_d[t, NA_ptf[s, t]];
+param d{t in T, s in S} default NA_d[t, NA_ancf[s, t]];
 
 param invmin;
 
 param invmax;
 
-param gamma{P} in 0 .. (H - 1);
+param H := (max{t in T} t);
 
-param pi{S};
+param gamma{P} in 0 .. (H - 1);
 
 param ca{C};
 
@@ -70,31 +72,28 @@ s.t. cancelledFuel{t in T, s in S}: w[t, s] = (sum{c in A : (tau[c] = t)} (q[c] 
 
 minimize cost: (sum{t in T, s in S} (pi[s] * (((sum{c in P : (t <= (H - gamma[c]))} ((ca[c] * q[c]) * v[c, t, s])) + (sum{c in A : (t <= (tau[c] - 1))} (((cc[c] - ca[c]) * q[c]) * x[c, t, s]))) + (h[t] * inv[t, s]))));
 
-var NA_inv{t in T, NA_S[t]} >= 0;
+s.t. NA_u_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] = NA_ancf[s2, t])}: u[t, s1] = u[t, s2];
 
-s.t. NA_inv_ctr{t in T, s in S}: inv[t, s] = NA_inv[t, NA_ptf[s, t]];
+s.t. NA_w_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] = NA_ancf[s2, t])}: w[t, s1] = w[t, s2];
 
-var NA_v{c in P, t in T, NA_S[t] : (t <= (H - gamma[c]))} binary;
+s.t. NA_inv_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] = NA_ancf[s2, t])}: inv[t, s1] = inv[t, s2];
 
-s.t. NA_v_ctr{c in P, t in T, s in S : (t <= (H - gamma[c]))}: v[c, t, s] = NA_v[c, t, NA_ptf[s, t]];
+s.t. NA_v_ctr{t in T, s1 in S, s2 in S, c in P : ((NA_ancf[s1, t] = NA_ancf[s2, t]) and (t <= (H - gamma[c])))}: v[c, t, s1] = v[c, t, s2];
 
-var NA_x{c in A, t in T, NA_S[t] : (t <= (tau[c] - 1))} binary;
-
-s.t. NA_x_ctr{c in A, t in T, s in S : (t <= (tau[c] - 1))}: x[c, t, s] = NA_x[c, t, NA_ptf[s, t]];
+s.t. NA_x_ctr{t in T, s1 in S, s2 in S, c in A : ((NA_ancf[s1, t] = NA_ancf[s2, t]) and (t <= (tau[c] - 1)))}: x[c, t, s1] = x[c, t, s2];
 
 
 data;
 
+set T := 1 2 3;
 
 set A := "A1" "A2";
 
 set P := "P1" "P2" "P3" "P4";
 
-set NA_S[1] := 1;
-set NA_S[2] := 1 2;
-set NA_S[3] := 1 2 3 4;
-
-param H := 3;
+set NA_ST[1] := 1;
+set NA_ST[2] := 1 2;
+set NA_ST[3] := 1 2 3 4;
 
 param inv0 := 20;
 
@@ -114,7 +113,7 @@ param cc := "A1" 32, "A2" 42;
 
 param h := 1 1, 2 1, 3 1;
 
-param NA_p :=
+param NA_pred :=
 [2, *] := 1 1, 2 1
 [3, *] := 1 1, 2 1, 3 2, 4 2;
 
@@ -125,6 +124,7 @@ param NA_d :=
 [2, *] := 1 38, 2 17
 [3, *] := 1 43, 2 24, 3 34, 4 44;
 
+end;
 
 /*
 STANDARD OUTPUT
@@ -135,8 +135,8 @@ Parameter(s) specified in the command line:
  --model fuelSupplyMinTSSep_NA.mod --output fuelSupplyMinTSSep_NA.out
 Reading model section from fuelSupplyMinTSSep_NA.mod...
 Reading data section from fuelSupplyMinTSSep_NA.mod...
-fuelSupplyMinTSSep_NA.mod:133: warning: final NL missing before end of file
-133 lines were read
+fuelSupplyMinTSSep_NA.mod:127: warning: final NL missing before end of file
+127 lines were read
 Generating balance0...
 Generating balance...
 Generating inventory...
@@ -145,74 +145,102 @@ Generating singleCancellation...
 Generating acquiredFuel...
 Generating cancelledFuel...
 Generating cost...
+Generating NA_u_ctr...
+Generating NA_w_ctr...
 Generating NA_inv_ctr...
 Generating NA_v_ctr...
 Generating NA_x_ctr...
 Model has been successfully generated
 GLPK Integer Optimizer, v4.55
-121 rows, 92 columns, 296 non-zeros
-49 integer variables, all of which are binary
+269 rows, 72 columns, 448 non-zeros
+36 integer variables, all of which are binary
 Preprocessing...
-76 rows, 67 columns, 180 non-zeros
-49 integer variables, all of which are binary
+124 rows, 52 columns, 276 non-zeros
+36 integer variables, all of which are binary
 Scaling...
  A: min|aij| =  1.000e+00  max|aij| =  4.000e+01  ratio =  4.000e+01
-GM: min|aij| =  7.376e-01  max|aij| =  1.356e+00  ratio =  1.838e+00
-EQ: min|aij| =  5.905e-01  max|aij| =  1.000e+00  ratio =  1.694e+00
-2N: min|aij| =  5.000e-01  max|aij| =  1.375e+00  ratio =  2.750e+00
+GM: min|aij| =  8.842e-01  max|aij| =  1.131e+00  ratio =  1.279e+00
+EQ: min|aij| =  8.314e-01  max|aij| =  1.000e+00  ratio =  1.203e+00
+2N: min|aij| =  5.000e-01  max|aij| =  1.250e+00  ratio =  2.500e+00
 Constructing initial basis...
-Size of triangular part is 74
+Size of triangular part is 59
 Solving LP relaxation...
 GLPK Simplex Optimizer, v4.55
-76 rows, 67 columns, 180 non-zeros
-      0: obj =   2.446875000e+01  infeas =  1.875e+01 (2)
-*     4: obj =   5.568468750e+03  infeas =  0.000e+00 (2)
-*    10: obj =   3.787468750e+03  infeas =  1.615e-16 (2)
+124 rows, 52 columns, 276 non-zeros
+      0: obj =   2.446875000e+01  infeas =  1.875e+01 (65)
+*     6: obj =   5.648468750e+03  infeas =  0.000e+00 (65)
+*    11: obj =   3.787468750e+03  infeas =  2.220e-16 (65)
 OPTIMAL LP SOLUTION FOUND
 Integer optimization begins...
-+    10: mip =     not found yet >=              -inf        (1; 0)
-+    31: >>>>>   7.044468750e+03 >=   3.965468750e+03  43.7% (9; 0)
-+    43: >>>>>   7.005468750e+03 >=   4.069468750e+03  41.9% (10; 1)
-+    65: >>>>>   6.736468750e+03 >=   5.015968750e+03  25.5% (10; 7)
-+    74: >>>>>   6.574968750e+03 >=   5.365468750e+03  18.4% (10; 10)
-+    76: >>>>>   6.184468750e+03 >=   5.652968750e+03   8.6% (8; 13)
-+    79: >>>>>   5.934968750e+03 >=   5.868468750e+03   1.1% (5; 19)
-+    79: mip =   5.934968750e+03 >=     tree is empty   0.0% (0; 37)
++    11: mip =     not found yet >=              -inf        (1; 0)
++    29: >>>>>   7.806968750e+03 >=   4.069468750e+03  47.9% (9; 0)
++    46: >>>>>   7.005468750e+03 >=   4.144468750e+03  40.8% (12; 4)
++    74: >>>>>   6.736468750e+03 >=   5.087968750e+03  24.5% (12; 11)
++    83: >>>>>   6.574968750e+03 >=   5.365468750e+03  18.4% (12; 14)
++    85: >>>>>   6.184468750e+03 >=   5.442968750e+03  12.0% (10; 17)
++    88: >>>>>   5.934968750e+03 >=   5.886968750e+03   0.8% (4; 32)
++    88: mip =   5.934968750e+03 >=     tree is empty   0.0% (0; 47)
 INTEGER OPTIMAL SOLUTION FOUND
 Time used:   0.0 secs
-Memory used: 0.4 Mb (375739 bytes)
+Memory used: 0.4 Mb (466374 bytes)
 Writing MIP solution to 'fuelSupplyMinTSSep_NA.out'...
 
 OUTPUT (RESUME)
 ---------------
 Problem:    fuelSupplyMinTSSep_NA
-Rows:       121
-Columns:    92 (49 integer, 49 binary)
-Non-zeros:  296
+Rows:       269
+Columns:    72 (36 integer, 36 binary)
+Non-zeros:  448
 Status:     INTEGER OPTIMAL
 Objective:  cost = 5934.96875 (MINimum)
 (...)
-    73 NA_inv[1,1]                23             0               
-    74 NA_inv[2,1]                25             0               
-    75 NA_inv[2,2]                46             0               
-    76 NA_inv[3,1]                21             0               
-    77 NA_inv[3,2]                40             0               
-    78 NA_inv[3,3]                12             0               
-    79 NA_inv[3,4]                 2             0               
-    80 NA_v[P1,1,1] *              0             0             1 
-    81 NA_v[P1,2,1] *              0             0             1 
-    82 NA_v[P1,2,2] *              0             0             1 
-    83 NA_v[P2,1,1] *              0             0             1 
-    84 NA_v[P2,2,1] *              0             0             1 
-    85 NA_v[P2,2,2] *              0             0             1 
-    86 NA_v[P3,1,1] *              0             0             1 
-    87 NA_v[P3,2,1] *              1             0             1 
-    88 NA_v[P3,2,2] *              0             0             1 
-    89 NA_v[P4,1,1] *              1             0             1 
-    90 NA_v[P4,2,1] *              0             0             1 
-    91 NA_v[P4,2,2] *              0             0             1 
-    92 NA_x[A2,1,1] *              1             0             1 
+    25 inv[1,1]                   23             0               
+    26 inv[1,2]                   23             0               
+    27 inv[1,3]                   23             0               
+    28 inv[1,4]                   23             0               
+    29 inv[2,1]                   25             0               
+    30 inv[2,2]                   25             0               
+    31 inv[2,3]                   46             0               
+    32 inv[2,4]                   46             0               
+    33 inv[3,1]                   21             0               
+    34 inv[3,2]                   40             0               
+    35 inv[3,3]                   12             0               
+    36 inv[3,4]                    2             0               
+    37 v[P1,1,1]    *              0             0             1 
+    38 v[P1,2,1]    *              0             0             1 
+    39 v[P1,1,2]    *              0             0             1 
+    40 v[P1,2,2]    *              0             0             1 
+    41 v[P1,1,3]    *              0             0             1 
+    42 v[P1,2,3]    *              0             0             1 
+    43 v[P1,1,4]    *              0             0             1 
+    44 v[P1,2,4]    *              0             0             1 
+    45 v[P2,1,1]    *              0             0             1 
+    46 v[P2,2,1]    *              0             0             1 
+    47 v[P2,1,2]    *              0             0             1 
+    48 v[P2,2,2]    *              0             0             1 
+    49 v[P2,1,3]    *              0             0             1 
+    50 v[P2,2,3]    *              0             0             1 
+    51 v[P2,1,4]    *              0             0             1 
+    52 v[P2,2,4]    *              0             0             1 
+    53 v[P3,1,1]    *              0             0             1 
+    54 v[P3,2,1]    *              1             0             1 
+    55 v[P3,1,2]    *              0             0             1 
+    56 v[P3,2,2]    *              1             0             1 
+    57 v[P3,1,3]    *              0             0             1 
+    58 v[P3,2,3]    *              0             0             1 
+    59 v[P3,1,4]    *              0             0             1 
+    60 v[P3,2,4]    *              0             0             1 
+    61 v[P4,1,1]    *              1             0             1 
+    62 v[P4,2,1]    *              0             0             1 
+    63 v[P4,1,2]    *              1             0             1 
+    64 v[P4,2,2]    *              0             0             1 
+    65 v[P4,1,3]    *              1             0             1 
+    66 v[P4,2,3]    *              0             0             1 
+    67 v[P4,1,4]    *              1             0             1 
+    68 v[P4,2,4]    *              0             0             1 
+    69 x[A2,1,1]    *              1             0             1 
+    70 x[A2,1,2]    *              1             0             1 
+    71 x[A2,1,3]    *              1             0             1 
+    72 x[A2,1,4]    *              1             0             1 
 (...)
 */
-
-end;

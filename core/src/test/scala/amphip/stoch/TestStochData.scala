@@ -47,11 +47,11 @@ class TestStochData {
       .stochBasicScenarios(t3, low3 -> r"1/3", high3 -> r"2/3")
 
     val model4 = model3
-      .stochBasicData(t1, low1,              p1, 0)
-      .stochBasicData(t1, high1,             p1, 2)
-      .stochBasicData(t2, high2,             p1, 0.3)
-      .stochBasicData(t2, low2,              p2, 0.5)
-      .stochBasicData(t2, BS("nonexistant"), p2, 0.5)
+      .stochBasicData(p1, t1, low1,              0)
+      .stochBasicData(p1, t1, high1,             2)
+      .stochBasicData(p1, t2, high2,             0.3)
+      .stochBasicData(p2, t2, low2,              0.5)
+      .stochBasicData(p2, t2, BS("nonexistant"), 0.5)
 
     /* 
       changes probability of (low1, low2, high3), 
@@ -63,9 +63,9 @@ class TestStochData {
       .stochCustomScenarios(List(low1, low2), high3 -> r"4/5", BS("New3") -> r"1/5")
 
     val model6 = model5
-      .stochScenarioData(List(low1, low2,  high3),        p1, 2.5)
-      .stochScenarioData(List(low1, high2, BS("High3a")), p1, 2.3)
-      .stochScenarioData(List(low1, high2, BS("High3b")), p1, 2.4)
+      .stochScenarioData(p1, List(low1, low2,  high3),        2.5)
+      .stochScenarioData(p1, List(low1, high2, BS("High3a")), 2.3)
+      .stochScenarioData(p1, List(low1, high2, BS("High3b")), 2.4)
 
     val stochData = model6.stochData
 
@@ -75,19 +75,19 @@ class TestStochData {
     println(s"TData: $TData")
     println(s"SData: $SData")
 
-    val scenarios = stochData.scenarios
+    val finalScenarios = stochData.finalScenarios
 
     println()
-    println("scenarios:")
-    println(scenarios.mkString("", "\n", "\n"))
+    println("finalScenarios:")
+    println(finalScenarios.mkString("", "\n", "\n"))
 
-    println("probabilities:")
-    val probabilities = stochData.probabilities
-    println(probabilities.mkString("", "\n", "\n"))
+    println("finalProbabilities:")
+    val finalProbabilities = stochData.finalProbabilities
+    println(finalProbabilities.mkString("", "\n", "\n"))
 
     println()
     println("mix:")
-    val mix = scenarios.zip(probabilities).map { case (ss, ps) => ss.zip(ps) }
+    val mix = finalScenarios.zip(finalProbabilities).map { case (ss, ps) => ss.zip(ps) }
     println(mix.mkString("", "\n", "\n"))
 
     val probData = stochData.probabilityData
@@ -189,10 +189,10 @@ class TestStochData {
       (financeStoch1, ti) =>
         financeStoch1
           .stochBasicScenarios(ti, low -> 0.5, high -> 0.5)
-          .stochBasicData(ti, low, ret,
+          .stochBasicData(ret, ti, low,
             List(stocks) -> 1.06,
             List(bonds) -> 1.12)
-          .stochBasicData(ti, high, ret,
+          .stochBasicData(ret, ti, high,
             List(stocks) -> 1.25,
             List(bonds) -> 1.14)
     }
@@ -207,21 +207,21 @@ class TestStochData {
     println(TData)
     println(SData)
 
-    val probabilities = stochData.probabilities
+    val finalProbabilities = stochData.finalProbabilities
     val probData = stochData.probabilityData
 
     println(probData.sum)
 
-    println(probabilities.mkString("\n"))
+    println(finalProbabilities.mkString("\n"))
     println(probData)
 
     //val linkData = stochData.linkData
 
     //println(linkData.mkString("\n"))
 
-    val scenarios = stochData.scenarios
+    val finalScenarios = stochData.finalScenarios
 
-    println(scenarios.mkString("\n"))
+    println(finalScenarios.mkString("\n"))
 
     val retData = stochData.paramData(ret)
 

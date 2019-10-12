@@ -9,7 +9,7 @@ import spire.implicits._
 
 import amphip.dsl._
 import amphip.model.ast.ParamStat
-import amphip.stoch.{Stage, BasicScenario}
+import amphip.stoch.{Stage, BasicScenario, StochData}, StochData.Scenario
 
 object fuelSupplyMinTSSep {
 
@@ -19,8 +19,8 @@ object fuelSupplyMinTSSep {
     // sets (and sets parameters)
     val t = dummy
     val tp = dummy
-    val H = param
-    val T = set := 1 to H
+    val T = set
+    val H = param := max(t in T)(t)
 
     val c = dummy
     val A = set
@@ -94,12 +94,13 @@ object fuelSupplyMinTSSep {
         balance0, balance, inventory, singleAcquisition, singleCancellation, acquiredFuel, cancelledFuel)
 
     // data
-    val HData = 3
     val AData = List("A1", "A2")
     val PData = List("P1", "P2", "P3", "P4")
 
+    val numStages = 3
+
     val basicMIPWData = basicMIP
-      .paramData(H, HData)
+      .setData(T, 1 to numStages)
       .setData(A, AData)
       .setData(P, PData)
       .paramData(inv0, 20)
@@ -110,7 +111,7 @@ object fuelSupplyMinTSSep {
       .paramData(q,  uniform(2)( 10,  50)(AData ::: PData))
       .paramData(ca, uniform(3)(150, 250)(AData ::: PData))
       .paramData(cc, uniform(4)( 30,  50)(AData))
-      .paramData(h, (1 to HData).map(_ -> 1))
+      .paramData(h, (1 to numStages).map(_ -> 1))
   }
 
   object NA_byHand {
@@ -147,6 +148,8 @@ object fuelSupplyMinTSSep {
       .replace(S, S_)
 
     val NA_pi = stochModel.param("pi") // `pi` to use versión with new `S`.
+
+    val uniformDemand = uniform[List[Int]](1)(10, 50)
 
     val stochModelWData = stochModel
       .setData(NA_S, 
@@ -187,13 +190,28 @@ object fuelSupplyMinTSSep {
       .stochBasicScenarios(t2, a -> r"1/2", b -> r"1/2")
       .stochBasicScenarios(t3, a -> r"1/2", b -> r"1/2")
 
+    // final probabilities following Beta[2,2] distribution
+    val finalScenarios = stochModelBasicScenarios.finalScenarios
+    val scenProbs = beta(finalScenarios).map { case (ss, prob) => ss -> prob.toRational }
+    
+    val stochModelFinalProbabilities = stochModelBasicScenarios
+      .stochProbabilities(scenProbs)
+    
+    // demand following U[10,50] distribution
     val scenarios = stochModelBasicScenarios.scenarios
-    val scenProbs = beta(scenarios).map { case (ss, prob) => ss -> prob.toRational }
+    val uniformDemand = uniform[Scenario](1)(10, 50).andThen { _.map { case (k, v) => k -> List(v) } }
 
-    val stochModelFinalProbabilities = 
-      stochModelBasicScenarios
-        .stochProbabilities(scenProbs)
+    val stochModelDemandData = 
+      stochModelFinalProbabilities
+        .stochScenarioData(d, uniformDemand(scenarios))
 
+    // mip equivalent
+    val mipEquiv = stochModelDemandData.mip
+
+    val modelStr = amphip.sem.mathprog.genModel(mipEquiv.model)
+    val dataStr = amphip.sem.mathprog.genData(mipEquiv.data)
+
+    val (sout, out) = mipEquiv.solve
   }
 
   object randomData {
@@ -215,8 +233,6 @@ object fuelSupplyMinTSSep {
         (xs: Iterable[A]) =>
           xs.map(_ -> random.between(min, max))
     }
-
-    val uniformDemand = uniform[List[Int]](1)(10, 50)
       
     def beta[A](xs: Seq[A]): Seq[(A, Double)] = {
       import breeze.stats.distributions.Beta

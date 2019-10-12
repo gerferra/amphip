@@ -1,7 +1,7 @@
 Problem:    fuelSupplyMinTSSep_NA
-Rows:       121
-Columns:    92 (49 integer, 49 binary)
-Non-zeros:  296
+Rows:       269
+Columns:    72 (36 integer, 36 binary)
+Non-zeros:  448
 Status:     INTEGER OPTIMAL
 Objective:  cost = 5934.96875 (MINimum)
 
@@ -140,101 +140,397 @@ Objective:  cost = 5934.96875 (MINimum)
     72 cancelledFuel[3,4]
                                    0            -0             = 
     73 cost                  5934.97                             
-    74 NA_inv_ctr[1,1]
+    74 NA_u_ctr[1,1,1]
                                    0            -0             = 
-    75 NA_inv_ctr[1,2]
+    75 NA_u_ctr[1,1,2]
                                    0            -0             = 
-    76 NA_inv_ctr[1,3]
+    76 NA_u_ctr[1,1,3]
                                    0            -0             = 
-    77 NA_inv_ctr[1,4]
+    77 NA_u_ctr[1,1,4]
                                    0            -0             = 
-    78 NA_inv_ctr[2,1]
+    78 NA_u_ctr[1,2,1]
                                    0            -0             = 
-    79 NA_inv_ctr[2,2]
+    79 NA_u_ctr[1,2,2]
                                    0            -0             = 
-    80 NA_inv_ctr[2,3]
+    80 NA_u_ctr[1,2,3]
                                    0            -0             = 
-    81 NA_inv_ctr[2,4]
+    81 NA_u_ctr[1,2,4]
                                    0            -0             = 
-    82 NA_inv_ctr[3,1]
+    82 NA_u_ctr[1,3,1]
                                    0            -0             = 
-    83 NA_inv_ctr[3,2]
+    83 NA_u_ctr[1,3,2]
                                    0            -0             = 
-    84 NA_inv_ctr[3,3]
+    84 NA_u_ctr[1,3,3]
                                    0            -0             = 
-    85 NA_inv_ctr[3,4]
+    85 NA_u_ctr[1,3,4]
                                    0            -0             = 
-    86 NA_v_ctr[P1,1,1]
+    86 NA_u_ctr[1,4,1]
                                    0            -0             = 
-    87 NA_v_ctr[P1,1,2]
+    87 NA_u_ctr[1,4,2]
                                    0            -0             = 
-    88 NA_v_ctr[P1,1,3]
+    88 NA_u_ctr[1,4,3]
                                    0            -0             = 
-    89 NA_v_ctr[P1,1,4]
+    89 NA_u_ctr[1,4,4]
                                    0            -0             = 
-    90 NA_v_ctr[P1,2,1]
+    90 NA_u_ctr[2,1,1]
                                    0            -0             = 
-    91 NA_v_ctr[P1,2,2]
+    91 NA_u_ctr[2,1,2]
                                    0            -0             = 
-    92 NA_v_ctr[P1,2,3]
+    92 NA_u_ctr[2,2,1]
                                    0            -0             = 
-    93 NA_v_ctr[P1,2,4]
+    93 NA_u_ctr[2,2,2]
                                    0            -0             = 
-    94 NA_v_ctr[P2,1,1]
+    94 NA_u_ctr[2,3,3]
                                    0            -0             = 
-    95 NA_v_ctr[P2,1,2]
+    95 NA_u_ctr[2,3,4]
                                    0            -0             = 
-    96 NA_v_ctr[P2,1,3]
+    96 NA_u_ctr[2,4,3]
                                    0            -0             = 
-    97 NA_v_ctr[P2,1,4]
+    97 NA_u_ctr[2,4,4]
                                    0            -0             = 
-    98 NA_v_ctr[P2,2,1]
+    98 NA_u_ctr[3,1,1]
                                    0            -0             = 
-    99 NA_v_ctr[P2,2,2]
+    99 NA_u_ctr[3,2,2]
                                    0            -0             = 
-   100 NA_v_ctr[P2,2,3]
+   100 NA_u_ctr[3,3,3]
                                    0            -0             = 
-   101 NA_v_ctr[P2,2,4]
+   101 NA_u_ctr[3,4,4]
                                    0            -0             = 
-   102 NA_v_ctr[P3,1,1]
+   102 NA_w_ctr[1,1,1]
                                    0            -0             = 
-   103 NA_v_ctr[P3,1,2]
+   103 NA_w_ctr[1,1,2]
                                    0            -0             = 
-   104 NA_v_ctr[P3,1,3]
+   104 NA_w_ctr[1,1,3]
                                    0            -0             = 
-   105 NA_v_ctr[P3,1,4]
+   105 NA_w_ctr[1,1,4]
                                    0            -0             = 
-   106 NA_v_ctr[P3,2,1]
+   106 NA_w_ctr[1,2,1]
                                    0            -0             = 
-   107 NA_v_ctr[P3,2,2]
+   107 NA_w_ctr[1,2,2]
                                    0            -0             = 
-   108 NA_v_ctr[P3,2,3]
+   108 NA_w_ctr[1,2,3]
                                    0            -0             = 
-   109 NA_v_ctr[P3,2,4]
+   109 NA_w_ctr[1,2,4]
                                    0            -0             = 
-   110 NA_v_ctr[P4,1,1]
+   110 NA_w_ctr[1,3,1]
                                    0            -0             = 
-   111 NA_v_ctr[P4,1,2]
+   111 NA_w_ctr[1,3,2]
                                    0            -0             = 
-   112 NA_v_ctr[P4,1,3]
+   112 NA_w_ctr[1,3,3]
                                    0            -0             = 
-   113 NA_v_ctr[P4,1,4]
+   113 NA_w_ctr[1,3,4]
                                    0            -0             = 
-   114 NA_v_ctr[P4,2,1]
+   114 NA_w_ctr[1,4,1]
                                    0            -0             = 
-   115 NA_v_ctr[P4,2,2]
+   115 NA_w_ctr[1,4,2]
                                    0            -0             = 
-   116 NA_v_ctr[P4,2,3]
+   116 NA_w_ctr[1,4,3]
                                    0            -0             = 
-   117 NA_v_ctr[P4,2,4]
+   117 NA_w_ctr[1,4,4]
                                    0            -0             = 
-   118 NA_x_ctr[A2,1,1]
+   118 NA_w_ctr[2,1,1]
                                    0            -0             = 
-   119 NA_x_ctr[A2,1,2]
+   119 NA_w_ctr[2,1,2]
                                    0            -0             = 
-   120 NA_x_ctr[A2,1,3]
+   120 NA_w_ctr[2,2,1]
                                    0            -0             = 
-   121 NA_x_ctr[A2,1,4]
+   121 NA_w_ctr[2,2,2]
+                                   0            -0             = 
+   122 NA_w_ctr[2,3,3]
+                                   0            -0             = 
+   123 NA_w_ctr[2,3,4]
+                                   0            -0             = 
+   124 NA_w_ctr[2,4,3]
+                                   0            -0             = 
+   125 NA_w_ctr[2,4,4]
+                                   0            -0             = 
+   126 NA_w_ctr[3,1,1]
+                                   0            -0             = 
+   127 NA_w_ctr[3,2,2]
+                                   0            -0             = 
+   128 NA_w_ctr[3,3,3]
+                                   0            -0             = 
+   129 NA_w_ctr[3,4,4]
+                                   0            -0             = 
+   130 NA_inv_ctr[1,1,1]
+                                   0            -0             = 
+   131 NA_inv_ctr[1,1,2]
+                                   0            -0             = 
+   132 NA_inv_ctr[1,1,3]
+                                   0            -0             = 
+   133 NA_inv_ctr[1,1,4]
+                                   0            -0             = 
+   134 NA_inv_ctr[1,2,1]
+                                   0            -0             = 
+   135 NA_inv_ctr[1,2,2]
+                                   0            -0             = 
+   136 NA_inv_ctr[1,2,3]
+                                   0            -0             = 
+   137 NA_inv_ctr[1,2,4]
+                                   0            -0             = 
+   138 NA_inv_ctr[1,3,1]
+                                   0            -0             = 
+   139 NA_inv_ctr[1,3,2]
+                                   0            -0             = 
+   140 NA_inv_ctr[1,3,3]
+                                   0            -0             = 
+   141 NA_inv_ctr[1,3,4]
+                                   0            -0             = 
+   142 NA_inv_ctr[1,4,1]
+                                   0            -0             = 
+   143 NA_inv_ctr[1,4,2]
+                                   0            -0             = 
+   144 NA_inv_ctr[1,4,3]
+                                   0            -0             = 
+   145 NA_inv_ctr[1,4,4]
+                                   0            -0             = 
+   146 NA_inv_ctr[2,1,1]
+                                   0            -0             = 
+   147 NA_inv_ctr[2,1,2]
+                                   0            -0             = 
+   148 NA_inv_ctr[2,2,1]
+                                   0            -0             = 
+   149 NA_inv_ctr[2,2,2]
+                                   0            -0             = 
+   150 NA_inv_ctr[2,3,3]
+                                   0            -0             = 
+   151 NA_inv_ctr[2,3,4]
+                                   0            -0             = 
+   152 NA_inv_ctr[2,4,3]
+                                   0            -0             = 
+   153 NA_inv_ctr[2,4,4]
+                                   0            -0             = 
+   154 NA_inv_ctr[3,1,1]
+                                   0            -0             = 
+   155 NA_inv_ctr[3,2,2]
+                                   0            -0             = 
+   156 NA_inv_ctr[3,3,3]
+                                   0            -0             = 
+   157 NA_inv_ctr[3,4,4]
+                                   0            -0             = 
+   158 NA_v_ctr[1,1,1,P1]
+                                   0            -0             = 
+   159 NA_v_ctr[1,1,1,P2]
+                                   0            -0             = 
+   160 NA_v_ctr[1,1,1,P3]
+                                   0            -0             = 
+   161 NA_v_ctr[1,1,1,P4]
+                                   0            -0             = 
+   162 NA_v_ctr[1,1,2,P1]
+                                   0            -0             = 
+   163 NA_v_ctr[1,1,2,P2]
+                                   0            -0             = 
+   164 NA_v_ctr[1,1,2,P3]
+                                   0            -0             = 
+   165 NA_v_ctr[1,1,2,P4]
+                                   0            -0             = 
+   166 NA_v_ctr[1,1,3,P1]
+                                   0            -0             = 
+   167 NA_v_ctr[1,1,3,P2]
+                                   0            -0             = 
+   168 NA_v_ctr[1,1,3,P3]
+                                   0            -0             = 
+   169 NA_v_ctr[1,1,3,P4]
+                                   0            -0             = 
+   170 NA_v_ctr[1,1,4,P1]
+                                   0            -0             = 
+   171 NA_v_ctr[1,1,4,P2]
+                                   0            -0             = 
+   172 NA_v_ctr[1,1,4,P3]
+                                   0            -0             = 
+   173 NA_v_ctr[1,1,4,P4]
+                                   0            -0             = 
+   174 NA_v_ctr[1,2,1,P1]
+                                   0            -0             = 
+   175 NA_v_ctr[1,2,1,P2]
+                                   0            -0             = 
+   176 NA_v_ctr[1,2,1,P3]
+                                   0            -0             = 
+   177 NA_v_ctr[1,2,1,P4]
+                                   0            -0             = 
+   178 NA_v_ctr[1,2,2,P1]
+                                   0            -0             = 
+   179 NA_v_ctr[1,2,2,P2]
+                                   0            -0             = 
+   180 NA_v_ctr[1,2,2,P3]
+                                   0            -0             = 
+   181 NA_v_ctr[1,2,2,P4]
+                                   0            -0             = 
+   182 NA_v_ctr[1,2,3,P1]
+                                   0            -0             = 
+   183 NA_v_ctr[1,2,3,P2]
+                                   0            -0             = 
+   184 NA_v_ctr[1,2,3,P3]
+                                   0            -0             = 
+   185 NA_v_ctr[1,2,3,P4]
+                                   0            -0             = 
+   186 NA_v_ctr[1,2,4,P1]
+                                   0            -0             = 
+   187 NA_v_ctr[1,2,4,P2]
+                                   0            -0             = 
+   188 NA_v_ctr[1,2,4,P3]
+                                   0            -0             = 
+   189 NA_v_ctr[1,2,4,P4]
+                                   0            -0             = 
+   190 NA_v_ctr[1,3,1,P1]
+                                   0            -0             = 
+   191 NA_v_ctr[1,3,1,P2]
+                                   0            -0             = 
+   192 NA_v_ctr[1,3,1,P3]
+                                   0            -0             = 
+   193 NA_v_ctr[1,3,1,P4]
+                                   0            -0             = 
+   194 NA_v_ctr[1,3,2,P1]
+                                   0            -0             = 
+   195 NA_v_ctr[1,3,2,P2]
+                                   0            -0             = 
+   196 NA_v_ctr[1,3,2,P3]
+                                   0            -0             = 
+   197 NA_v_ctr[1,3,2,P4]
+                                   0            -0             = 
+   198 NA_v_ctr[1,3,3,P1]
+                                   0            -0             = 
+   199 NA_v_ctr[1,3,3,P2]
+                                   0            -0             = 
+   200 NA_v_ctr[1,3,3,P3]
+                                   0            -0             = 
+   201 NA_v_ctr[1,3,3,P4]
+                                   0            -0             = 
+   202 NA_v_ctr[1,3,4,P1]
+                                   0            -0             = 
+   203 NA_v_ctr[1,3,4,P2]
+                                   0            -0             = 
+   204 NA_v_ctr[1,3,4,P3]
+                                   0            -0             = 
+   205 NA_v_ctr[1,3,4,P4]
+                                   0            -0             = 
+   206 NA_v_ctr[1,4,1,P1]
+                                   0            -0             = 
+   207 NA_v_ctr[1,4,1,P2]
+                                   0            -0             = 
+   208 NA_v_ctr[1,4,1,P3]
+                                   0            -0             = 
+   209 NA_v_ctr[1,4,1,P4]
+                                   0            -0             = 
+   210 NA_v_ctr[1,4,2,P1]
+                                   0            -0             = 
+   211 NA_v_ctr[1,4,2,P2]
+                                   0            -0             = 
+   212 NA_v_ctr[1,4,2,P3]
+                                   0            -0             = 
+   213 NA_v_ctr[1,4,2,P4]
+                                   0            -0             = 
+   214 NA_v_ctr[1,4,3,P1]
+                                   0            -0             = 
+   215 NA_v_ctr[1,4,3,P2]
+                                   0            -0             = 
+   216 NA_v_ctr[1,4,3,P3]
+                                   0            -0             = 
+   217 NA_v_ctr[1,4,3,P4]
+                                   0            -0             = 
+   218 NA_v_ctr[1,4,4,P1]
+                                   0            -0             = 
+   219 NA_v_ctr[1,4,4,P2]
+                                   0            -0             = 
+   220 NA_v_ctr[1,4,4,P3]
+                                   0            -0             = 
+   221 NA_v_ctr[1,4,4,P4]
+                                   0            -0             = 
+   222 NA_v_ctr[2,1,1,P1]
+                                   0            -0             = 
+   223 NA_v_ctr[2,1,1,P2]
+                                   0            -0             = 
+   224 NA_v_ctr[2,1,1,P3]
+                                   0            -0             = 
+   225 NA_v_ctr[2,1,1,P4]
+                                   0            -0             = 
+   226 NA_v_ctr[2,1,2,P1]
+                                   0            -0             = 
+   227 NA_v_ctr[2,1,2,P2]
+                                   0            -0             = 
+   228 NA_v_ctr[2,1,2,P3]
+                                   0            -0             = 
+   229 NA_v_ctr[2,1,2,P4]
+                                   0            -0             = 
+   230 NA_v_ctr[2,2,1,P1]
+                                   0            -0             = 
+   231 NA_v_ctr[2,2,1,P2]
+                                   0            -0             = 
+   232 NA_v_ctr[2,2,1,P3]
+                                   0            -0             = 
+   233 NA_v_ctr[2,2,1,P4]
+                                   0            -0             = 
+   234 NA_v_ctr[2,2,2,P1]
+                                   0            -0             = 
+   235 NA_v_ctr[2,2,2,P2]
+                                   0            -0             = 
+   236 NA_v_ctr[2,2,2,P3]
+                                   0            -0             = 
+   237 NA_v_ctr[2,2,2,P4]
+                                   0            -0             = 
+   238 NA_v_ctr[2,3,3,P1]
+                                   0            -0             = 
+   239 NA_v_ctr[2,3,3,P2]
+                                   0            -0             = 
+   240 NA_v_ctr[2,3,3,P3]
+                                   0            -0             = 
+   241 NA_v_ctr[2,3,3,P4]
+                                   0            -0             = 
+   242 NA_v_ctr[2,3,4,P1]
+                                   0            -0             = 
+   243 NA_v_ctr[2,3,4,P2]
+                                   0            -0             = 
+   244 NA_v_ctr[2,3,4,P3]
+                                   0            -0             = 
+   245 NA_v_ctr[2,3,4,P4]
+                                   0            -0             = 
+   246 NA_v_ctr[2,4,3,P1]
+                                   0            -0             = 
+   247 NA_v_ctr[2,4,3,P2]
+                                   0            -0             = 
+   248 NA_v_ctr[2,4,3,P3]
+                                   0            -0             = 
+   249 NA_v_ctr[2,4,3,P4]
+                                   0            -0             = 
+   250 NA_v_ctr[2,4,4,P1]
+                                   0            -0             = 
+   251 NA_v_ctr[2,4,4,P2]
+                                   0            -0             = 
+   252 NA_v_ctr[2,4,4,P3]
+                                   0            -0             = 
+   253 NA_v_ctr[2,4,4,P4]
+                                   0            -0             = 
+   254 NA_x_ctr[1,1,1,A2]
+                                   0            -0             = 
+   255 NA_x_ctr[1,1,2,A2]
+                                   0            -0             = 
+   256 NA_x_ctr[1,1,3,A2]
+                                   0            -0             = 
+   257 NA_x_ctr[1,1,4,A2]
+                                   0            -0             = 
+   258 NA_x_ctr[1,2,1,A2]
+                                   0            -0             = 
+   259 NA_x_ctr[1,2,2,A2]
+                                   0            -0             = 
+   260 NA_x_ctr[1,2,3,A2]
+                                   0            -0             = 
+   261 NA_x_ctr[1,2,4,A2]
+                                   0            -0             = 
+   262 NA_x_ctr[1,3,1,A2]
+                                   0            -0             = 
+   263 NA_x_ctr[1,3,2,A2]
+                                   0            -0             = 
+   264 NA_x_ctr[1,3,3,A2]
+                                   0            -0             = 
+   265 NA_x_ctr[1,3,4,A2]
+                                   0            -0             = 
+   266 NA_x_ctr[1,4,1,A2]
+                                   0            -0             = 
+   267 NA_x_ctr[1,4,2,A2]
+                                   0            -0             = 
+   268 NA_x_ctr[1,4,3,A2]
+                                   0            -0             = 
+   269 NA_x_ctr[1,4,4,A2]
                                    0            -0             = 
 
    No. Column name       Activity     Lower bound   Upper bound
@@ -311,26 +607,6 @@ Objective:  cost = 5934.96875 (MINimum)
     70 x[A2,1,2]    *              1             0             1 
     71 x[A2,1,3]    *              1             0             1 
     72 x[A2,1,4]    *              1             0             1 
-    73 NA_inv[1,1]                23             0               
-    74 NA_inv[2,1]                25             0               
-    75 NA_inv[2,2]                46             0               
-    76 NA_inv[3,1]                21             0               
-    77 NA_inv[3,2]                40             0               
-    78 NA_inv[3,3]                12             0               
-    79 NA_inv[3,4]                 2             0               
-    80 NA_v[P1,1,1] *              0             0             1 
-    81 NA_v[P1,2,1] *              0             0             1 
-    82 NA_v[P1,2,2] *              0             0             1 
-    83 NA_v[P2,1,1] *              0             0             1 
-    84 NA_v[P2,2,1] *              0             0             1 
-    85 NA_v[P2,2,2] *              0             0             1 
-    86 NA_v[P3,1,1] *              0             0             1 
-    87 NA_v[P3,2,1] *              1             0             1 
-    88 NA_v[P3,2,2] *              0             0             1 
-    89 NA_v[P4,1,1] *              1             0             1 
-    90 NA_v[P4,2,1] *              0             0             1 
-    91 NA_v[P4,2,2] *              0             0             1 
-    92 NA_x[A2,1,1] *              1             0             1 
 
 Integer feasibility conditions:
 

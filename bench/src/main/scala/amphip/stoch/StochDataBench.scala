@@ -45,8 +45,8 @@ class StochDataBench {
     val prob = param(S)
     //val link = param(S, S, T) default 0
     val ST = set(T) within S * S
-    val p1 = param(S, T)
-    val x1 = xvar(S, T)
+    val p1 = param(T, S)
+    val x1 = xvar(T, S)
     val obj = minimize(p1 * x1)
     val mipModel = model(obj)
     val stochModel = mipModel.stochastic(T, S, prob, ST)
@@ -62,8 +62,8 @@ class StochDataBench {
       (model, ti) =>
         model
           .stochBasicScenarios(ti, a -> 0.4, b -> 0.6)
-          .stochBasicData(ti, a, p1, 1.2)
-          .stochBasicData(ti, b, p1, 1.3)
+          .stochBasicData(p1, ti, a, 1.2)
+          .stochBasicData(p1, ti, b, 1.3)
     }
 
     testModel = stochModelBasicData
@@ -122,7 +122,7 @@ class StochDataBench {
 
     val scenariosData =
       for {
-        (scen, s) <- scenarios.zipWithIndex
+        (scen, s) <- finalScenarios.zipWithIndex
         pair <- scen.zipWithIndex
         bs = pair._1
         t = pair._2
@@ -144,7 +144,7 @@ class StochDataBench {
         pData <- cData.orElse(bData).orElse(defaultData).toList
         (key, value) <- pData
       } yield {
-        (List[SimpleData](s + 1, t + 1) ::: key.subscript) -> value
+        (List[SimpleData](t + 1, s + 1) ::: key.subscript) -> value
       }
 
     scenariosData
@@ -182,7 +182,7 @@ class StochDataBench {
         pData <- cData.orElse(bData).orElse(defaultData).toList
         (key, value) <- pData
       } yield {
-        (List[SimpleData](s, t) ::: key.subscript) -> value
+        (List[SimpleData](t, s) ::: key.subscript) -> value
       }
 
     scenariosData
@@ -218,7 +218,7 @@ class StochDataBench {
             pData <- cData.orElse(bData).orElse(defaultData).toList
             (key, value) <- pData
           } yield {
-            (List[SimpleData](s_ + 1, t_ + 1) ::: key.subscript) -> value
+            (List[SimpleData](t_ + 1, s_ + 1) ::: key.subscript) -> value
           }
         res ++= stValues
       }

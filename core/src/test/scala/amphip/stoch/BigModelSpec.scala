@@ -31,9 +31,9 @@ object BigModelSpec extends App /* extends FunSuite */ {
     import sd._
 
     lazy private[this] val scenariosArr: Array[Array[Scenario]] = {
-      val res = Array.ofDim[Scenario](scenarios.size, stages.size)
+      val res = Array.ofDim[Scenario](finalScenarios.size, stages.size)
       for {
-        (scen, s) <- scenarios.zipWithIndex
+        (scen, s) <- finalScenarios.zipWithIndex
       } {
         cfor(0)(_ < stages.length, _ + 1) { t =>
           res(s)(t) = scen.take(t + 1)
@@ -52,7 +52,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
         scenariosArr(s1_)(t_) == scenariosArr(s2_)(t_)
       }
 
-      val scenariosSize = scenarios.size
+      val scenariosSize = finalScenarios.size
       val stagesSize = stages.size
 
       println("before triple iteration")
@@ -130,8 +130,8 @@ object BigModelSpec extends App /* extends FunSuite */ {
       (model, ti) =>
         model
           .stochBasicScenarios(ti, a -> 0.4, b -> 0.6)
-          .stochBasicData(ti, a, p1, 1.2)
-          .stochBasicData(ti, b, p1, 1.3)
+          .stochBasicData(p1, ti, a, 1.2)
+          .stochBasicData(p1, ti, b, 1.3)
     }
 
     val assignBS = millis
@@ -145,7 +145,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
 
     val balancedTreeT = millis
 
-    val scenarios = stochData.scenarios
+    val finalScenarios = stochData.finalScenarios
 
     val scenariosT = millis
 
@@ -233,7 +233,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
 
     val start3 = millis
 
-    stochData.probabilities
+    stochData.finalProbabilities
 
     val probabilitiesT = millis
 
@@ -292,8 +292,8 @@ object BigModelSpec extends App /* extends FunSuite */ {
     elapsed("mipT", startData, mipT)
     elapsed("total", start, startData)*/
 
-    println("scenarios:")
-    println(scenarios.take(10).mkString("", "\n", "\n"))
+    println("finalScenarios:")
+    println(finalScenarios.take(10).mkString("", "\n", "\n"))
 
 
     /*val start5 = millis

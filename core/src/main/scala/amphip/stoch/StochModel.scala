@@ -1,9 +1,11 @@
 package amphip.stoch
 
 import scalaz.syntax.show._
+import cats.syntax.option._
 
 import amphip.model.ast._
 import amphip.model.dsl._
+import amphip.model.replace
 import amphip.data._
 import amphip.stoch.StochModel._
 
@@ -26,7 +28,7 @@ object StochModel {
 sealed trait NAMode
 case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
 case class CompressedNAMode(link: SetStat) extends NAMode
-case class AdaptedNAMode(T: SetStat) extends NAMode {
+case class AdaptedNAMode(T: SetStat, S: SetStat) extends NAMode {
   val ST: SetStat = set("NA_ST", T)
   
   val pred: ParamStat = {
@@ -41,9 +43,9 @@ case class AdaptedNAMode(T: SetStat) extends NAMode {
       cond (tp === t) { s } { anc(t-1, pred(t,s), tp) }
   }
 
-  val H = {
+  val H: ParamStat = {
     val t = dummy("t")
-    max(t in T)(t)
+    param("NA_H") := max(t in T)(t)
   }
 
   val ancf: ParamStat = {
@@ -51,6 +53,38 @@ case class AdaptedNAMode(T: SetStat) extends NAMode {
     val s = dummy("s")
     param("NA_ancf", s in ST(H), t in T) in ST(t) := anc(H, s, t)
   }
+
+  def adaptParam(param: ParamStat): Option[(ParamStat, ParamStat)] =
+    for {
+      IndExpr(entries0, predicate) <- param.domain
+    } yield {
+      val TExpr = T()
+      val SExpr = S()
+
+      val tIdeal = dummy("t")
+      val sIdeal = dummy("s")
+
+      val entries = nonanticipativity.assignIndices(entries0, T, S, sIdeal, tIdeal)
+      val subscript = entries.flatMap(_.indices)
+      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption getOrElse tIdeal 
+      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption getOrElse sIdeal 
+
+      val param0 = param.copy(domain = IndExpr(entries, predicate).some)
+
+      /* 
+        Adapted version of the parameter which don't have separated scenarios 
+        and allows to specify the parameter values in a more compact way.
+       */
+      val NA_param = 
+        replace(param0, SExpr, ST(t))
+        .copy(name = s"NA_${param0.name}")
+
+      val subscript1: List[SimpleExpr] = subscript.map(x => if (x == s) ancf(s,t) else x: SimpleExpr)
+
+      val param_ = param0 default NA_param(subscript1)
+
+      param_ -> NA_param
+    }
 }
 
 sealed trait NAForm
@@ -73,8 +107,9 @@ case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: S
     case CompressedNAMode(link) =>
       checkDomain(link.name, link.domain, List(T))
 
-    case AdaptedNAMode(innerT) => 
+    case AdaptedNAMode(innerT, innerS) => 
       require(innerT == T, s"Adapted NA mode stages set is different to model stages set (${innerT.shows} vs ${T.shows})")
+      require(innerS == S, s"Adapted NA mode scenarios set is different to model scenarios set (${innerS.shows} vs ${S.shows})")
 
   }
   
