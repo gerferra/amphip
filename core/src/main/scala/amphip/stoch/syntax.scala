@@ -269,6 +269,12 @@ trait AllSyntax {
           case model0: MultiStageStochModel =>
             import model0.{T, naMode}
 
+            /* 
+              XXX review `nonanticipativityConstraints` method: 
+              non-anticipativity can be incorporated in different ways 
+              depending on the `naMode` (eg. with pairs of adapted variables 
+              and constraints)
+            */
             val model01 = (model0 :++ nonanticipativityConstraints)
               .setData(T, stochData.TData)
 

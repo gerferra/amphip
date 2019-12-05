@@ -6,6 +6,7 @@
  */
 
 import spire.implicits._
+import spire.math.{Rational, Numeric}
 
 import amphip.dsl._
 import amphip.model.ast.ParamStat
@@ -149,6 +150,9 @@ object fuelSupplyMinTSSep {
 
     val NA_pi = stochModel.param("pi") // `pi` to use versión with new `S`.
 
+
+    // specification of scenarios and parameters data
+
     val uniformDemand = uniform[List[Int]](1)(10, 50)
 
     val stochModelWData = stochModel
@@ -160,7 +164,7 @@ object fuelSupplyMinTSSep {
         List(List(2, 1) -> 1, List(2, 2) -> 1) :::
         List(List(3, 1) -> 1, List(3, 2) -> 1, List(3, 3) -> 2, List(3, 4) -> 2)
       )
-      .paramData(NA_pi, beta(1 to 4))
+      .paramData(NA_pi, betaD(1 to 4))
       .paramData(NA_d, 
         uniformDemand(List(List(1, 1))) :::
         uniformDemand(List(List(2, 1), List(2, 2))) :::
@@ -176,34 +180,36 @@ object fuelSupplyMinTSSep {
   object NA_auto { 
     import base._ 
 
+    // Generated stochastic model
     val stochModel = basicMIPWData.stochastic(T, S, pi)
+
+
+    // specification of scenarios and paremeters data
 
     val (t1, t2, t3) = (Stage("1"), Stage("2"), Stage("3"))
     val (init, a, b) = (BasicScenario("init"), BasicScenario("a"), BasicScenario("b"))
 
-    val stochModelStages = stochModel
-      .stochStages(t1, t2, t3)
+    val stochModelStages = stochModel.stochStages(t1, t2, t3)
 
     // basic tree, two alternatives per stage (dummy probabilities)
-    val stochModelBasicScenarios = stochModelStages
-      .stochBasicScenarios(t1, init -> r"1")
-      .stochBasicScenarios(t2, a -> r"1/2", b -> r"1/2")
-      .stochBasicScenarios(t3, a -> r"1/2", b -> r"1/2")
+    val stochModelBasicScenarios = 
+      stochModelStages
+        .stochBasicScenarios(t1, init -> r"1")
+        .stochBasicScenarios(t2, a -> r"1/2", b -> r"1/2")
+        .stochBasicScenarios(t3, a -> r"1/2", b -> r"1/2")
 
     // final probabilities following Beta[2,2] distribution
     val finalScenarios = stochModelBasicScenarios.finalScenarios
-    val scenProbs = beta(finalScenarios).map { case (ss, prob) => ss -> prob.toRational }
     
-    val stochModelFinalProbabilities = stochModelBasicScenarios
-      .stochProbabilities(scenProbs)
+    val stochModelFinalProbabilities = 
+      stochModelBasicScenarios.stochProbabilities(betaR(finalScenarios))
     
     // demand following U[10,50] distribution
     val scenarios = stochModelBasicScenarios.scenarios
-    val uniformDemand = uniform[Scenario](1)(10, 50).andThen { _.map { case (k, v) => k -> List(v) } }
+    val uniformDemand = uniformL[Scenario](1)(10, 50)
 
     val stochModelDemandData = 
-      stochModelFinalProbabilities
-        .stochScenarioData(d, uniformDemand(scenarios))
+      stochModelFinalProbabilities.stochScenarioData(d, uniformDemand(scenarios))
 
     // mip equivalent
     val mipEquiv = stochModelDemandData.mip
@@ -217,7 +223,7 @@ object fuelSupplyMinTSSep {
   object randomData {
     import support._ 
 
-    // data generated from probability distributions
+    // probability distributions for data generation
 
     /**
      * Given a `seed`, returns a function that given a list of elements
@@ -225,7 +231,7 @@ object fuelSupplyMinTSSep {
      * matched with uniform random values in the specified range, using 
      * the seed to initialize the random number generator.
      */
-    def uniform[A](seed: Long): (Int, Int) => (Iterable[A])  => Iterable[(A, Int)] = {
+    def uniform[A](seed: Long): (Int, Int) => (Iterable[A]) => Iterable[(A, Int)] = {
       val random = new scala.util.Random()
       random.setSeed(seed)
       
@@ -233,10 +239,19 @@ object fuelSupplyMinTSSep {
         (xs: Iterable[A]) =>
           xs.map(_ -> random.between(min, max))
     }
+
+    def uniformL[A](seed: Long): (Int, Int) => (Iterable[A]) => Iterable[(A, List[Int])] = { 
+      def u[X] = uniform[X](seed)
       
-    def beta[A](xs: Seq[A]): Seq[(A, Double)] = {
+      (min: Int, max: Int) =>
+        u[A](min, max).andThen { _.map { case (k, v) => k -> List(v) } }
+    }
+
+    def beta[A, N: Numeric](xs: Seq[A]): Seq[(A, N)] = {
       import breeze.stats.distributions.Beta
       
+      def asN(d: Double): N = Numeric[N].fromDouble(d)
+
       val betaDist = new Beta(2, 2)
       
       val size = xs.size
@@ -246,14 +261,17 @@ object fuelSupplyMinTSSep {
       val discretization =
         idxNorm
           .sliding(2)
-          .map { case Seq(x, y) => betaDist.probability(x, y) }
+          .map { case Seq(x, y) => asN(betaDist.probability(x, y)) }
           .toSeq
       
       val probs = 
-        betaDist.probability(0, idxNorm.head) +: discretization
+        asN(betaDist.probability(0, idxNorm.head)) +: discretization
       
       xs.zip(probs)
     }
+
+    def betaD[A] = beta[A, Double] _
+    def betaR[A] = beta[A, Rational] _ 
   }
     
   object support {

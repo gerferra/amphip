@@ -25,6 +25,12 @@ object StochModel {
 
 }
 
+/* 
+  TODO review non anticipativity schemas names. 
+  - CompressedNAMode is likely to be removed
+  - DenseNAMode ~> ExplicitNAMode?
+  - AdaptedNAMode ~> ImplicitNAMode?
+ */
 sealed trait NAMode
 case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
 case class CompressedNAMode(link: SetStat) extends NAMode
