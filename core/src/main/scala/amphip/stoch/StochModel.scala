@@ -29,7 +29,11 @@ object StochModel {
   TODO review non anticipativity schemas names. 
   - CompressedNAMode is likely to be removed
   - DenseNAMode ~> ExplicitNAMode?
-  - AdaptedNAMode ~> ImplicitNAMode?
+  - AdaptedNAMode ~> ImplicitNAMode? 
+    - This can be implicit or explicit, current implementation is explicit.
+    - Maybe retain "adapted" and add parameter to specify if the non anticipative 
+      version of variables and parameters should replace the originals 
+      (this is implicit non anticipativity).
  */
 sealed trait NAMode
 case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
