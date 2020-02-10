@@ -34,9 +34,9 @@ object fuelSupplyMinTSSep {
     // parameters (and sets derived from parameters)
     val d = param(T, S)
 
-    val inv0 = param
-    val invmin = param
-    val invmax = param
+    val k0 = param
+    val kmin = param
+    val kmax = param
 
     val tau = param(A) in T
     val gamma = param(P) in (0 to H - 1)
@@ -53,7 +53,7 @@ object fuelSupplyMinTSSep {
     val pi = param(S)
 
     // variables
-    val inv = xvar(T, S) >= 0
+    val k = xvar(T, S) >= 0
 
     val v = xvar(ind(c in P, t in T, S) | t <= H - gamma(c)).binary
     val x = xvar(ind(c in A, t in T, S) | t <= tau(c) - 1).binary
@@ -67,16 +67,16 @@ object fuelSupplyMinTSSep {
         pi(s) * (
           sum(ind(c in P) | t <= H - gamma(c)) {  ca(c)          * q(c) * v(c,t,s) } +
           sum(ind(c in A) | t <= tau(c) - 1  ) { (cc(c) - ca(c)) * q(c) * x(c,t,s) } +
-          h(t) * inv(t,s)
+          h(t) * k(t,s)
         )
       }
     }
 
     // constraints
-    val balance0 = st(                   s in S) { inv0        + a(1) + u(1,s) === d(1,s) + w(1,s) + inv(1,s) }
-    val balance  = st(t in T &~ List(1), s in S) { inv(t-1, s) + a(t) + u(t,s) === d(t,s) + w(t,s) + inv(t,s) };
+    val balance0 = st(                   s in S) { k0        + a(1) + u(1,s) === d(1,s) + w(1,s) + k(1,s) }
+    val balance  = st(t in T &~ List(1), s in S) { k(t-1, s) + a(t) + u(t,s) === d(t,s) + w(t,s) + k(t,s) };
 
-    val inventory = st(t in T, s in S) { dlte(invmin, inv(t,s), invmax) }
+    val inventory = st(t in T, s in S) { dlte(kmin, k(t,s), kmax) }
 
     val singleAcquisition  = st(c in P, s in S) { sum(ind(t in T) | t <= H - gamma(c)) { v(c,t,s) } <= 1 }
     val singleCancellation = st(c in A, s in S) { sum(ind(t in T) | t <= tau(c) - 1  ) { x(c,t,s) } <= 1 }
@@ -104,9 +104,9 @@ object fuelSupplyMinTSSep {
       .setData(T, 1 to numStages)
       .setData(A, AData)
       .setData(P, PData)
-      .paramData(inv0, 20)
-      .paramData(invmin, 0)
-      .paramData(invmax, 80)
+      .paramData(k0, 20)
+      .paramData(kmin, 0)
+      .paramData(kmax, 80)
       .paramData(tau, "A1" -> 1, "A2" -> 2)
       .paramData(gamma, PData.map(_ -> 1))
       .paramData(q,  uniform(2)( 10,  50)(AData ::: PData))
@@ -130,8 +130,8 @@ object fuelSupplyMinTSSep {
 
     val NA_d = param(t in T, NA_S(t))
 
-    val NA_inv = xvar(t in T, NA_S(t)) >= 0
-    val NA_inv_ctr = st(t in T, s in S) { inv(t, s) === NA_inv(t, NA_ptf(s,t)) }
+    val NA_k = xvar(t in T, NA_S(t)) >= 0
+    val NA_k_ctr = st(t in T, s in S) { k(t, s) === NA_k(t, NA_ptf(s,t)) }
 
     val NA_v = xvar(ind(c in P, t in T, NA_S(t)) | t <= H - gamma(c)).binary
     val NA_v_ctr = st(ind(c in P, t in T, s in S) | t <= H - gamma(c)) { v(c,t,s) === NA_v(c,t,NA_ptf(s,t)) }
@@ -144,7 +144,7 @@ object fuelSupplyMinTSSep {
     val S_ = set("S") default NA_S(H)
 
     // the order of replacements is relevant in this case
-    val stochModel = (List(NA_ptf, NA_d) ++: basicMIPWData :++ List(NA_inv_ctr, NA_v_ctr, NA_x_ctr))
+    val stochModel = (List(NA_ptf, NA_d) ++: basicMIPWData :++ List(NA_k_ctr, NA_v_ctr, NA_x_ctr))
       .replace(d, d_) 
       .replace(S, S_)
 
