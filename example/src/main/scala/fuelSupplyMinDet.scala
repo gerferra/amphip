@@ -21,9 +21,9 @@ object fuelSupplyMinDet {
   // parameters (and sets derived from parameters)
   val d = param(T)
 
-  val k0 = param
-  val kmin = param
-  val kmax = param
+  val y0 = param
+  val ymin = param
+  val ymax = param
 
   val tau = param(A) in T
   val gamma = param(P) in (0 to H - 1)
@@ -38,7 +38,7 @@ object fuelSupplyMinDet {
     sum(ind(c in A) | tau(c) === t) { q(c) }
 
   // variables
-  val k = xvar(T) >= 0
+  val y = xvar(T) >= 0
 
   val v = xvar(ind(c in P, t in T) | t <= H - gamma(c)).binary
   val x = xvar(ind(c in A, t in T) | t <= tau(c) - 1).binary
@@ -51,15 +51,15 @@ object fuelSupplyMinDet {
     sum(t in T) {
       sum(ind(c in P) | t <= H - gamma(c)) {  ca(c)          * q(c) * v(c,t) } +
       sum(ind(c in A) | t <= tau(c) - 1  ) { (cc(c) - ca(c)) * q(c) * x(c,t) } +
-      h(t) * k(t)
+      h(t) * y(t)
     }
   }
 
   // constraints
-  val balance0 = st                   { k0     + a(1) + u(1) === d(1) + w(1) + k(1) }
-  val balance  = st(ind(t in T) | t > 1) { k(t-1) + a(t) + u(t) === d(t) + w(t) + k(t) }
+  val balance0 = st                   { y0     + a(1) + u(1) === d(1) + w(1) + y(1) }
+  val balance  = st(ind(t in T) | t > 1) { y(t-1) + a(t) + u(t) === d(t) + w(t) + y(t) }
 
-  val inventory = st(t in T) { dlte(kmin, k(t), kmax) }
+  val inventory = st(t in T) { dlte(ymin, y(t), ymax) }
 
   val singleAcquisition  = st(c in P) { sum(ind(t in T) | t <= H - gamma(c)) { v(c,t) } <= 1 }
   val singleCancellation = st(c in A) { sum(ind(t in T) | t <= tau(c) - 1  ) { x(c,t) } <= 1 }
@@ -89,9 +89,9 @@ object fuelSupplyMinDet {
     .paramData(H, 3)
     .setData(A, AData)
     .setData(P, PData)
-    .paramData(k0, 20)
-    .paramData(kmin, 0)
-    .paramData(kmax, 80)
+    .paramData(y0, 20)
+    .paramData(ymin, 0)
+    .paramData(ymax, 80)
     .paramData(tau, "A1" -> 1, "A2" -> 2)
     .paramData(gamma, PData.map(_ -> 1))
     .paramData(d,  1 -> 35.0, 2 -> 27.5, 3 -> 36.25)
