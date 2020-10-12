@@ -26,7 +26,8 @@ class LinkedMap[K, +V] private (
     new LinkedMap(newVect, newMap)
   }
 
-  override def ++[V1 >: V](xs: GenTraversableOnce[(K, V1)]): LinkedMap[K, V1] = ((repr: LinkedMap[K, V1]) /: xs.seq)(_ + _)
+  override def ++[V1 >: V](xs: GenTraversableOnce[(K, V1)]): LinkedMap[K, V1] = 
+    xs.seq.foldLeft[LinkedMap[K, V1]](repr)(_ + _)
 
   def -(key: K): LinkedMap[K, V] = {
     val newVect = theVect filter { _ != key }
