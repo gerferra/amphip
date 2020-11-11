@@ -115,6 +115,49 @@ object fuelSupplyMinTSSep {
       .paramData(h, (1 to numStages).map(_ -> 1))
   }
 
+  object NA_auto { 
+    import base._ 
+
+    // Generated stochastic model
+    val stochModel = basicMIPWData.stochastic(T, S, pi)
+
+
+    // specification of scenarios and paremeters data
+
+    val (t1, t2, t3) = (Stage("1"), Stage("2"), Stage("3"))
+    val (init, a, b) = (BasicScenario("init"), BasicScenario("a"), BasicScenario("b"))
+
+    val stochModelStages = stochModel.stochStages(t1, t2, t3)
+
+    // basic tree, two alternatives per stage (dummy probabilities)
+    val stochModelBasicScenarios = 
+      stochModelStages
+        .stochBasicScenarios(t1, init -> r"1")
+        .stochBasicScenarios(t2, a -> r"1/2", b -> r"1/2")
+        .stochBasicScenarios(t3, a -> r"1/2", b -> r"1/2")
+
+    // final probabilities following Beta[2,2] distribution
+    val finalScenarios = stochModelBasicScenarios.finalScenarios
+    
+    val stochModelFinalProbabilities = 
+      stochModelBasicScenarios.stochProbabilities(betaR(2, 2)(finalScenarios))
+    
+    // demand following U[10,50] distribution
+    val scenarios = stochModelBasicScenarios.scenarios
+    val uniformDemand = uniformL[Scenario](1)(10, 50)
+
+    val stochModelDemandData = 
+      stochModelFinalProbabilities.stochScenarioData(d, uniformDemand(scenarios))
+
+    // mip equivalent
+    val mipEquiv = stochModelDemandData.mip
+
+    val modelStr = amphip.sem.mathprog.genModel(mipEquiv.model)
+    val dataStr = amphip.sem.mathprog.genData(mipEquiv.data)
+
+    val (sout, out) = mipEquiv.solve
+  }
+
   object NA_byHand {
     import base._ 
 
@@ -164,7 +207,7 @@ object fuelSupplyMinTSSep {
         List(List(2, 1) -> 1, List(2, 2) -> 1) :::
         List(List(3, 1) -> 1, List(3, 2) -> 1, List(3, 3) -> 2, List(3, 4) -> 2)
       )
-      .paramData(NA_pi, betaD(1 to 4))
+      .paramData(NA_pi, betaD(2, 2)(1 to 4))
       .paramData(NA_d, 
         uniformDemand(List(List(1, 1))) :::
         uniformDemand(List(List(2, 1), List(2, 2))) :::
@@ -175,49 +218,6 @@ object fuelSupplyMinTSSep {
     val dataStr = amphip.sem.mathprog.genData(stochModelWData.data)
 
     val (sout, out) = stochModelWData.solve
-  }
-
-  object NA_auto { 
-    import base._ 
-
-    // Generated stochastic model
-    val stochModel = basicMIPWData.stochastic(T, S, pi)
-
-
-    // specification of scenarios and paremeters data
-
-    val (t1, t2, t3) = (Stage("1"), Stage("2"), Stage("3"))
-    val (init, a, b) = (BasicScenario("init"), BasicScenario("a"), BasicScenario("b"))
-
-    val stochModelStages = stochModel.stochStages(t1, t2, t3)
-
-    // basic tree, two alternatives per stage (dummy probabilities)
-    val stochModelBasicScenarios = 
-      stochModelStages
-        .stochBasicScenarios(t1, init -> r"1")
-        .stochBasicScenarios(t2, a -> r"1/2", b -> r"1/2")
-        .stochBasicScenarios(t3, a -> r"1/2", b -> r"1/2")
-
-    // final probabilities following Beta[2,2] distribution
-    val finalScenarios = stochModelBasicScenarios.finalScenarios
-    
-    val stochModelFinalProbabilities = 
-      stochModelBasicScenarios.stochProbabilities(betaR(finalScenarios))
-    
-    // demand following U[10,50] distribution
-    val scenarios = stochModelBasicScenarios.scenarios
-    val uniformDemand = uniformL[Scenario](1)(10, 50)
-
-    val stochModelDemandData = 
-      stochModelFinalProbabilities.stochScenarioData(d, uniformDemand(scenarios))
-
-    // mip equivalent
-    val mipEquiv = stochModelDemandData.mip
-
-    val modelStr = amphip.sem.mathprog.genModel(mipEquiv.model)
-    val dataStr = amphip.sem.mathprog.genData(mipEquiv.data)
-
-    val (sout, out) = mipEquiv.solve
   }
 
   object randomData {
@@ -247,12 +247,12 @@ object fuelSupplyMinTSSep {
         u[A](min, max).andThen { _.map { case (k, v) => k -> List(v) } }
     }
 
-    def beta[A, N: Numeric](xs: Seq[A]): Seq[(A, N)] = {
+    def beta[A, N: Numeric](a: Double, b: Double)(xs: Seq[A]): Seq[(A, N)] = {
       import breeze.stats.distributions.Beta
       
       def asN(d: Double): N = Numeric[N].fromDouble(d)
 
-      val betaDist = new Beta(2, 2)
+      val betaDist = new Beta(a, b)
       
       val size = xs.size
       val idx = 1 to size
