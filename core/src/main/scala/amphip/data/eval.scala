@@ -502,7 +502,7 @@ object eval {
   // SYMBOLIC
   implicit val SymExprEval: Eval[SymExpr, String] = from(implicit modelData =>
     {
-      case CondSymExpr(test, ifTrue, otherwise) => if (eval(test)) eval(ifTrue) else otherwise.fold("")(eval(_))
+      case CondSymExpr(test, ifTrue, otherwise) => if (eval(test)) eval(ifTrue) else otherwise.fold("0")(eval(_))
 
       case Concat(left, right) => eval(left) + eval(right)
 
