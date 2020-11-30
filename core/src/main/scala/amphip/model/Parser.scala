@@ -293,7 +293,7 @@ class Parser extends RegexParsers with PackratParsers {
       pNumExpr6
 
   lazy val pCondNumExpr: PP[NumExpr] =
-    ("if" ~> pLogicExpr <~ "then") ~ (pNumExpr6 | pNumExpr) ~ opt("else" ~> (pNumExpr6 | pNumExpr)) ^^ {
+    ("if" ~> pLogicExpr <~ "then") ~ pNumExpr6 ~ opt("else" ~> pNumExpr6) ^^ {
       case testS ~ ifTrueS ~ otherwiseS =>
         for {
           test <- testS
@@ -305,7 +305,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pNumExpr6: PP[NumExpr] =
-    pNumExpr5 ~ rep(("+" | "-" | "less") ~ (pNumExpr5 | pNumExpr)) ^^ {
+    pNumExpr5 ~ rep(("+" | "-" | "less") ~ pNumExpr5) ^^ {
       case numS ~ listP =>
         for {
           num <- numS
@@ -330,7 +330,7 @@ class Parser extends RegexParsers with PackratParsers {
       pNumExpr4
 
   lazy val pIterNumExpr: PP[NumExpr] =
-    ("sum" | "prod" | "min" | "max") ~ pIndExpr ~ (pNumExpr4 | pNumExpr) ^^ {
+    ("sum" | "prod" | "min" | "max") ~ pIndExpr ~ pNumExpr4 ^^ {
       case op ~ indexingS ~ integrandS =>
         for {
           p <- scoped(indexingS, integrandS)
@@ -348,7 +348,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pNumExpr4: PP[NumExpr] =
-    pNumExpr3 ~ rep(("*" | "/" | "div" | "mod") ~ (pNumExpr3 | pNumExpr)) ^^ {
+    pNumExpr3 ~ rep(("*" | "/" | "div" | "mod") ~ pNumExpr3) ^^ {
       case numS ~ listP =>
         for {
           num <- numS
@@ -371,7 +371,7 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pNumExpr3: PP[NumExpr] =
     pNumExpr2 |
-      ("+" | "-") ~ (pNumExpr2 | pNumExpr) ^^ {
+      ("+" | "-") ~ pNumExpr2 ^^ {
         case op ~ exprS =>
           for {
             exp <- exprS
@@ -385,7 +385,7 @@ class Parser extends RegexParsers with PackratParsers {
       }
 
   lazy val pNumExpr2: PP[NumExpr] =
-    pNumExpr1 ~ rep(("**" | "^") ~> (pNumExpr1 | pNumExpr)) ^^ {
+    pNumExpr1 ~ rep(("**" | "^") ~> pNumExpr1) ^^ {
       case numS ~ listS =>
         for {
           num <- numS
@@ -399,7 +399,8 @@ class Parser extends RegexParsers with PackratParsers {
     pNumRef |
       pNumFuncRef |
       pNumLit.map(x => ev.state(x: NumExpr)) |
-      "(" ~> pNumExpr <~ ")"
+      "(" ~> pNumExpr <~ ")" |
+      pNumExpr
 
   lazy val pNumRef: PP[NumExpr] = pSubscriptedParamRef.as[NumExpr] | pSimpleRef.as[NumExpr]
 
@@ -459,7 +460,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pSymExpr8: PP[SymExpr] =
-    pSymExpr1 ~ rep("&" ~> (pSymExpr1 | pSymExpr)) ^^ {
+    pSymExpr1 ~ rep("&" ~> pSymExpr1) ^^ {
       case symS ~ listS =>
         for {
           sym <- symS
@@ -474,7 +475,8 @@ class Parser extends RegexParsers with PackratParsers {
       pSymFuncRef |
       pStringLit.map(ev.state(_: SymExpr)) |
       pNumExpr ^^ (_.map(SymNumExpr(_): SymExpr)) |
-      "(" ~> pSymExpr <~ ")"
+      "(" ~> pSymExpr <~ ")" | 
+      pSymExpr
 
   lazy val pSymRef: PP[SymExpr] = pSubscriptedParamRef.as[SymExpr] | pSimpleRef.as[SymExpr]
 
@@ -508,12 +510,12 @@ class Parser extends RegexParsers with PackratParsers {
       pSetExpr13
 
   lazy val pCondSetExpr: PP[SetExpr] =
-    ("if" ~> pLogicExpr <~ "then") ~ (pSetExpr13 | pSetExpr) ~ ("else" ~> (pSetExpr13 | pSetExpr)) ^^ {
+    ("if" ~> pLogicExpr <~ "then") ~ pSetExpr13 ~ ("else" ~> pSetExpr13) ^^ {
       case testS ~ ifTrueS ~ otherwiseS => for { test <- testS; ifTrue <- ifTrueS; otherwise <- otherwiseS } yield CondSetExpr(test, ifTrue, otherwise): SetExpr
     }
 
   lazy val pSetExpr13: PP[SetExpr] =
-    pSetExpr12 ~ rep(("union" | "diff" | "symdiff") ~ (pSetExpr12 | pSetExpr)) ^^ {
+    pSetExpr12 ~ rep(("union" | "diff" | "symdiff") ~ pSetExpr12) ^^ {
       case setS ~ listP =>
         for {
           set <- setS
@@ -534,7 +536,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pSetExpr12: PP[SetExpr] =
-    pSetExpr11 ~ rep("inter" ~> (pSetExpr11 | pSetExpr)) ^^ {
+    pSetExpr11 ~ rep("inter" ~> pSetExpr11) ^^ {
       case setS ~ listS =>
         for {
           set <- setS
@@ -547,7 +549,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pSetExpr11: PP[SetExpr] =
-    pSetExpr10 ~ rep("cross" ~> (pSetExpr10 | pSetExpr)) ^^ {
+    pSetExpr10 ~ rep("cross" ~> pSetExpr10) ^^ {
       case setS ~ listS =>
         for {
           set <- setS
@@ -598,7 +600,8 @@ class Parser extends RegexParsers with PackratParsers {
   lazy val pSetExpr1: PP[SetExpr] =
     pSetRef.as[SetExpr] |
       pSetLit.as[SetExpr] |
-      "(" ~> pSetExpr <~ ")"
+      "(" ~> pSetExpr <~ ")" |
+       pSetExpr
 
   lazy val pSetRef: PP[SetRef] = pSubscriptedSetRef | pUnsubscriptedSetRef
 
@@ -697,7 +700,7 @@ class Parser extends RegexParsers with PackratParsers {
   // LOGIC
 
   lazy val pLogicExpr: PP[LogicExpr] =
-    pLogicExpr18 ~ rep(("or" | "||") ~> (pLogicExpr18 | pLogicExpr)) ^^ {
+    pLogicExpr18 ~ rep(("or" | "||") ~> pLogicExpr18) ^^ {
       case propS ~ listS =>
 
         for {
@@ -717,7 +720,7 @@ class Parser extends RegexParsers with PackratParsers {
     pIterLogicExpr | pLogicExpr17
 
   lazy val pIterLogicExpr: PP[LogicExpr] =
-    ("forall" | "exists") ~ pIndExpr ~ (pLogicExpr17 | pLogicExpr) ^^ {
+    ("forall" | "exists") ~ pIndExpr ~ pLogicExpr17 ^^ {
       case op ~ indexingS ~ integrandS =>
         for {
           p <- scoped(indexingS, integrandS)
@@ -733,7 +736,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pLogicExpr17: PP[LogicExpr] =
-    pLogicExpr16 ~ rep(("and" | "&&") ~> (pLogicExpr16 | pLogicExpr)) ^^ {
+    pLogicExpr16 ~ rep(("and" | "&&") ~> pLogicExpr16) ^^ {
       case propS ~ listS =>
         for {
           prop <- propS
@@ -747,8 +750,8 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pLogicExpr16: PP[LogicExpr] =
-    pLogicExpr15 |
-      ("not" | "!") ~> pLogicExpr15 ^^ (_.map(Neg(_): LogicExpr))
+    ("not" | "!") ~> pLogicExpr15 ^^ (_.map(Neg(_): LogicExpr)) |
+      pLogicExpr15
 
   lazy val pLogicExpr15: PP[LogicExpr] =
     pRelExpr |
@@ -797,7 +800,8 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pLogicExpr1: PP[LogicExpr] =
     pNumExpr.as[LogicExpr] |
-      "(" ~> pLogicExpr <~ ")"
+      "(" ~> pLogicExpr <~ ")" |
+       pLogicExpr
 
   ////
   // LINEAR
@@ -809,7 +813,7 @@ class Parser extends RegexParsers with PackratParsers {
       pLinExpr6
 
   lazy val pCondLinExpr: PP[LinExpr \/ NumExpr] =
-    ("if" ~> pLogicExpr <~ "then") ~ (pLinExpr6 | pLinExprDisj) ~ opt("else" ~> (pLinExpr6 | pLinExprDisj)) ^^ {
+    ("if" ~> pLogicExpr <~ "then") ~ pLinExpr6 ~ opt("else" ~> pLinExpr6) ^^ {
       case testS ~ ifTrueS ~ otherwiseS =>
         for {
           test <- testS
@@ -842,7 +846,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pLinExpr6: PP[LinExpr \/ NumExpr] =
-    pLinExpr5 ~ rep(wpos("+" | "-" | "less") ~ (pLinExpr5 | pLinExprDisj)) ^^ {
+    pLinExpr5 ~ rep(wpos("+" | "-" | "less") ~ pLinExpr5) ^^ {
       case numS ~ listP =>
         for {
           num <- numS
@@ -893,7 +897,7 @@ class Parser extends RegexParsers with PackratParsers {
       pLinExpr4
 
   lazy val pIterLinExpr: PP[LinExpr \/ NumExpr] =
-    ("sum" | "prod" | "min" | "max") ~ pIndExpr ~ wpos(pLinExpr4 | pLinExprDisj) ^^ {
+    ("sum" | "prod" | "min" | "max") ~ pIndExpr ~ wpos(pLinExpr4) ^^ {
       case op ~ indexingS ~ ((integrandS, pos)) =>
         for {
           p <- scoped(indexingS, integrandS)
@@ -922,7 +926,7 @@ class Parser extends RegexParsers with PackratParsers {
     }
 
   lazy val pLinExpr4: PP[LinExpr \/ NumExpr] =
-    pLinExpr3 ~ rep(wpos("*" | "/" | "div" | "mod") ~ (pLinExpr3 | pLinExprDisj)) ^^ {
+    pLinExpr3 ~ rep(wpos("*" | "/" | "div" | "mod") ~ pLinExpr3) ^^ {
       case numS ~ listP =>
         for {
           num <- numS
@@ -981,7 +985,7 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pLinExpr3: PP[LinExpr \/ NumExpr] =
     pLinExpr2 |
-      ("+" | "-") ~ (pLinExpr2 | pLinExprDisj) ^^ {
+      ("+" | "-") ~ pLinExpr2 ^^ {
         case op ~ exprS =>
           for {
             exp <- exprS
@@ -995,7 +999,7 @@ class Parser extends RegexParsers with PackratParsers {
       }
 
   lazy val pLinExpr2: PP[LinExpr \/ NumExpr] =
-    wpos(pLinExpr1) ~ rep(wpos("**" | "^") ~ (pLinExpr1 | pLinExprDisj)) ^^ {
+    wpos(pLinExpr1) ~ rep(wpos("**" | "^") ~ pLinExpr1) ^^ {
       case (numS, pos) ~ listP =>
         for {
           num <- numS
@@ -1022,7 +1026,8 @@ class Parser extends RegexParsers with PackratParsers {
     pLinRef |
       pNumFuncRef.asRight[LinExpr] |
       pNumLit.map(x => ev.state(x: NumExpr)).asRight[LinExpr] |
-      "(" ~> pLinExprDisj <~ ")"
+      "(" ~> pLinExprDisj <~ ")" | 
+      pLinExprDisj
 
   lazy val pLinRef: PP[LinExpr \/ NumExpr] = pSubscriptedLinRef | pUnsubscriptedLinRef
 
