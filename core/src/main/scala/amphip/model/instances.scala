@@ -124,6 +124,7 @@ trait SetInstances { self: NumInstances =>
 trait LogInstances {
 
   implicit def IndEntryAsIn(x: IndEntry): In = In(x.indices.map(DummyIndRef(_)), x.set)
+  // XXX add a LogicExpr literal to convert any Scala.Boolean into
 
 }
 
