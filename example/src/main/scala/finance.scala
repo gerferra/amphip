@@ -15,22 +15,21 @@ object finance {
   val T = set
   val H = param := max(t in T)(t)
 
-  val s = dummy
-  val S = set
-
   val i = dummy
   val I = set
 
+  val s = dummy
+  val S = set
+
   val G = param
   val b = param
+  val xi = param(ind(t in T, S, I) | t > 1)
   val q = param
   val r = param
 
   val p = param(S)
 
-  val xi = param(T, S, I)
-
-  val x = xvar(T, S, I) >= 0
+  val x = xvar(ind(t in T, S, I) | t < H) >= 0
   val y = xvar(S) >= 0
   val w = xvar(S) >= 0
 
@@ -41,18 +40,18 @@ object finance {
 
   val budget = 
     st(s in S) {
-      sum(i in I) { x(1, s, i) } === b
+      sum(i in I) { x(1,s,i) } === b
     }
 
   val balance =
-    st(t in (2 to H), s in S) {
-      sum(i in I) { xi(t, s, i) * x(t - 1, s, i) } === 
-      sum(i in I) { x(t, s, i) }
+    st(t in (2 to H-1), s in S) {
+      sum(i in I) { xi(t,s,i) * x(t-1,s,i) } === 
+      sum(i in I) { x(t,s,i) }
     }
 
   val goal =
     st(s in S) {
-      sum(i in I) { xi(H, s, i) * x(H - 1, s, i) } - y(s) + w(s) === G
+      sum(i in I) { xi(H,s,i) * x(H-1,s,i) } - y(s) + w(s) === G
     }
 
   val stochModel = 
