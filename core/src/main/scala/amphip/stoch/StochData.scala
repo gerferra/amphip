@@ -644,10 +644,21 @@ object StochData {
       case m: MultiStageStochModel => List(m.T(), m.S())
     }
 
+  /**
+    * Converts `p` into a deterministic parameters removing the entries 
+    * corresponding to `m.T()` and `m.S()` (if apply). 
+    * 
+    * Important:
+    * - Assumes that the sets to be removed are at the start of the entries 
+    *   list.
+    * - Removes any predicate of the indexing expression.
+    */
   def asDet(p: ParamStat, model: StochModel): ParamStat = p match {
     case ParamStat(_, _, Some(indexing), _) =>
       val newEntries = indexing.entries.drop(stochIndices(model).size)
-      p.copy(domain = indexing.copy(entries = newEntries).some)
+      p.copy(domain = indexing.copy(
+                        entries = newEntries, 
+                        predicate = None).some)
     case _ => p
   }
 }
