@@ -16,7 +16,7 @@ object ast {
   /*
    * STATEMENTS 
    */
-  sealed trait Stat extends Decl
+  trait Stat extends Decl
 
   case class SetStat(
                       name: SymName,
@@ -34,7 +34,7 @@ object ast {
                      domain: Option[IndExpr] = None,
                      atts: List[VarAtt] = Nil) extends Stat
 
-  sealed trait ConstraintStat extends Stat
+  trait ConstraintStat extends Stat
 
   case class EqConstraintStat(
                                name: SymName,
@@ -73,7 +73,7 @@ object ast {
                                  expr: LinExpr,
                                  lower: NumExpr) extends ConstraintStat
 
-  sealed trait ObjectiveStat extends Stat
+  trait ObjectiveStat extends Stat
 
   case class Minimize(
                        name: SymName,
@@ -136,13 +136,13 @@ object ast {
    */
   sealed trait Expr
 
-  sealed trait SimpleExpr extends Expr // groups NumExpr and SymExpr ...
+  trait SimpleExpr extends Expr // groups NumExpr and SymExpr ...
 
-  sealed trait SetExpr extends Expr
+  trait SetExpr extends Expr
 
-  sealed trait LogicExpr extends Expr
+  trait LogicExpr extends Expr
 
-  sealed trait LinExpr extends Expr
+  trait LinExpr extends Expr
 
   /*
    * Groups SetRef, ParamRef, VarRef, ConstraintRef, ObjectiveRef
@@ -152,9 +152,9 @@ object ast {
   /*
    * SIMPLE
    */
-  sealed trait NumExpr extends LogicExpr with SimpleExpr with LinExpr
+  trait NumExpr extends LogicExpr with SimpleExpr with LinExpr
 
-  sealed trait SymExpr extends SimpleExpr
+  trait SymExpr extends SimpleExpr
 
   /*
    * ParamStat reference with lazy semantic to allow recursive definitions.
@@ -237,7 +237,7 @@ object ast {
    * NumExpr* => NumExpr 
    * ....
    */
-  sealed trait NumFuncRef extends NumExpr
+  trait NumFuncRef extends NumExpr
 
   case class Abs(x: NumExpr) extends NumFuncRef
 
@@ -295,7 +295,7 @@ object ast {
   /*
    * XXX Same comments as NumFuncRef
    */
-  sealed trait SymFuncRef extends SymExpr
+  trait SymFuncRef extends SymExpr
 
   case class Substr(x: SymExpr, from: NumExpr, length: Option[NumExpr] = None) extends SymFuncRef
 
@@ -464,7 +464,7 @@ object ast {
   /*
    * STAT
    */
-  sealed trait RowRef extends StatRef // to group ConstraintRef and ObjectiveRef ...
+  trait RowRef extends StatRef // to group ConstraintRef and ObjectiveRef ...
   case class ConstraintRef(crt: ConstraintStat, subscript: List[SimpleExpr] = Nil) extends RowRef
   case class ObjectiveRef(obj: ObjectiveStat, subscript: List[SimpleExpr] = Nil) extends RowRef
   
