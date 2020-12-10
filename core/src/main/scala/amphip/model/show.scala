@@ -239,7 +239,7 @@ trait ShowInstances {
 
     case x: NumFuncRef => x.shows
 
-    case x: NumLit => x.num.shows
+    case NumLit(num) => num.shows
 
   }
 

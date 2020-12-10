@@ -152,7 +152,7 @@ object ast {
   /*
    * SIMPLE
    */
-  trait NumExpr extends LogicExpr with SimpleExpr with LinExpr
+  trait NumExpr extends SimpleExpr with LogicExpr with LinExpr
 
   trait SymExpr extends SimpleExpr
 
