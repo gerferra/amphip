@@ -170,7 +170,7 @@ object ast {
     lazy private val product = (param.name, subscript)
 
     override def equals(obj: Any): Boolean = obj match {
-      case that: ParamRef => this.product.equals(that.product)
+      case that: ParamRef => (that canEqual this) && this.product.equals(that.product)
       case _ => false 
     }
     override def hashCode(): Int = this.product.hashCode()
@@ -334,7 +334,7 @@ object ast {
     lazy private val product = (set.name, subscript)
 
     override def equals(obj: Any): Boolean = obj match {
-      case that: SetRef => this.product.equals(that.product)
+      case that: SetRef => (that canEqual this) && this.product.equals(that.product)
       case _ => false 
     }
     override def hashCode(): Int = this.product.hashCode()
@@ -441,7 +441,7 @@ object ast {
     lazy private val product = (xvar.name, subscript)
 
     override def equals(obj: Any): Boolean = obj match {
-      case that: VarRef => this.product.equals(that.product)
+      case that: VarRef => (that canEqual this) && this.product.equals(that.product)
       case _ => false 
     }
     override def hashCode(): Int = this.product.hashCode()
