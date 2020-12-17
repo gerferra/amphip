@@ -1,5 +1,5 @@
 # amphip
-`amphip` is a collection of experiments around working with GNU MathProg in Scala at high level.
+`amphip` is a collection of experiments around working with GNU MathProg in Scala in high level, aiming to support working with scenario-based multistage stochastic programming models.
 
 <img style="float:right" alt="Hyalella azteca" src="https://upload.wikimedia.org/wikipedia/commons/5/59/Hyalella_azteca.jpg" width="200" />
 
