@@ -1,5 +1,5 @@
 # amphip
-`amphip` is a collection of experiments around working with GNU MathProg in Scala at a high level.
+`amphip` is a collection of experiments around working with GNU MathProg in Scala at high level.
 
 <img style="float:right" alt="Hyalella azteca" src="https://upload.wikimedia.org/wikipedia/commons/5/59/Hyalella_azteca.jpg" width="200" />
 
@@ -10,6 +10,7 @@ It includes:
 * A functional parser of the MathProg language using the `scala-parser-combinators` library
 * Pretty-printing of the AST that generates the corresponding MathProg code
 * An evaluator of arbitrary MathProg expressions in the context of some model and data instance
+* An extension to the embedding to support scenario-based multistage stochastic programming
 
 I talked about the techniques used to encode MathProg syntax in this library at [Scala by the Bay 2015](http://scalabythebay2015.sched.org/event/8cbbc52523ac9e5a905361e00d357099)
 * [Video](https://www.youtube.com/watch?v=Od_AH-_XoEQ)
