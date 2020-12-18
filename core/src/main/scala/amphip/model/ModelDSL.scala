@@ -1,3 +1,3 @@
 package amphip.model
 
-trait ModelDSL extends AllInstances with AllSyntax with amphip.model.ShowInstances
+trait ModelDSL extends AllInstances with AllSyntax with ShowInstances
