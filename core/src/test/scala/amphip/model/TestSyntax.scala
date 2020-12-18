@@ -96,17 +96,17 @@ object TestSyntax {
 
   sum(I, J)(i less j).shows
 
-  cond(a > b)(1)(3)
+  xif(a > b)(1)(3)
 
-  cond1(a > b)(1)
+  xif1(a > b)(1)
 
-  cond1(a || b)(1)
-  cond(a > b)("1")(1)
+  xif1(a || b)(1)
+  xif(a > b)("1")(1)
 
-  cond1(i in I)("a")
+  xif1(i in I)("a")
 
-  cond1(a > b)("a")
-  cond(a > b)(I)(J)
+  xif1(a > b)("a")
+  xif(a > b)(I)(J)
 
   I within J
 

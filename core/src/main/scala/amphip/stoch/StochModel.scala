@@ -50,7 +50,7 @@ case class AdaptedNAMode(T: SetStat, S: SetStat) extends NAMode {
     val (t, tp) = (dummy("t"), dummy("tp"))
     val s = dummy("s")
     param("NA_anc", ind(t in T, s in ST(t), tp in T) | tp <= t) in ST(tp) :=
-      cond (tp === t) { s } { anc(t-1, pred(t,s), tp) }
+      xif (tp === t) { s } { anc(t-1, pred(t,s), tp) }
   }
 
   val H: ParamStat = {

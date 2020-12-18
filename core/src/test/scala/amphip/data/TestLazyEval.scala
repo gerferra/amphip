@@ -45,7 +45,7 @@ class TestLazyEval {
 
     val s = dummy
     val S = set := List(1, 2)
-    lazy val p: ParamStat = param(s in S) := cond(s === 1) { 1 } { p(s - 1) * 2 }
+    lazy val p: ParamStat = param(s in S) := xif(s === 1) { 1 } { p(s - 1) * 2 }
 
     checkParams(p)
   }

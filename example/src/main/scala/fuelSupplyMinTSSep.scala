@@ -167,7 +167,7 @@ object fuelSupplyMinTSSep {
 
     lazy val NA_pt: ParamStat = 
       param(ind(t in T, s in NA_S(t), tp in T) | tp <= t) in NA_S(tp) :=
-        cond (tp === t) { s } { NA_pt(t-1, NA_p(t,s), tp) }
+        xif (tp === t) { s } { NA_pt(t-1, NA_p(t,s), tp) }
 
     val NA_ptf = param(s in NA_S(H), t in T) in NA_S(t) := NA_pt(H, s, t)
 

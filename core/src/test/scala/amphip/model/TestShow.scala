@@ -139,17 +139,17 @@ class TestShow {
 
     assertEquals("(max{i in S} alpha[i])", max(i in S)(alpha(i)).shows)
 
-    assertEquals(cond(i in I) { 2 } { q(i) },
+    assertEquals(xif(i in I) { 2 } { q(i) },
       CondNumExpr(
         In(List(i), I),
         NumLit(2),
         q(i).some))
 
-    assertEquals("(if (i in I) then 2 else q[i])", cond(i in I) { 2 } { q(i) }.shows)
+    assertEquals("(if (i in I) then 2 else q[i])", xif(i in I) { 2 } { q(i) }.shows)
 
-    assertEquals(cond1(i in I) { 2 }, CondNumExpr(In(List(i), I), NumLit(2)))
+    assertEquals(xif1(i in I) { 2 }, CondNumExpr(In(List(i), I), NumLit(2)))
 
-    assertEquals("(if (i in I) then 2)", cond1(i in I) { 2 }.shows)
+    assertEquals("(if (i in I) then 2)", xif1(i in I) { 2 }.shows)
 
     assertEquals((2 ** (3 ** (4 ** 5))), NumRaise(NumLit(2), NumRaise(NumLit(3), NumRaise(NumLit(4), NumLit(5)))))
 
@@ -230,7 +230,7 @@ class TestShow {
     assertEquals(3 in I, In(List(num(3)), I))
 
     assertEquals(
-      cond(-a > 2) {
+      xif(-a > 2) {
         sum { i in I }(a(i)) + 8
       } {
         max { i in I }(a(i)) + 9
@@ -245,7 +245,7 @@ class TestShow {
           NumLit(9)).some))
 
     assertEquals("(if ((-a) > 2) then ((sum{i in I} a[i]) + 8) else ((max{i in I} a[i]) + 9))",
-      cond(-a > 2) { sum(i in I)(a(i)) + 8 } { max(i in I)(a(i)) + 9 }.shows)
+      xif(-a > 2) { sum(i in I)(a(i)) + 8 } { max(i in I)(a(i)) + 9 }.shows)
 
     assertEquals("(if ((-a) > 2) then (if ((+b) < -8) then 10 else 20) else (if ((+b) >= -8) then 30 else 40))",
       (CondNumExpr(

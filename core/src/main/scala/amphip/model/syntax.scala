@@ -210,9 +210,9 @@ trait AllSyntax {
     def symbolic(implicit SymbolicOp: SymbolicOp[A]): A = SymbolicOp.symbolic(a)
   }
 
-  def cond[A, B, C](test: LogicExpr)(ifTrue: A)(otherwise: B)(implicit CondOp: CondOp[LogicExpr, A, B, C]): C = CondOp.cond(test)(ifTrue)(otherwise)
+  def xif[A, B, C](test: LogicExpr)(ifTrue: A)(otherwise: B)(implicit CondOp: CondOp[LogicExpr, A, B, C]): C = CondOp.cond(test)(ifTrue)(otherwise)
 
-  def cond1[A, B](test: LogicExpr)(ifTrue: A)(implicit Cond1Op: Cond1Op[LogicExpr, A, B]): B = Cond1Op.cond1(test)(ifTrue)
+  def xif1[A, B](test: LogicExpr)(ifTrue: A)(implicit Cond1Op: Cond1Op[LogicExpr, A, B]): B = Cond1Op.cond1(test)(ifTrue)
 
   implicit class AddSyntax[A](lhe: A) {
     def +[B, C](rhe: B)(implicit AddOp: AddOp[A, B, C]): C = AddOp.add(lhe, rhe)
