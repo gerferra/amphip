@@ -2,7 +2,7 @@ package amphip.model
 
 object ast {
 
-  case class Model(statements: List[Stat])
+  final case class Model(statements: List[Stat])
 
   /*
    * DECLARATIONS
@@ -11,53 +11,53 @@ object ast {
     def name: SymName
   }
 
-  case class DummyIndDecl(name: SymName, synthetic: Boolean = false) extends Decl
+  final case class DummyIndDecl(name: SymName, synthetic: Boolean = false) extends Decl
 
   /*
    * STATEMENTS 
    */
-  trait Stat extends Decl
+  sealed trait Stat extends Decl
 
-  case class SetStat(
+  final case class SetStat(
                       name: SymName,
                       alias: Option[StringLit] = None,
                       domain: Option[IndExpr] = None,
                       atts: List[SetAtt] = Nil) extends Stat
 
-  case class ParamStat(name: SymName,
+  final case class ParamStat(name: SymName,
                        alias: Option[StringLit] = None,
                        domain: Option[IndExpr] = None,
                        atts: List[ParamAtt] = Nil) extends Stat
 
-  case class VarStat(name: SymName,
+  final case class VarStat(name: SymName,
                      alias: Option[StringLit] = None,
                      domain: Option[IndExpr] = None,
                      atts: List[VarAtt] = Nil) extends Stat
 
-  trait ConstraintStat extends Stat
+  sealed trait ConstraintStat extends Stat
 
-  case class EqConstraintStat(
+  final case class EqConstraintStat(
                                name: SymName,
                                alias: Option[StringLit] = None,
                                domain: Option[IndExpr] = None,
                                left: LinExpr,
                                right: LinExpr) extends ConstraintStat
 
-  case class LTEConstraintStat(
+  final case class LTEConstraintStat(
                                 name: SymName,
                                 alias: Option[StringLit] = None,
                                 domain: Option[IndExpr] = None,
                                 left: LinExpr,
                                 right: LinExpr) extends ConstraintStat
 
-  case class GTEConstraintStat(
+  final case class GTEConstraintStat(
                                 name: SymName,
                                 alias: Option[StringLit] = None,
                                 domain: Option[IndExpr] = None,
                                 left: LinExpr,
                                 right: LinExpr) extends ConstraintStat
 
-  case class DLTEConstraintStat(
+  final case class DLTEConstraintStat(
                                  name: SymName,
                                  alias: Option[StringLit] = None,
                                  domain: Option[IndExpr] = None,
@@ -65,7 +65,7 @@ object ast {
                                  expr: LinExpr,
                                  upper: NumExpr) extends ConstraintStat
 
-  case class DGTEConstraintStat(
+  final case class DGTEConstraintStat(
                                  name: SymName,
                                  alias: Option[StringLit] = None,
                                  domain: Option[IndExpr] = None,
@@ -73,15 +73,15 @@ object ast {
                                  expr: LinExpr,
                                  lower: NumExpr) extends ConstraintStat
 
-  trait ObjectiveStat extends Stat
+  sealed trait ObjectiveStat extends Stat
 
-  case class Minimize(
+  final case class Minimize(
                        name: SymName,
                        alias: Option[StringLit] = None,
                        domain: Option[IndExpr] = None,
                        expr: LinExpr) extends ObjectiveStat
 
-  case class Maximize(
+  final case class Maximize(
                        name: SymName,
                        alias: Option[StringLit] = None,
                        domain: Option[IndExpr] = None,
@@ -89,41 +89,41 @@ object ast {
 
   sealed trait SetAtt
 
-  case class SetDimen(expr: Int) extends SetAtt
+  final case class SetDimen(expr: Int) extends SetAtt
 
-  case class SetWithin(expr: SetExpr) extends SetAtt
+  final case class SetWithin(expr: SetExpr) extends SetAtt
 
-  case class SetAssign(expr: SetExpr) extends SetAtt
+  final case class SetAssign(expr: SetExpr) extends SetAtt
 
-  case class SetDefault(expr: SetExpr) extends SetAtt
+  final case class SetDefault(expr: SetExpr) extends SetAtt
 
   sealed trait ParamAtt
 
-  case class ParamLT(expr: SimpleExpr) extends ParamAtt
+  final case class ParamLT(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamLTE(expr: SimpleExpr) extends ParamAtt
+  final case class ParamLTE(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamEq(expr: SimpleExpr) extends ParamAtt
+  final case class ParamEq(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamNEq(expr: SimpleExpr) extends ParamAtt
+  final case class ParamNEq(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamGT(expr: SimpleExpr) extends ParamAtt
+  final case class ParamGT(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamGTE(expr: SimpleExpr) extends ParamAtt
+  final case class ParamGTE(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamIn(expr: SetExpr) extends ParamAtt
+  final case class ParamIn(expr: SetExpr) extends ParamAtt
 
-  case class ParamAssign(expr: SimpleExpr) extends ParamAtt
+  final case class ParamAssign(expr: SimpleExpr) extends ParamAtt
 
-  case class ParamDefault(expr: SimpleExpr) extends ParamAtt
+  final case class ParamDefault(expr: SimpleExpr) extends ParamAtt
 
   sealed trait VarAtt
 
-  case class VarGTE(expr: NumExpr) extends VarAtt
+  final case class VarGTE(expr: NumExpr) extends VarAtt
 
-  case class VarLTE(expr: NumExpr) extends VarAtt
+  final case class VarLTE(expr: NumExpr) extends VarAtt
 
-  case class VarEq(expr: NumExpr) extends VarAtt
+  final case class VarEq(expr: NumExpr) extends VarAtt
 
   case object Integer extends ParamAtt with VarAtt
 
@@ -136,13 +136,13 @@ object ast {
    */
   sealed trait Expr
 
-  trait SimpleExpr extends Expr // groups NumExpr and SymExpr ...
+  sealed trait SimpleExpr extends Expr // groups NumExpr and SymExpr ...
 
-  trait SetExpr extends Expr
+  sealed trait SetExpr extends Expr
 
-  trait LogicExpr extends Expr
+  sealed trait LogicExpr extends Expr
 
-  trait LinExpr extends Expr
+  sealed trait LinExpr extends Expr
 
   /*
    * Groups SetRef, ParamRef, VarRef, ConstraintRef, ObjectiveRef
@@ -152,16 +152,16 @@ object ast {
   /*
    * SIMPLE
    */
-  trait NumExpr extends SimpleExpr with LogicExpr with LinExpr
+  sealed trait NumExpr extends SimpleExpr with LogicExpr with LinExpr
 
-  trait SymExpr extends SimpleExpr
+  sealed trait SymExpr extends SimpleExpr
 
   /*
    * ParamStat reference with lazy semantic to allow recursive definitions.
    * Overrides `hashCode`, `equals` and `Product` methods to only consider the 
    * name of the ParamStat and avoid infinite loops.
    */
-  class ParamRef(paramThunk: () => ParamStat, val subscript: List[SimpleExpr] = Nil) extends NumExpr with SymExpr with StatRef with Product with Serializable {
+  final class ParamRef(paramThunk: () => ParamStat, val subscript: List[SimpleExpr] = Nil) extends NumExpr with SymExpr with StatRef with Product with Serializable {
     lazy val param: ParamStat = paramThunk()
 
     def copy(paramThunk: () => ParamStat = paramThunk, subscript: List[SimpleExpr] = subscript) = 
@@ -190,42 +190,42 @@ object ast {
       Some((x.param, x.subscript))
   } 
 
-  case class DummyIndRef(dummyInd: DummyIndDecl) extends NumExpr with SymExpr
+  final case class DummyIndRef(dummyInd: DummyIndDecl) extends NumExpr with SymExpr
 
   /*
    * NUMERIC
    */
-  case class CondNumExpr(test: LogicExpr, ifTrue: NumExpr, otherwise: Option[NumExpr] = None) extends NumExpr
+  final case class CondNumExpr(test: LogicExpr, ifTrue: NumExpr, otherwise: Option[NumExpr] = None) extends NumExpr
 
-  case class NumAdd(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumAdd(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumSub(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumSub(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumLess(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumLess(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumSum(indexing: IndExpr, integrand: NumExpr) extends NumExpr
+  final case class NumSum(indexing: IndExpr, integrand: NumExpr) extends NumExpr
 
-  case class NumProd(indexing: IndExpr, integrand: NumExpr) extends NumExpr
+  final case class NumProd(indexing: IndExpr, integrand: NumExpr) extends NumExpr
 
-  case class NumMax(indexing: IndExpr, integrand: NumExpr) extends NumExpr
+  final case class NumMax(indexing: IndExpr, integrand: NumExpr) extends NumExpr
 
-  case class NumMin(indexing: IndExpr, integrand: NumExpr) extends NumExpr
+  final case class NumMin(indexing: IndExpr, integrand: NumExpr) extends NumExpr
 
-  case class NumMult(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumMult(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumDiv(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumDiv(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumDivExact(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumDivExact(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumMod(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumMod(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumUnaryPlus(x: NumExpr) extends NumExpr
+  final case class NumUnaryPlus(x: NumExpr) extends NumExpr
 
-  case class NumUnaryMinus(x: NumExpr) extends NumExpr
+  final case class NumUnaryMinus(x: NumExpr) extends NumExpr
 
-  case class NumRaise(left: NumExpr, right: NumExpr) extends NumExpr
+  final case class NumRaise(left: NumExpr, right: NumExpr) extends NumExpr
 
-  case class NumLit(num: BigDecimal) extends NumExpr
+  final case class NumLit(num: BigDecimal) extends NumExpr
 
   /*
    * XXX handle functions just by their "shapes"?
@@ -237,95 +237,95 @@ object ast {
    * NumExpr* => NumExpr 
    * ....
    */
-  trait NumFuncRef extends NumExpr
+  sealed trait NumFuncRef extends NumExpr
 
-  case class Abs(x: NumExpr) extends NumFuncRef
+  final case class Abs(x: NumExpr) extends NumFuncRef
 
-  case class Atan(x: NumExpr) extends NumFuncRef
+  final case class Atan(x: NumExpr) extends NumFuncRef
 
-  case class Atan2(y: NumExpr, x: NumExpr) extends NumFuncRef
+  final case class Atan2(y: NumExpr, x: NumExpr) extends NumFuncRef
 
-  case class Card(x: SetExpr) extends NumFuncRef
+  final case class Card(x: SetExpr) extends NumFuncRef
 
-  case class Ceil(x: NumExpr) extends NumFuncRef
+  final case class Ceil(x: NumExpr) extends NumFuncRef
 
-  case class Cos(x: NumExpr) extends NumFuncRef
+  final case class Cos(x: NumExpr) extends NumFuncRef
 
-  case class Exp(x: NumExpr) extends NumFuncRef
+  final case class Exp(x: NumExpr) extends NumFuncRef
 
-  case class Floor(x: NumExpr) extends NumFuncRef
+  final case class Floor(x: NumExpr) extends NumFuncRef
 
-  case class Gmtime() extends NumFuncRef
+  final case class Gmtime() extends NumFuncRef
 
-  case class Length(x: SymExpr) extends NumFuncRef
+  final case class Length(x: SymExpr) extends NumFuncRef
 
-  case class Log(x: NumExpr) extends NumFuncRef
+  final case class Log(x: NumExpr) extends NumFuncRef
 
-  case class Log10(x: NumExpr) extends NumFuncRef
+  final case class Log10(x: NumExpr) extends NumFuncRef
 
-  case class Max(x: NumExpr*) extends NumFuncRef
+  final case class Max(x: NumExpr*) extends NumFuncRef
 
-  case class Min(x: NumExpr*) extends NumFuncRef
+  final case class Min(x: NumExpr*) extends NumFuncRef
 
-  case class Round(x: NumExpr, n: Option[NumExpr] = None) extends NumFuncRef
+  final case class Round(x: NumExpr, n: Option[NumExpr] = None) extends NumFuncRef
 
-  case class Sin(x: NumExpr) extends NumFuncRef
+  final case class Sin(x: NumExpr) extends NumFuncRef
 
-  case class Sqrt(x: NumExpr) extends NumFuncRef
+  final case class Sqrt(x: NumExpr) extends NumFuncRef
 
-  case class Str2time(s: SymExpr, f: SymExpr) extends NumFuncRef
+  final case class Str2time(s: SymExpr, f: SymExpr) extends NumFuncRef
 
-  case class Trunc(x: NumExpr, n: Option[NumExpr] = None) extends NumFuncRef
+  final case class Trunc(x: NumExpr, n: Option[NumExpr] = None) extends NumFuncRef
 
-  case class Irand224() extends NumFuncRef
+  final case class Irand224() extends NumFuncRef
 
-  case class Uniform01() extends NumFuncRef
+  final case class Uniform01() extends NumFuncRef
 
   /*
    * SYMBOLIC
    */
-  case class CondSymExpr(test: LogicExpr, ifTrue: SymExpr, otherwise: Option[SymExpr] = None) extends SymExpr
+  final case class CondSymExpr(test: LogicExpr, ifTrue: SymExpr, otherwise: Option[SymExpr] = None) extends SymExpr
 
-  case class Concat(left: SymExpr, right: SymExpr) extends SymExpr
+  final case class Concat(left: SymExpr, right: SymExpr) extends SymExpr
 
-  case class StringLit(str: String) extends SymExpr
+  final case class StringLit(str: String) extends SymExpr
 
-  case class SymNumExpr(numExpr: NumExpr) extends SymExpr
+  final case class SymNumExpr(numExpr: NumExpr) extends SymExpr
 
   /*
    * XXX Same comments as NumFuncRef
    */
-  trait SymFuncRef extends SymExpr
+  sealed trait SymFuncRef extends SymExpr
 
-  case class Substr(x: SymExpr, from: NumExpr, length: Option[NumExpr] = None) extends SymFuncRef
+  final case class Substr(x: SymExpr, from: NumExpr, length: Option[NumExpr] = None) extends SymFuncRef
 
-  case class Time2str(t: NumExpr, f: SymExpr) extends SymFuncRef
+  final case class Time2str(t: NumExpr, f: SymExpr) extends SymFuncRef
 
   /*
    * SET
    */
-  case class CondSetExpr(test: LogicExpr, ifTrue: SetExpr, otherwise: SetExpr) extends SetExpr
+  final case class CondSetExpr(test: LogicExpr, ifTrue: SetExpr, otherwise: SetExpr) extends SetExpr
 
-  case class Union(left: SetExpr, right: SetExpr) extends SetExpr
+  final case class Union(left: SetExpr, right: SetExpr) extends SetExpr
 
-  case class Diff(left: SetExpr, right: SetExpr) extends SetExpr
+  final case class Diff(left: SetExpr, right: SetExpr) extends SetExpr
 
-  case class SymDiff(left: SetExpr, right: SetExpr) extends SetExpr
+  final case class SymDiff(left: SetExpr, right: SetExpr) extends SetExpr
 
-  case class Inter(left: SetExpr, right: SetExpr) extends SetExpr
+  final case class Inter(left: SetExpr, right: SetExpr) extends SetExpr
 
-  case class Cross(left: SetExpr, right: SetExpr) extends SetExpr
+  final case class Cross(left: SetExpr, right: SetExpr) extends SetExpr
 
-  case class SetOf(indexing: IndExpr, integrand: List[SimpleExpr]) extends SetExpr
+  final case class SetOf(indexing: IndExpr, integrand: List[SimpleExpr]) extends SetExpr
 
-  case class ArithSet(t0: NumExpr, tf: NumExpr, deltaT: Option[NumExpr] = None) extends SetExpr
+  final case class ArithSet(t0: NumExpr, tf: NumExpr, deltaT: Option[NumExpr] = None) extends SetExpr
 
   /*
    * SetStat reference with lazy semantic to allow recursive definitions.
    * Overrides `hashCode`, `equals` and `Product` methods to only consider the 
    * name of the SetStat and avoid infinite loops.
    */
-  class SetRef(setThunk: () => SetStat, val subscript: List[SimpleExpr] = Nil) extends SetExpr with StatRef with Product with Serializable {
+  final class SetRef(setThunk: () => SetStat, val subscript: List[SimpleExpr] = Nil) extends SetExpr with StatRef with Product with Serializable {
     lazy val set: SetStat = setThunk()
 
     def copy(setThunk: () => SetStat = setThunk, subscript: List[SimpleExpr] = subscript) = 
@@ -354,16 +354,16 @@ object ast {
       Some((x.set, x.subscript))
   } 
 
-  case class SetLit(values: Tuple*) extends SetExpr
+  final case class SetLit(values: Tuple*) extends SetExpr
 
   /*
    * INDEXING
    */
-  case class IndExpr(entries: List[IndEntry], predicate: Option[LogicExpr] = None)
+  final case class IndExpr(entries: List[IndEntry], predicate: Option[LogicExpr] = None)
 
-  case class IndExprSet(indexing: IndExpr) extends SetExpr
+  final case class IndExprSet(indexing: IndExpr) extends SetExpr
 
-  case class IndEntry(indices: List[DummyIndDecl], set: SetExpr, predicate: Option[LogicExpr] = None)
+  final case class IndEntry(indices: List[DummyIndDecl], set: SetExpr, predicate: Option[LogicExpr] = None)
 
   object IndEntry {
     def extract(predicate: LogicExpr): Map[DummyIndDecl, SimpleExpr] = predicate match {
@@ -376,63 +376,63 @@ object ast {
   /*
    * LOGIC
    */
-  case class Disj(left: LogicExpr, right: LogicExpr) extends LogicExpr
+  final case class Disj(left: LogicExpr, right: LogicExpr) extends LogicExpr
 
-  case class Forall(indexing: IndExpr, integrand: LogicExpr) extends LogicExpr
+  final case class Forall(indexing: IndExpr, integrand: LogicExpr) extends LogicExpr
 
-  case class Exists(indexing: IndExpr, integrand: LogicExpr) extends LogicExpr
+  final case class Exists(indexing: IndExpr, integrand: LogicExpr) extends LogicExpr
 
-  case class Conj(left: LogicExpr, right: LogicExpr) extends LogicExpr
+  final case class Conj(left: LogicExpr, right: LogicExpr) extends LogicExpr
 
-  case class Neg(x: LogicExpr) extends LogicExpr
+  final case class Neg(x: LogicExpr) extends LogicExpr
 
-  case class LT(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
+  final case class LT(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
 
-  case class LTE(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
+  final case class LTE(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
 
-  case class GT(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
+  final case class GT(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
 
-  case class GTE(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
+  final case class GTE(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
 
-  case class Eq(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
+  final case class Eq(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
 
-  case class NEq(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
+  final case class NEq(left: SimpleExpr, right: SimpleExpr) extends LogicExpr
 
-  case class In(values: List[SimpleExpr], set: SetExpr) extends LogicExpr
+  final case class In(values: List[SimpleExpr], set: SetExpr) extends LogicExpr
 
-  case class NotIn(values: List[SimpleExpr], set: SetExpr) extends LogicExpr
+  final case class NotIn(values: List[SimpleExpr], set: SetExpr) extends LogicExpr
 
-  case class Within(left: SetExpr, right: SetExpr) extends LogicExpr
+  final case class Within(left: SetExpr, right: SetExpr) extends LogicExpr
 
-  case class NotWithin(left: SetExpr, right: SetExpr) extends LogicExpr
+  final case class NotWithin(left: SetExpr, right: SetExpr) extends LogicExpr
 
   /*
    * LINEAR
    */
-  case class CondLinExpr(test: LogicExpr, ifTrue: LinExpr, otherwise: Option[LinExpr] = None) extends LinExpr
+  final case class CondLinExpr(test: LogicExpr, ifTrue: LinExpr, otherwise: Option[LinExpr] = None) extends LinExpr
 
-  case class LinAdd(left: LinExpr, right: LinExpr) extends LinExpr
+  final case class LinAdd(left: LinExpr, right: LinExpr) extends LinExpr
 
-  case class LinSub(left: LinExpr, right: LinExpr) extends LinExpr
+  final case class LinSub(left: LinExpr, right: LinExpr) extends LinExpr
 
-  case class LinSum(indexing: IndExpr, integrand: LinExpr) extends LinExpr
+  final case class LinSum(indexing: IndExpr, integrand: LinExpr) extends LinExpr
   // XXX artificial construct to handle more easily this case when interpreting the model
-  case class LinSumExp(summands: List[LinExpr]) extends LinExpr
+  final case class LinSumExp(summands: List[LinExpr]) extends LinExpr
 
-  case class LinMult(left: NumExpr, right: LinExpr) extends LinExpr
+  final case class LinMult(left: NumExpr, right: LinExpr) extends LinExpr
 
-  case class LinDiv(left: LinExpr, right: NumExpr) extends LinExpr
+  final case class LinDiv(left: LinExpr, right: NumExpr) extends LinExpr
 
-  case class LinUnaryPlus(x: LinExpr) extends LinExpr
+  final case class LinUnaryPlus(x: LinExpr) extends LinExpr
 
-  case class LinUnaryMinus(x: LinExpr) extends LinExpr
+  final case class LinUnaryMinus(x: LinExpr) extends LinExpr
 
   /*
    * VarStat reference with lazy semantic to allow recursive definitions.
    * Overrides `hashCode`, `equals` and `Product` methods to only consider the 
    * name of the VarStat and avoid infinite loops.
    */
-  class VarRef(varThunk: () => VarStat, val subscript: List[SimpleExpr] = Nil) extends LinExpr with StatRef with Product with Serializable {
+  final class VarRef(varThunk: () => VarStat, val subscript: List[SimpleExpr] = Nil) extends LinExpr with StatRef with Product with Serializable {
     lazy val xvar: VarStat = varThunk()
 
     def copy(varThunk: () => VarStat = varThunk, subscript: List[SimpleExpr] = subscript) = 
@@ -464,9 +464,9 @@ object ast {
   /*
    * STAT
    */
-  trait RowRef extends StatRef // to group ConstraintRef and ObjectiveRef ...
-  case class ConstraintRef(crt: ConstraintStat, subscript: List[SimpleExpr] = Nil) extends RowRef
-  case class ObjectiveRef(obj: ObjectiveStat, subscript: List[SimpleExpr] = Nil) extends RowRef
+  sealed trait RowRef extends StatRef // to group ConstraintRef and ObjectiveRef ...
+  final case class ConstraintRef(crt: ConstraintStat, subscript: List[SimpleExpr] = Nil) extends RowRef
+  final case class ObjectiveRef(obj: ObjectiveStat, subscript: List[SimpleExpr] = Nil) extends RowRef
   
 
 
