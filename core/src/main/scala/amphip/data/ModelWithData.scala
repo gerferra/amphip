@@ -22,7 +22,7 @@ case class ModelData(
     varsExpansion  : Expansion[VarStat]   = LinkedMap.empty) {
 
   def plusParam(k: DataKey, d: SimpleData)   : ModelData = copy(params = params + (k -> d))
-  def plusSet  (k: DataKey, d: List[SetData]): ModelData = copy(sets   = sets   + (k -> d))
+  def plusSet  (k: DataKey, d: List[SetTuple]): ModelData = copy(sets   = sets   + (k -> d))
 
   def plusParams(d: ParamStatData): ModelData = copy(params = params ++ d)
   def plusSets  (d: SetStatData)  : ModelData = copy(sets   = sets   ++ d)
@@ -49,7 +49,7 @@ case class ModelData(
 }
 
 object ModelData {
-  type SetStatData   = LinkedMap[DataKey, List[SetData]]
+  type SetStatData   = LinkedMap[DataKey, List[SetTuple]]
   type ParamStatData = LinkedMap[DataKey, SimpleData]
 
   type IndexingData = List[LinkedMap[DataKey, SimpleData]]
@@ -98,4 +98,4 @@ object SimpleData {
 }
 
 // wraps a list representing a tuple
-case class SetData(values: List[SimpleData])
+case class SetTuple(values: List[SimpleData])

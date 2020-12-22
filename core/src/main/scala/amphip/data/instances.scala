@@ -113,29 +113,29 @@ trait SetDataInstances {
 
   private[this] val key = DataKey
 
-  implicit def SimpleDataAsSetData[A](x: A)(implicit conv: A => SimpleData): SetData = SetData(List(x))
+  implicit def SimpleDataAsSetData[A](x: A)(implicit conv: A => SimpleData): SetTuple = SetTuple(List(x))
 
   implicit def IterableSimpleDataAsSetData[A](x: Iterable[A])(
-    implicit conv: A => SimpleData): SetData = SetData(x.map(conv).toList)
+    implicit conv: A => SimpleData): SetTuple = SetTuple(x.map(conv).toList)
 
   implicit def IterableSetDataAsListSetData[A](x: Iterable[A])(
-    implicit conv: A => SetData): List[SetData] = x.map(conv).toList
+    implicit conv: A => SetTuple): List[SetTuple] = x.map(conv).toList
 
   implicit def TupleAsTupleListSetData[A, B](t: (A, B))(
     implicit convA: A => List[SimpleData],
-    convB: B => List[SetData]): (List[SimpleData], List[SetData]) = convA(t._1) -> convB(t._2)
+    convB: B => List[SetTuple]): (List[SimpleData], List[SetTuple]) = convA(t._1) -> convB(t._2)
     
   implicit def TupleAsTupleListSetData1[A, B](t: (A, B))(
     implicit convA: A => SimpleData,
-    convB: B => List[SetData]): (List[SimpleData], List[SetData]) = List(convA(t._1)) -> convB(t._2)
+    convB: B => List[SetTuple]): (List[SimpleData], List[SetTuple]) = List(convA(t._1)) -> convB(t._2)
 
   implicit def IterableAsListTupleListSetData[A](xs: Iterable[A])(
-    implicit conv: A => (List[SimpleData], List[SetData])): List[(List[SimpleData], List[SetData])] =
+    implicit conv: A => (List[SimpleData], List[SetTuple])): List[(List[SimpleData], List[SetTuple])] =
     xs.map(TupleAsTupleListSetData(_)).toList
 
   implicit def SetStatExtensiveDataOp[A, B](
     implicit convA: A => SetStat,
-    convB: B => List[SetData]): DataOp[A, B] = new DataOp[A, B] {
+    convB: B => List[SetTuple]): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => values match {
@@ -149,7 +149,7 @@ trait SetDataInstances {
             } yield {
               val subscript = localData.values.toList
               val k = key(decl.name, subscript)
-              k -> localValues.map(x => x: SetData)
+              k -> localValues.map(x => x: SetTuple)
             }
 
           ModelData(sets = LinkedMap(pairs: _*))
@@ -159,13 +159,13 @@ trait SetDataInstances {
 
   implicit def SetStatExtensiveDataListOp[A, B](
     implicit convA: A => SetStat,
-    convB: B => List[List[SetData]]): DataOp[A, B] = new DataOp[A, B] {
+    convB: B => List[List[SetTuple]]): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData =
-      SetStatExtensiveDataOp[SetStat, List[SetData]].data(decl, values.flatten)
+      SetStatExtensiveDataOp[SetStat, List[SetTuple]].data(decl, values.flatten)
   }
 
   implicit def SetStatIndexedDataOp[A, B](implicit convA: A => SetStat,
-                                                   convB: B => (List[SimpleData], List[SetData])): DataOp[A, B] = new DataOp[A, B] {
+                                                   convB: B => (List[SimpleData], List[SetTuple])): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => ModelData()
@@ -180,7 +180,7 @@ trait SetDataInstances {
   }
   
   implicit def SetStatIndexedDataOp1[A, B](implicit convA: A => SetStat,
-                                                    convB: B => (SimpleData, List[SetData])): DataOp[A, B] = new DataOp[A, B] {
+                                                    convB: B => (SimpleData, List[SetTuple])): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData = {
       decl.domain match {
         case None => ModelData()
@@ -196,9 +196,9 @@ trait SetDataInstances {
 
   implicit def SetStatIndexedDataListOp[A, B](
     implicit convA: A => SetStat,
-    convB: B => List[(List[SimpleData], List[SetData])]): DataOp[A, B] = new DataOp[A, B] {
+    convB: B => List[(List[SimpleData], List[SetTuple])]): DataOp[A, B] = new DataOp[A, B] {
     def data(decl: A, values: List[B])(implicit modelData: ModelData): ModelData =
-      SetStatIndexedDataOp[SetStat, (List[SimpleData], List[SetData])].data(decl, values.flatten)
+      SetStatIndexedDataOp[SetStat, (List[SimpleData], List[SetTuple])].data(decl, values.flatten)
   }
 }
 

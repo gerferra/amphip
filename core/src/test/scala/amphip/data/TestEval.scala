@@ -34,11 +34,11 @@ class TestEval {
     assertEquals(eval(pAssg()), 3: SimpleData)
     assertEquals(eval(pAssg(), modelData.plusParam(key("p"), 1)), 3: SimpleData)
 
-    assertEquals(eval(S(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetData](1, 2, 3))
-    assertEquals(eval(SDef()), List[SetData](2, 3, 4))
-    assertEquals(eval(SDef(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetData](1, 2, 3))
-    assertEquals(eval(SAssg()), List[SetData](3, 4, 5))
-    assertEquals(eval(SAssg(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetData](3, 4, 5))
+    assertEquals(eval(S(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetTuple](1, 2, 3))
+    assertEquals(eval(SDef()), List[SetTuple](2, 3, 4))
+    assertEquals(eval(SDef(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetTuple](1, 2, 3))
+    assertEquals(eval(SAssg()), List[SetTuple](3, 4, 5))
+    assertEquals(eval(SAssg(), modelData.plusSet(key("S"), List(1, 2, 3))), List[SetTuple](3, 4, 5))
 
     // default sets
 
@@ -137,7 +137,7 @@ class TestEval {
         key("b", 5) -> 11)
 
     val indSetData =
-      LinkedMap[DataKey, List[SetData]](
+      LinkedMap[DataKey, List[SetTuple]](
         key("I", 3) -> List(3, 4, 5),
         key("I", 4) -> List(4, 5, 6),
         key("I", 5) -> List(5, 6, 7),
