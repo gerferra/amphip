@@ -43,11 +43,8 @@ object eval {
 
   private val PFSetAssing: PartialFunction[SetAtt, List[SetData]] = { 
     case SetAssign(SetLit(values @ _*)) =>  
-        values.toList.map {
-          case Nil                   => SetTuple(Nil)
-          case NumLit   (num) :: Nil => SetVal(SimpleNum(num))
-          case StringLit(str) :: Nil => SetVal(SimpleStr(str))
-          case l => SetTuple(l.collect {
+        values.toList.map { l => 
+          SetData(l.collect {
             case NumLit   (num) => SimpleNum(num)
             case StringLit(str) => SimpleStr(str)
           })
@@ -56,11 +53,8 @@ object eval {
   
   private val PFSetDefault: PartialFunction[SetAtt, List[SetData]] = { 
     case SetDefault(SetLit(values @ _*)) =>  
-        values.toList.map {
-          case Nil                   => SetTuple(Nil)
-          case NumLit   (num) :: Nil => SetVal(SimpleNum(num))
-          case StringLit(str) :: Nil => SetVal(SimpleStr(str))
-          case l => SetTuple(l.collect {
+        values.toList.map { l => 
+          SetData(l.collect {
             case NumLit   (num) => SimpleNum(num)
             case StringLit(str) => SimpleStr(str)
           })
@@ -550,13 +544,7 @@ object eval {
           x <- eval(left)
           y <- eval(right)
         } yield {
-          (x, y) match {
-            case (SetVal(x), SetVal(y)) => SetTuple(List(x, y))
-            case (SetVal(x), SetTuple(y)) => SetTuple(x :: y)
-            case (SetTuple(x), SetVal(y)) => SetTuple(x ::: List(y))
-            case (SetTuple(x), SetTuple(y)) => SetTuple(x ::: y)
-          }
-
+          SetData(x.values ::: y.values)
         }
 
       case SetOf(indexing, integrand) => eval(indexing -> integrand)
@@ -566,23 +554,15 @@ object eval {
         val tfVal = eval(tf)
         val deltaTVal = deltaT.fold[BigDecimal](1)(eval(_))
 
-        (t0Val to tfVal by deltaTVal).map(x => SetVal(SimpleNum(x))).toList
+        (t0Val to tfVal by deltaTVal).map(x => SetData(List(SimpleNum(x)))).toList
 
       case x: SetRef => eval(x)
 
       case SetLit(values @ _*) =>
-        values.toList.map {
-          case Nil => SetTuple(Nil)
-          case x :: Nil => SetVal(eval(x))
-          case l => SetTuple(eval(l))
-        }
+        values.toList.map(l => SetData(eval(l)))
 
       case IndExprSet(indexing) =>
-        eval(indexing).map(_.values.toList).map {
-          case Nil => SetTuple(Nil)
-          case x :: Nil => SetVal(x)
-          case l => SetTuple(l)
-        }
+        eval(indexing).map(_.values.toList).map(SetData(_))
     })
 
   implicit val SetRefEval: Eval[SetRef, List[SetData]] = from(implicit modelData => {
@@ -628,11 +608,9 @@ object eval {
 
         def localData(indices: List[DummyIndDecl], setD: SetData): LinkedMap[DataKey, SimpleData] =
           (indices, setD) match {
-            case (Nil, SetTuple(Nil)) => LinkedMap.empty
-            case (i :: Nil, SetVal(x)) => LinkedMap(key(i.name) -> x)
-            case (i :: is, SetTuple(x :: xs)) => LinkedMap(key(i.name) -> x) ++ localData(is, SetTuple(xs))
-            case (_, SetVal(_)) => sys.error(s"`${indices.shows}' has incompatible size for `${set.shows}'")
-            case (_, SetTuple(_)) => sys.error(s"`${indices.shows}' has incompatible size for `${set.shows}'")
+            case (Nil, SetData(Nil)) => LinkedMap.empty
+            case (i :: is, SetData(x :: xs)) => LinkedMap(key(i.name) -> x) ++ localData(is, SetData(xs))
+            case (_, SetData(_)) => sys.error(s"`${indices.shows}' has incompatible size for `${set.shows}'")
           }
 
         val setEv = eval(set)
@@ -653,10 +631,7 @@ object eval {
 
   def effectiveIndices(setEv: List[SetData], indices: List[DummyIndDecl], nameHint: Option[String] = None, gen: Gen = gen): List[DummyIndDecl] = {
     if (indices.isEmpty) {
-      val dimen = setEv.headOption.fold(0)(_ match {
-        case SetVal(_) => 1
-        case SetTuple(xs) => xs.size
-      })
+      val dimen = setEv.headOption.fold(0)(_.values.size)
       List.fill(dimen)(DummyIndDecl(gen.dummy(nameHint).freshName, synthetic = true))
     } else {
       indices
@@ -680,9 +655,8 @@ object eval {
           localData <- eval(indexing)
         } yield {
           integrand match {
-            case Nil => SetTuple(Nil)
-            case x :: Nil => SetVal(eval(x, modelData.plusParams(localData)))
-            case l => SetTuple(eval(l, modelData.plusParams(localData)))
+            case Nil => SetData(Nil) // XXX delete if not needed
+            case l   => SetData(eval(l, modelData.plusParams(localData)))
           }
         }
     })
@@ -724,21 +698,11 @@ object eval {
 
       case NotIn(values, set) =>
         val ev = eval(values)
-        !eval(set).exists(x => (ev, x) match {
-          case (Nil, SetTuple(Nil)) => true
-          case (i :: Nil, SetVal(x)) => i == x
-          case (is, SetTuple(xs)) => is == xs
-          case _ => false
-        })
+        !eval(set).exists(x => ev == x.values)
 
       case In(values, set) =>
         val ev = eval(values)
-        eval(set).exists(x => (ev, x) match {
-          case (Nil, SetTuple(Nil)) => true
-          case (i :: Nil, SetVal(x)) => i == x
-          case (is, SetTuple(xs)) => is == xs
-          case _ => false
-        })
+        eval(set).exists(x => ev == x.values)
 
       case NotWithin(left, right) =>
         val r = eval(right).toSet
@@ -806,11 +770,7 @@ object eval {
   def typeMismatchNumExpr(decl: SymName, declType: String) = s"$declType `$decl' has incorrect type. Expected `NumExpr', found `SymExpr'."
 
   private def asSetLit(data: List[SetData]): SetLit = {
-    val tuples =
-      data.map {
-        case SetVal(x) => List(x.fold(NumLit, StringLit))
-        case SetTuple(values) => values.map(_.fold(NumLit, StringLit))
-      }
+    val tuples = data.map(_.values.map(_.fold(NumLit, StringLit)))
     SetLit(tuples: _*)
   }
 }

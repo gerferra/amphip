@@ -97,6 +97,5 @@ object SimpleData {
 
 }
 
-sealed trait SetData
-case class SetVal(x: SimpleData) extends SetData
-case class SetTuple(values: List[SimpleData]) extends SetData
+// wraps a list representing a tuple
+case class SetData(values: List[SimpleData])

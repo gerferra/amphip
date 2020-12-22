@@ -15,8 +15,8 @@ trait ShowInstances {
   implicit val DataKeyShow: Show[DataKey] = Show.showFromToString[DataKey]
 
   implicit val SetDataShow: Show[SetData] = Show.show {
-    case SetVal(x) => SimpleDataShow.show(x)
-    case SetTuple(x) => x.map(_.shows).mkString("(", ", ", ")")
+    case SetData(x :: Nil) => SimpleDataShow.show(x)
+    case SetData(xs)       => xs.map(_.shows).mkString("(", ", ", ")")
   }
 
   implicit val SimpleDataShow: Show[SimpleData] = Show.show {

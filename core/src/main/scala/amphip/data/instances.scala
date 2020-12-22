@@ -113,10 +113,10 @@ trait SetDataInstances {
 
   private[this] val key = DataKey
 
-  implicit def SimpleDataAsSetData[A](x: A)(implicit conv: A => SimpleData): SetData = SetVal(x)
+  implicit def SimpleDataAsSetData[A](x: A)(implicit conv: A => SimpleData): SetData = SetData(List(x))
 
   implicit def IterableSimpleDataAsSetData[A](x: Iterable[A])(
-    implicit conv: A => SimpleData): SetData = SetTuple(x.map(conv).toList)
+    implicit conv: A => SimpleData): SetData = SetData(x.map(conv).toList)
 
   implicit def IterableSetDataAsListSetData[A](x: Iterable[A])(
     implicit conv: A => SetData): List[SetData] = x.map(conv).toList
