@@ -344,8 +344,8 @@ trait AllSyntax {
 
   implicit class ModelSyntax(val model: Model) {
     def relax(xvar: VarStat): Model = {
-      val relaxVar = xvar.relax
-      replace(xvar, relaxVar)
+      val relaxedVar = xvar.relax
+      replace(xvar, relaxedVar)
     }
 
     def relax: Model = model.variables.foldLeft(model)((model, v) => model.relax(v))
