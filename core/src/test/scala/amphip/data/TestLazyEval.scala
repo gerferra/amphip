@@ -3,6 +3,8 @@ package amphip.data
 import org.junit.Assert._
 import org.junit.Test
 
+import amphip.data.ModelData._
+
 class TestLazyEval {
   import amphip.model.ast._
 

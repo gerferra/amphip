@@ -7,7 +7,7 @@ import org.junit.Test
 
 import amphip.dsl._
 import amphip.model.ast._
-import amphip.data._
+import amphip.data.ModelData._
 
 class TestStochData {
 

@@ -3,6 +3,7 @@ package amphip.data
 import scalaz._, Scalaz._
 
 import amphip.model.show._
+import amphip.data.ModelData._
 
 object show extends ShowInstances
 
@@ -24,7 +25,7 @@ trait ShowInstances {
     case SimpleStr(x) => x.show
   }
   
-  implicit val ListSetDataShow: Show[List[SetTuple]] = Show.show { list =>
+  implicit val ListSetDataShow: Show[SetData] = Show.show { list =>
     list.map(_.shows).mkString(" ")
   }
 }

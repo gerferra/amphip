@@ -6,7 +6,7 @@ import org.junit.Test
 class TestReplace {
   import amphip.dsl._
   import amphip.model.ast.{ParamStat, Model, ParamAssign, NumLit}
-  import amphip.data.{SimpleData, DataKey, SimpleNum}
+  import amphip.data.ModelData.{SimpleData, DataKey, SimpleNum}
 
   @Test
   def testLazyReplace(): Unit = {

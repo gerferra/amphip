@@ -11,7 +11,7 @@ import org.openjdk.jmh.annotations._
 import amphip.dsl._
 import amphip.stoch.StochDataBench._
 import amphip.model.ast._
-import amphip.data._
+import amphip.data.ModelData._
 
 object StochDataBench {
   val BS = BasicScenario

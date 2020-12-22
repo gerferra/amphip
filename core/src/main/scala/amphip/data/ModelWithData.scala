@@ -22,7 +22,7 @@ case class ModelData(
     varsExpansion  : Expansion[VarStat]   = LinkedMap.empty) {
 
   def plusParam(k: DataKey, d: SimpleData)   : ModelData = copy(params = params + (k -> d))
-  def plusSet  (k: DataKey, d: List[SetTuple]): ModelData = copy(sets   = sets   + (k -> d))
+  def plusSet  (k: DataKey, d: SetData): ModelData = copy(sets   = sets   + (k -> d))
 
   def plusParams(d: ParamStatData): ModelData = copy(params = params ++ d)
   def plusSets  (d: SetStatData)  : ModelData = copy(sets   = sets   ++ d)
@@ -49,7 +49,50 @@ case class ModelData(
 }
 
 object ModelData {
-  type SetStatData   = LinkedMap[DataKey, List[SetTuple]]
+  // XXX define `toString'?
+  sealed trait SimpleData
+  case class SimpleNum(num: BigDecimal) extends SimpleData
+  case class SimpleStr(str: String) extends SimpleData
+
+  object SimpleData {
+    implicit class SimpleDataOps(val sd: SimpleData) extends AnyVal {
+      def fold[A](ifNum: BigDecimal => A, ifStr: String => A): A = sd match {
+        case SimpleNum(num) => ifNum(num)
+        case SimpleStr(str) => ifStr(str)
+      }
+
+      def numOr(default: => BigDecimal): BigDecimal = fold(identity    , _ => default)
+      def strOr(default: => String    ): String     = fold(_ => default, identity)
+    }
+
+    implicit val SimpleDataOrder: Order[SimpleData] = new Order[SimpleData] {
+      def compare(x: SimpleData, y: SimpleData): Int =
+        x -> y match {
+          case (SimpleNum(x), SimpleNum(y)) => Order[BigDecimal].compare(x, y)
+          case (x, y) =>
+            Order[String].compare(
+              x.fold(_.toString, identity),
+              y.fold(_.toString, identity))
+        }
+    }
+  }
+
+  type SetData = List[SetTuple]
+  // wraps a list representing a tuple
+  case class SetTuple(values: List[SimpleData])
+
+  case class DataKey(name: String, subscript: List[SimpleData] = Nil) {
+    override def toString = {
+      val subsTxt = subscript.toNel.fold("") { nel => "[" + nel.toList.map(_.shows).mkString(",") + "]" }
+      s"$name$subsTxt"
+    }
+  }
+  object DataKey {
+    def apply(name: String, subscript: SimpleData*): DataKey = apply(name, subscript.toList)
+  }
+
+
+  type SetStatData   = LinkedMap[DataKey, SetData]
   type ParamStatData = LinkedMap[DataKey, SimpleData]
 
   type IndexingData = List[LinkedMap[DataKey, SimpleData]]
@@ -57,45 +100,5 @@ object ModelData {
   type LazyExpansion[A] = LinkedMap[DataKey, () => A]
 }
 
-case class DataKey(name: String, subscript: List[SimpleData] = Nil) {
-  override def toString = {
-    val subsTxt = subscript.toNel.fold("") { nel => "[" + nel.toList.map(_.shows).mkString(",") + "]" }
-    s"$name$subsTxt"
-  }
-}
 
-object DataKey {
-  def apply(name: String, subscript: SimpleData*): DataKey = apply(name, subscript.toList)
-}
 
-// XXX define `toString'?
-sealed trait SimpleData
-case class SimpleNum(num: BigDecimal) extends SimpleData
-case class SimpleStr(str: String) extends SimpleData
-
-object SimpleData {
-  implicit class SimpleDataOps(val sd: SimpleData) extends AnyVal {
-    def fold[A](ifNum: BigDecimal => A, ifStr: String => A): A = sd match {
-      case SimpleNum(num) => ifNum(num)
-      case SimpleStr(str) => ifStr(str)
-    }
-
-    def numOr(default: => BigDecimal): BigDecimal = fold(identity    , _ => default)
-    def strOr(default: => String    ): String     = fold(_ => default, identity)
-  }
-
-  implicit val SimpleDataOrder: Order[SimpleData] = new Order[SimpleData] {
-    def compare(x: SimpleData, y: SimpleData): Int =
-      x -> y match {
-        case (SimpleNum(x), SimpleNum(y)) => Order[BigDecimal].compare(x, y)
-        case (x, y) =>
-          Order[String].compare(
-            x.fold(_.toString, identity),
-            y.fold(_.toString, identity))
-      }
-  }
-
-}
-
-// wraps a list representing a tuple
-case class SetTuple(values: List[SimpleData])

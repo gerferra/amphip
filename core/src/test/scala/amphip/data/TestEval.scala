@@ -8,6 +8,7 @@ import org.junit.Test
 import amphip.base._
 import amphip.dsl._
 import amphip.model.ast.{ ConstraintStat, DLTEConstraintStat, DGTEConstraintStat, ObjectiveStat, Minimize, Maximize }
+import amphip.data.ModelData._
 
 class TestEval {
 
@@ -137,7 +138,7 @@ class TestEval {
         key("b", 5) -> 11)
 
     val indSetData =
-      LinkedMap[DataKey, List[SetTuple]](
+      LinkedMap[DataKey, SetData](
         key("I", 3) -> List(3, 4, 5),
         key("I", 4) -> List(4, 5, 6),
         key("I", 5) -> List(5, 6, 7),

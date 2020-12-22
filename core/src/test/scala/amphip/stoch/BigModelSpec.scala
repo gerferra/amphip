@@ -26,7 +26,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
 
   def lazyStochData(sd: StochData) = new {
 
-    import amphip.data._
+    import amphip.data.ModelData._
 
     import sd._
 
