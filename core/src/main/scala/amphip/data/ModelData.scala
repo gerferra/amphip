@@ -12,8 +12,6 @@ import amphip.model.ast._
 import amphip.data.show._
 import amphip.data.ModelData._
 
-case class ModelWithData(model: Model, data: ModelData)
-
 case class ModelData(
     params: ParamStatData = LinkedMap.empty,
     sets  : SetStatData   = LinkedMap.empty,
