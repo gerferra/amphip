@@ -13,21 +13,19 @@ import amphip.data.show._
 import amphip.data.ModelData._
 
 case class ModelData(
-    params: ParamStatData = LinkedMap.empty,
     sets  : SetStatData   = LinkedMap.empty,
+    params: ParamStatData = LinkedMap.empty,
     setsExpansion  : Expansion[SetStat]   = LinkedMap.empty, 
-    paramsExpansion: Expansion[ParamStat] = LinkedMap.empty,
-    varsExpansion  : Expansion[VarStat]   = LinkedMap.empty) {
+    paramsExpansion: Expansion[ParamStat] = LinkedMap.empty) {
 
-  def plusParam(k: DataKey, d: SimpleData)   : ModelData = copy(params = params + (k -> d))
-  def plusSet  (k: DataKey, d: SetData): ModelData = copy(sets   = sets   + (k -> d))
+  def plusParam(k: DataKey, d: SimpleData): ModelData = copy(params = params + (k -> d))
+  def plusSet  (k: DataKey, d: SetData)   : ModelData = copy(sets   = sets   + (k -> d))
 
   def plusParams(d: ParamStatData): ModelData = copy(params = params ++ d)
   def plusSets  (d: SetStatData)  : ModelData = copy(sets   = sets   ++ d)
   
   def plusParamsExpansion(d: Expansion[ParamStat]): ModelData = copy(paramsExpansion = paramsExpansion ++ d)
-  def plusSetsExpansion  (d: Expansion[SetStat])  : ModelData = copy(setsExpansion   = setsExpansion ++ d)
-  def plusVarsExpansion  (d: Expansion[VarStat])  : ModelData = copy(varsExpansion   = varsExpansion ++ d)
+  def plusSetsExpansion  (d: Expansion[SetStat])  : ModelData = copy(setsExpansion   = setsExpansion   ++ d)
 
   def params(d: ParamStatData): ModelData = copy(params = d)
   def sets  (d: SetStatData)  : ModelData = copy(sets   = d)
@@ -36,21 +34,38 @@ case class ModelData(
     params          = params          ++ m.params,
     sets            = sets            ++ m.sets,
     setsExpansion   = setsExpansion   ++ m.setsExpansion,
-    paramsExpansion = paramsExpansion ++ m.paramsExpansion,
-    varsExpansion   = varsExpansion   ++ m.varsExpansion)
+    paramsExpansion = paramsExpansion ++ m.paramsExpansion)
 
   def filterParams(pred: DataKey => Boolean): ModelData =
     params(params.filter { case (key, _) => pred(key) })
 
   def filterSets(pred: DataKey => Boolean): ModelData =
     sets(sets.filter { case (key, _) => pred(key)})
+
+  def set(s: SetStat): List[(List[SimpleData], SetData)] = {
+    val base = sets.filter { case (key, _) => key.name == s.name }
+    for {
+      (k, v) <- base.toList 
+    } yield {
+      k.subscript -> v
+    }
+  }
+
+  def param(p: ParamStat): List[(List[SimpleData], SimpleData)] = {
+    val base = params.filter { case (key, _) => key.name == p.name }
+    for {
+      (k, v) <- base.toList 
+    } yield {
+      k.subscript -> v
+    }
+  }
 }
 
 object ModelData {
   // XXX define `toString'?
   sealed trait SimpleData
   case class SimpleNum(num: BigDecimal) extends SimpleData
-  case class SimpleStr(str: String) extends SimpleData
+  case class SimpleStr(str: String)     extends SimpleData
 
   object SimpleData {
     implicit class SimpleDataOps(val sd: SimpleData) extends AnyVal {
@@ -92,9 +107,9 @@ object ModelData {
 
   type SetStatData   = LinkedMap[DataKey, SetData]
   type ParamStatData = LinkedMap[DataKey, SimpleData]
+  type IndexingData  = List[LinkedMap[DataKey, SimpleData]]
 
-  type IndexingData = List[LinkedMap[DataKey, SimpleData]]
-  type Expansion[A] = LinkedMap[DataKey, A]
+  type Expansion[A]     = LinkedMap[DataKey, A]
   type LazyExpansion[A] = LinkedMap[DataKey, () => A]
 }
 
