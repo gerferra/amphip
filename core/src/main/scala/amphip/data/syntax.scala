@@ -43,25 +43,21 @@ trait AllSyntax {
 
     ////
 
-    def paramData[B](decl: ParamStat, values: B*)(implicit DataOp: DataOp[ParamStat, B]): ModelWithData = {
+    def declData[A,B](decl: A, values: B*)(implicit DataOp: DataOp[A, B]): ModelWithData = {
       val newData = DataOp.data(decl, values.toList)(m.data)
       ModelWithData(m.model, m.data + newData)
     }
-    def paramDataList[B](list: List[(ParamStat, List[B])])(implicit DataOp: DataOp[ParamStat, B]): ModelWithData = {
+    def declDataList[A,B](list: List[(A, List[B])])(implicit DataOp: DataOp[A, B]): ModelWithData = {
       list.foldLeft(m: ModelWithData) {
-        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.paramData(decl, nel.toList: _*))
+        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.declData(decl, nel.toList: _*))
       }
     }
 
-    def setData[B](decl: SetStat, values: B*)(implicit DataOp: DataOp[SetStat, B]): ModelWithData = {
-      val newData = DataOp.data(decl, values.toList)(m.data)
-      ModelWithData(m.model, m.data + newData)
-    }
-    def setDataList[B](list: List[(SetStat, List[B])])(implicit DataOp: DataOp[SetStat, B]): ModelWithData = {
-      list.foldLeft(m: ModelWithData) {
-        case (model, (decl, data)) => data.toNel.fold(model)(nel => model.setData(decl, nel.toList: _*))
-      }
-    }
+    def paramData[B](decl: ParamStat, values: B*)(implicit DataOp: DataOp[ParamStat, B]) = declData(decl, values: _*)
+    def setData  [B](decl: SetStat  , values: B*)(implicit DataOp: DataOp[SetStat  , B]) = declData(decl, values: _*)
+    
+    def paramDataList[B](list: List[(ParamStat, List[B])])(implicit DataOp: DataOp[ParamStat, B]) = declDataList(list)
+    def setDataList  [B](list: List[(SetStat  , List[B])])(implicit DataOp: DataOp[SetStat  , B]) = declDataList(list)
 
     def eval[A, B](expr: A)(implicit Eval: amphip.data.eval.Eval[A, B]): B = amphip.data.eval(expr, m.data)
 
