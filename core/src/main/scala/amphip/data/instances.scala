@@ -123,6 +123,10 @@ trait SetDataInstances {
 
   implicit def SimpleDataAsSetTuple[A](x: A)(implicit conv: A => SimpleData): SetTuple = SetTuple(List(x))
 
+  implicit def Tuple2SimpleDataAsSetTuple[A, B](t: (A, B))(
+    implicit  convA: A => SimpleData,
+              convB: B => SimpleData): SetTuple = SetTuple(List(t._1, t._2))
+
   implicit def IterableSimpleDataAsSetTuple[A](x: Iterable[A])(
     implicit conv: A => SimpleData): SetTuple = SetTuple(x.map(conv).toList)
 
