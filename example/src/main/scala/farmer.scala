@@ -47,7 +47,7 @@ object farmer {
       w(f) + wf(f) <= yields(f) * x(f) 
     }
 
-    // For completeness. With the given instance this is the empty set
+    // For completeness. With the given data instance this is the empty set
     val productionC = st(c in Crops &~ (PCrops | FCrops)) {
       w(c) <= yields(c) * x(c)
     }
@@ -218,23 +218,23 @@ object farmer {
       ))
       // new data
       .setData(S, List(SA, SM, SB))
+      .paramData(pi, 
+        SA -> 1d/3, 
+        SM -> 1d/3, 
+        SB -> 1d/3)
       .paramData(yields, 
         (SA, W) ->  2.5 * 1.2, //  3
         (SA, C) ->  3   * 1.2, //  3.6
         (SA, B) -> 20   * 1.2, // 24
 
         (SM, W) ->  2.5,
-        (SM, C) ->  3d,
-        (SM, B) -> 20d,
+        (SM, C) ->  3.0,
+        (SM, B) -> 20.0,
 
         (SB, W) ->  2.5 * 0.8, //  2
         (SB, C) ->  3   * 0.8, //  2.4
         (SB, B) -> 20   * 0.8) // 16 
-      .paramData(pi, 
-        SA -> 1d/3, 
-        SM -> 1d/3, 
-        SB -> 1d/3, 
-      )
+      
       
     val (sout, out) = rpModelWithData.solve
   }
