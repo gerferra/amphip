@@ -42,7 +42,8 @@ trait AllSyntax {
      */
     def stochastic(S: SetStat, prob: ParamStat): StochModel = {
       val prevStat = List[Stat](S, prob).flatMap(collect(_, { case s: Stat => s }))
-      TwoStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), S, prob)
+      val base = TwoStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), S, prob)
+      base.stochStages(Stage("single"))
     }
 
   }
@@ -264,7 +265,14 @@ trait AllSyntax {
       val model1 =
         model0 match {
           case model0: TwoStageStochModel =>
-            model0.setData(S, stochData.SData)
+            model0
+              .setData(S, stochData.SData)
+              .paramData(p, stochData.probabilityData) 
+              .paramDataList(stochData.parametersData.map {
+                case (param, data) => param -> data.map {
+                  case (subscript, data) => subscript.drop(1) -> data // removes stage index in two-stage model
+                }
+              })
 
           case model0: MultiStageStochModel =>
             import model0.{T, naMode}
