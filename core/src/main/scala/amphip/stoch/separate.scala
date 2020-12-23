@@ -48,7 +48,8 @@ object separate {
     val newObj = separateObjective(detVarsNames, m1.S, m1.p, obj)
     val m2 = m1.replace(obj, newObj)
 
-    m2.model
+    val m2mip = m2.mip // to generate stochastic data
+    ModelWithData(m2.model.model, m2mip.data)
   }
 
   /**
