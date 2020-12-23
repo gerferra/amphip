@@ -1,6 +1,6 @@
 
 /*
- * "Financial planning" problem based on 
+ * "Financial planning problem" based on 
  * http://dx.doi.org/10.1007/978-1-4614-0237-4.
  */
 
