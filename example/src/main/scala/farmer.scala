@@ -102,17 +102,7 @@ object farmer {
   }
 
   trait RPBase {
-    import EV.{
-      yields => _, 
-      w  => _, 
-      wf => _, 
-      y  => _, 
-      productionP   => _, 
-      productionF   => _, 
-      productionC   => _, 
-      fpriceQuota   => _,
-      benefit       => _, 
-      _}
+    import EV._
 
     val s = dummy
     val S = set
