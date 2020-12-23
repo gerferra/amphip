@@ -11,7 +11,7 @@ import amphip.data.show._
 object genData {
 
   def apply(modelData: ModelData): String = modelData match {
-    case ModelData(params, sets, _, _, _) =>
+    case ModelData(sets, params, _, _) =>
       getSetData(sets) + "\n" + getParamData(params) + "\nend;\n"
   }
 
