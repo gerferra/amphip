@@ -35,7 +35,7 @@ object eval {
   def apply[A, B](expr: A)(implicit modelData: ModelData, Eval: Eval[A, B]): B = Eval.eval(expr)
   def apply[A, B](expr: A, modelData: => ModelData)(implicit Eval: Eval[A, B]): B = Eval.eval(expr)(modelData)
 
-  def from[A, B](f: ModelData => A => B): Eval[A, B] = new Eval[A, B] {
+  private def from[A, B](f: ModelData => A => B): Eval[A, B] = new Eval[A, B] {
     def eval(a: A)(implicit modelData: ModelData): B = f(modelData)(a)
   }
 
@@ -378,7 +378,8 @@ object eval {
         val expParam = 
           modelData.paramsExpansion.get(k) 
           .orElse(expand(param).get(k).map(_())) // only calculates the expansion if it is not preloaded
-          .err(s"subscript `${subscript.shows}' does not conform to parameter `${param.name}' definition")
+          .err(s"subscript `${subscript.shows}' does not " +
+            s"conform to parameter `${param.name}' definition")
 
         val assignData  = evalAtt(expParam, PFParamAssing)
         val defaultData = evalAtt(expParam, PFParamDefault)

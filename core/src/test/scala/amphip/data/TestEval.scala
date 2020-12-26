@@ -215,7 +215,85 @@ class TestEval {
     val varY = xvar("varY", ind(i1 in I, i2 in I) | (bInd(i2) - aInd(i1) === 1))
     assertEquals(eval(varY, modelData.plusParams(indParamData)), LinkedMap(key("varY", 5, 3) -> xvar("varY")))
 
-    // XXX complete ...
-  }
+    {
+      val AData = List(4,7,9)
+      val BData = List((1,"Jan"), (1,"Feb"), (2,"Mar"), (2,"Apr"), (3,"May"), (3,"Jun"))
+      val CData = List("a","b","c")
 
+      val i = dummy
+      val A = set := AData
+      val j = dummy 
+      val k = dummy
+      val B = set := BData
+      val l = dummy
+      val C = set := CData
+      
+      {
+        // {i in A, (j,k) in B, l in C}
+        val result =
+          for {
+            i     <- AData 
+            (j,k) <- BData 
+            l     <- CData
+          } yield {
+            LinkedMap(
+              key("i") -> (i: SimpleData), 
+              key("j") -> (j: SimpleData), 
+              key("k") -> (k: SimpleData), 
+              key("l") -> (l: SimpleData))
+          }
+
+        val evResult = eval(ind(i in A, (j,k) in B, l in C), ModelData())
+        assertEquals(result, evResult)
+      }
+      
+      {
+        // {i in A, (i-1,k) in B, l in C}
+        val result =
+          for {
+            i     <- AData 
+            (j,k) <- BData if j == i-1
+            l     <- CData
+          } yield {
+            LinkedMap(
+              key("i") -> (i: SimpleData), 
+              key("k") -> (k: SimpleData), 
+              key("l") -> (l: SimpleData))
+          }
+
+        val evResult = eval(ind(i in A, (j,k).in(B) | j === i-1, l in C), ModelData())
+        assertEquals(result, evResult)
+      }
+    }
+
+    {
+      import amphip.model.ast.ParamStat 
+      val N = param := 10
+      val n = dummy 
+      lazy val fib: ParamStat = {
+        param(n in (0 to N)) :=
+          xif (n === 0) { 
+            0 
+          } { 
+            xif (n === 1) {
+              1
+            } {
+              fib(n-1) + fib(n-2) 
+            }
+          }
+      }
+
+      import spire.math.{fib => _fib}
+      val result =
+        for {
+          n     <- 0 to 10
+        } yield {
+          key("fib", n) -> (param("fib") := _fib(n.toLong))
+        }
+      val resMap = LinkedMap(result: _*)
+
+      val evResult = eval(fib, ModelData())
+      assertEquals(resMap, evResult)
+    }
+  }
 }

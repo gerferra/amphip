@@ -90,6 +90,10 @@ trait TupleInstances {
     implicit conv1: A => SimpleExpr,
              conv2: B => SimpleExpr): List[SimpleExpr] = List(a, b)
 
+  implicit def Tuple2AsListSimpleExprTupled[A, B](t: (A, B))(
+    implicit conv1: A => SimpleExpr,
+             conv2: B => SimpleExpr): List[SimpleExpr] = List(t._1, t._2)
+
   implicit def Tuple3AsListSimpleExpr[A, B, C](a: A, b: B, c: C)(
     implicit conv1: A => SimpleExpr,
              conv2: B => SimpleExpr,
@@ -109,16 +113,19 @@ trait TupleInstances {
              conv5: E => SimpleExpr): List[SimpleExpr] = List(a, b, c, d, e)
 }
 
-trait SetInstances { self: NumInstances =>
+trait SetInstances extends SetInstancesLowPriority { self: NumInstances =>
 
   implicit def SetExprAsIndEntry[A](a: A)(implicit conv: A => SetExpr): IndEntry = IndEntry(Nil, a)
   implicit def RangeAsArithSet(t: Range): ArithSet = ArithSet(t.start, t.end, if (t.step != 1) some(t.step) else none)
   implicit def NumericRangeAsArithSet[T: Numeric](t: NumericRange[T]): ArithSet = ArithSet(t.start, t.end, some(t.step))
   implicit def IndExprAsSetexpr[A](a: A)(implicit conv: A => IndExpr): SetExpr = IndExprSet(a)
 
-  implicit def ListListSimplExprAsSetLit[A](values: List[List[A]])(implicit conv: A => SimpleExpr): SetExpr = SetLit(values.map(_.map(x => x: SimpleExpr)): _*)
-  implicit def ListSimplExprAsSetLit[A](values: List[A])(implicit conv: A => SimpleExpr): SetExpr = SetLit(values.map(x => List(x: SimpleExpr)): _*)
+  implicit def ListListSimpleExprAsSetLit[A](values: List[List[A]])(implicit conv: A => SimpleExpr): SetExpr = SetLit(values.map(_.map(conv)): _*)
+  implicit def ListSimpleExprAsSetLit    [A](values: List[A])(implicit conv: A => SimpleExpr      ): SetExpr = SetLit(values.map(conv).map(List(_)): _*)
+}
 
+trait SetInstancesLowPriority {
+  implicit def ListListSimpleExprAsSetLitLP[A](values: List[A])(implicit conv: A => List[SimpleExpr]): SetExpr = SetLit(values.map(conv): _*)
 }
 
 trait LogInstances {

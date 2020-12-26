@@ -45,7 +45,7 @@ trait AllSyntax {
 
     def declData[A,B](decl: A, values: B*)(implicit DataOp: DataOp[A, B]): ModelWithData = {
       val newData = DataOp.data(decl, values.toList)(m.data)
-      ModelWithData(m.model, m.data + newData)
+      m.copy(data = m.data + newData)
     }
     def declDataList[A,B](list: List[(A, List[B])])(implicit DataOp: DataOp[A, B]): ModelWithData = {
       list.foldLeft(m: ModelWithData) {
