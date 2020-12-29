@@ -28,7 +28,7 @@ object finance {
     val q = param
     val r = param
 
-    val p = param(S)
+    val pi = param(S)
 
     val x = xvar(ind(t in T, S, I) | t < H) >= 0
     val y = xvar(S) >= 0
@@ -36,7 +36,7 @@ object finance {
 
     val utility = 
       maximize { 
-        sum(s in S) { p(s) * (q * y(s) - r * w(s)) } 
+        sum(s in S) { pi(s) * (q * y(s) - r * w(s)) } 
       }
 
     val budget = 
@@ -56,7 +56,7 @@ object finance {
       }
 
     val stochModel = 
-      model(utility, budget, balance, goal).stochastic(T, S, p)
+      model(utility, budget, balance, goal).stochastic(T, S, pi)
 
     val (stock, bonds) = ("stock", "bonds")
     val stochModelDetData =
