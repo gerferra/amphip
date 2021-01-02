@@ -26,12 +26,12 @@ import StochData._
 
 case class StochData private (
     stages: List[Stage],
-    basicScenarios: LinkedMap[Stage, LinkedMap[BasicScenario, Rational]],
-    customScenarios: LinkedMap[Scenario, LinkedMap[BasicScenario, Rational]],
+    basicScenarios  : LinkedMap[Stage   , LinkedMap[BasicScenario, Rational]],
+    customScenarios : LinkedMap[Scenario, LinkedMap[BasicScenario, Rational]],
     deletedScenarios: LinkedMap[Scenario, Set[BasicScenario]],
-    defaults: LinkedMap[ParamStat, ParamStatData],
-    basicData: LinkedMap[Stage, LinkedMap[BasicScenario, LinkedMap[ParamStat, ParamStatData]]],
-    scenarioData: LinkedMap[Scenario, LinkedMap[ParamStat, ParamStatData]],
+    defaults    : LinkedMap[ParamStat, ParamStatData],
+    basicData   : LinkedMap[Stage    , LinkedMap[BasicScenario, LinkedMap[ParamStat, ParamStatData]]],
+    scenarioData: LinkedMap[Scenario , LinkedMap[ParamStat    , ParamStatData]],
     separated: Boolean) {
 
   def stages(ts: Stage*): StochData = copy(stages = ts.toList)

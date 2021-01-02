@@ -159,7 +159,7 @@ trait AllSyntax {
     //// 
 
     private def update(stochData: StochData): StochModel = (m: StochModel) match {
-      case m: TwoStageStochModel => m.copy(stochData = stochData)
+      case m: TwoStageStochModel   => m.copy(stochData = stochData)
       case m: MultiStageStochModel => m.copy(stochData = stochData)
     }
 
