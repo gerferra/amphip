@@ -129,15 +129,15 @@ object finance {
     import amphip.stoch.StochModel
 
     def stochPerfectTree(
-      m: StochModel, 
-      init: BasicScenario, 
+      m           : StochModel, 
+      init        : BasicScenario, 
       alternatives: Iterable[BasicScenario]): StochModel = {
 
       m.stochStages.toNel.fold(m) { nel =>
         val m1 = m.stochBasicScenarios(nel.head, init -> r"1")
 
-        val den = alternatives.size
-        val prob = r"1" / den
+        val den     = alternatives.size
+        val prob    = r"1" / den
         val altProb = alternatives.map(_ -> prob)
 
         nel.tail.foldLeft(m1) { (model, t) =>

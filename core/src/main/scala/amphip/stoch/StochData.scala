@@ -111,9 +111,12 @@ case class StochData private (
 
   def balancedTree[T](seed: List[T], ext: ((BasicScenario, Rational)) => T): List[List[T]] = {
     val rstages = stages.drop(seed.size)
-    val basis = basicScenarios.filterKeys(rstages.contains).mapValues(_.map(ext).toList)
+    val basis   = 
+      basicScenarios
+        .filterKeys(rstages.contains)
+        .mapValues(_.map(ext).toList)
 
-    val zero = seed.toNel.cata(x => List(x.toList.reverse), Nil)
+    val zero = seed.toNel.toList.flatMap(x => List(x.toList.reverse))
 
     val tree = basis.keys.foldLeft(zero) { (data, t) =>
       val bss = basis(t)
