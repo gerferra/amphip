@@ -485,7 +485,7 @@ case class StochData private (
         s_ = s - 1
         t_ = t - 1
         scenPrefix = prefix(s_)(t_)
-        bs = matrix(s_)(t_)
+        bs         = matrix(s_)(t_)
         cData = for {
           cbss <- scenarioData.get(scenPrefix)
           data <- cbss.get(param)
@@ -494,9 +494,9 @@ case class StochData private (
         }
         bData = for {
           stage <- stages.lift(t_)
-          bss <- basicData.get(stage)
-          ds <- bss.get(bs)
-          data <- ds.get(param)
+          bss   <- basicData.get(stage)
+          ds    <- bss.get(bs)
+          data  <- ds.get(param)
         } yield {
           data
         }

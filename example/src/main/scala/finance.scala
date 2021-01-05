@@ -111,7 +111,7 @@ object finance {
     val stochModelBasicData =
       stochStagesData(stochModelBasicScenarios, xi, List(t2,t3,t4),
         high -> List(stock -> 1.25, bonds -> 1.14),
-        low -> List(stock -> 1.06, bonds -> 1.12)
+        low  -> List(stock -> 1.06, bonds -> 1.12)
       )
 
     val mipEquiv = stochModelBasicData.mip
@@ -146,12 +146,12 @@ object finance {
       }
     }
 
-    def stochStagesData[A](
-      m: StochModel, 
-      p: ParamStat, 
-      stages: List[Stage],
-      bsDataList: (BasicScenario, A)*)(
-        implicit ev: DataOp[ParamStat, A]): StochModel = {
+    def stochStagesData[B](
+      m         : StochModel, 
+      p         : ParamStat, 
+      stages    : List[Stage],
+      bsDataList: (BasicScenario, B)*)
+      (implicit ev: DataOp[ParamStat, B]): StochModel = {
 
       stages.foldLeft(m) { (model0, t) =>
         bsDataList.foldLeft(model0) { (model1, bsData) =>
