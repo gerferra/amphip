@@ -1,0 +1,577 @@
+Problem:    finance_NA
+Rows:       257
+Columns:    64
+Non-zeros:  480
+Status:     OPTIMAL
+Objective:  utility = -1514.084643 (MAXimum)
+
+   No.   Row name   St   Activity     Lower bound   Upper bound    Marginal
+------ ------------ -- ------------- ------------- ------------- -------------
+     1 budget[1]    NS         55000         55000             =      0.193315 
+     2 budget[2]    NS         55000         55000             =       0.21875 
+     3 budget[3]    NS         55000         55000             =      0.188812 
+     4 budget[4]    NS         55000         55000             =      0.533063 
+     5 budget[5]    NS         55000         55000             =      0.172197 
+     6 budget[6]    NS         55000         55000             =      0.512609 
+     7 budget[7]    NS         55000         55000             =      0.451412 
+     8 budget[8]    NS         55000         55000             =      0.674334 
+     9 balance[2,1] NS             0            -0             =     -0.169575 
+    10 balance[2,2] NS             0            -0             =        -0.175 
+    11 balance[2,3] NS             0            -0             =      -0.15105 
+    12 balance[2,4] NS             0            -0             =      -0.42645 
+    13 balance[2,5] NS             0            -0             =      -0.16245 
+    14 balance[2,6] NS             0            -0             =     -0.483594 
+    15 balance[2,7] NS             0            -0             =      -0.42586 
+    16 balance[2,8] NS             0            -0             =     -0.618567 
+    17 balance[3,1] NS             0            -0             =      -0.14875 
+    18 balance[3,2] NS             0            -0             =         -0.14 
+    19 balance[3,3] NS             0            -0             =       -0.1425 
+    20 balance[3,4] NS             0            -0             =     -0.386875 
+    21 balance[3,5] NS             0            -0             =       -0.1425 
+    22 balance[3,6] NS             0            -0             =     -0.386875 
+    23 balance[3,7] NS             0            -0             =     -0.401755 
+    24 balance[3,8] NS             0            -0             =     -0.568766 
+    25 goal[1]      NS         80000         80000             =        -0.125 
+    26 goal[2]      NS         80000         80000             =        -0.125 
+    27 goal[3]      NS         80000         80000             =        -0.125 
+    28 goal[4]      NS         80000         80000             =     -0.345424 
+    29 goal[5]      NS         80000         80000             =        -0.125 
+    30 goal[6]      NS         80000         80000             =     -0.345424 
+    31 goal[7]      NS         80000         80000             =     -0.352417 
+    32 goal[8]      NS         80000         80000             =          -0.5 
+    33 utility      B       -1514.08                             
+    34 NA_x_ctr[1,1,1,stock]
+                    B              0            -0             = 
+    35 NA_x_ctr[1,1,1,bonds]
+                    B              0            -0             = 
+    36 NA_x_ctr[1,1,2,stock]
+                    B              0            -0             = 
+    37 NA_x_ctr[1,1,2,bonds]
+                    B              0            -0             = 
+    38 NA_x_ctr[1,1,3,stock]
+                    B              0            -0             = 
+    39 NA_x_ctr[1,1,3,bonds]
+                    B              0            -0             = 
+    40 NA_x_ctr[1,1,4,stock]
+                    B              0            -0             = 
+    41 NA_x_ctr[1,1,4,bonds]
+                    B              0            -0             = 
+    42 NA_x_ctr[1,1,5,stock]
+                    B              0            -0             = 
+    43 NA_x_ctr[1,1,5,bonds]
+                    B              0            -0             = 
+    44 NA_x_ctr[1,1,6,stock]
+                    B              0            -0             = 
+    45 NA_x_ctr[1,1,6,bonds]
+                    B              0            -0             = 
+    46 NA_x_ctr[1,1,7,stock]
+                    B              0            -0             = 
+    47 NA_x_ctr[1,1,7,bonds]
+                    B              0            -0             = 
+    48 NA_x_ctr[1,1,8,stock]
+                    NS             0            -0             =     0.0186533 
+    49 NA_x_ctr[1,1,8,bonds]
+                    B              0            -0             = 
+    50 NA_x_ctr[1,2,1,stock]
+                    B              0            -0             = 
+    51 NA_x_ctr[1,2,1,bonds]
+                    B              0            -0             = 
+    52 NA_x_ctr[1,2,2,stock]
+                    B              0            -0             = 
+    53 NA_x_ctr[1,2,2,bonds]
+                    B              0            -0             = 
+    54 NA_x_ctr[1,2,3,stock]
+                    B              0            -0             = 
+    55 NA_x_ctr[1,2,3,bonds]
+                    NS             0            -0             =      -0.01925 
+    56 NA_x_ctr[1,2,4,stock]
+                    B              0            -0             = 
+    57 NA_x_ctr[1,2,4,bonds]
+                    B              0            -0             = 
+    58 NA_x_ctr[1,2,5,stock]
+                    B              0            -0             = 
+    59 NA_x_ctr[1,2,5,bonds]
+                    B              0            -0             = 
+    60 NA_x_ctr[1,2,6,stock]
+                    B              0            -0             = 
+    61 NA_x_ctr[1,2,6,bonds]
+                    B              0            -0             = 
+    62 NA_x_ctr[1,2,7,stock]
+                    B              0            -0             = 
+    63 NA_x_ctr[1,2,7,bonds]
+                    B              0            -0             = 
+    64 NA_x_ctr[1,2,8,stock]
+                    B              0            -0             = 
+    65 NA_x_ctr[1,2,8,bonds]
+                    B              0            -0             = 
+    66 NA_x_ctr[1,3,1,stock]
+                    B              0            -0             = 
+    67 NA_x_ctr[1,3,1,bonds]
+                    B              0            -0             = 
+    68 NA_x_ctr[1,3,2,stock]
+                    B              0            -0             = 
+    69 NA_x_ctr[1,3,2,bonds]
+                    B              0            -0             = 
+    70 NA_x_ctr[1,3,3,stock]
+                    B              0            -0             = 
+    71 NA_x_ctr[1,3,3,bonds]
+                    B              0            -0             = 
+    72 NA_x_ctr[1,3,4,stock]
+                    B              0            -0             = 
+    73 NA_x_ctr[1,3,4,bonds]
+                    NS             0            -0             =    -0.0358655 
+    74 NA_x_ctr[1,3,5,stock]
+                    B              0            -0             = 
+    75 NA_x_ctr[1,3,5,bonds]
+                    B              0            -0             = 
+    76 NA_x_ctr[1,3,6,stock]
+                    B              0            -0             = 
+    77 NA_x_ctr[1,3,6,bonds]
+                    B              0            -0             = 
+    78 NA_x_ctr[1,3,7,stock]
+                    B              0            -0             = 
+    79 NA_x_ctr[1,3,7,bonds]
+                    B              0            -0             = 
+    80 NA_x_ctr[1,3,8,stock]
+                    B              0            -0             = 
+    81 NA_x_ctr[1,3,8,bonds]
+                    B              0            -0             = 
+    82 NA_x_ctr[1,4,1,stock]
+                    B              0            -0             = 
+    83 NA_x_ctr[1,4,1,bonds]
+                    B              0            -0             = 
+    84 NA_x_ctr[1,4,2,stock]
+                    B              0            -0             = 
+    85 NA_x_ctr[1,4,2,bonds]
+                    B              0            -0             = 
+    86 NA_x_ctr[1,4,3,stock]
+                    B              0            -0             = 
+    87 NA_x_ctr[1,4,3,bonds]
+                    B              0            -0             = 
+    88 NA_x_ctr[1,4,4,stock]
+                    B              0            -0             = 
+    89 NA_x_ctr[1,4,4,bonds]
+                    B              0            -0             = 
+    90 NA_x_ctr[1,4,5,stock]
+                    B              0            -0             = 
+    91 NA_x_ctr[1,4,5,bonds]
+                    NS             0            -0             =     -0.082775 
+    92 NA_x_ctr[1,4,6,stock]
+                    B              0            -0             = 
+    93 NA_x_ctr[1,4,6,bonds]
+                    B              0            -0             = 
+    94 NA_x_ctr[1,4,7,stock]
+                    B              0            -0             = 
+    95 NA_x_ctr[1,4,7,bonds]
+                    B              0            -0             = 
+    96 NA_x_ctr[1,4,8,stock]
+                    B              0            -0             = 
+    97 NA_x_ctr[1,4,8,bonds]
+                    B              0            -0             = 
+    98 NA_x_ctr[1,5,1,stock]
+                    B              0            -0             = 
+    99 NA_x_ctr[1,5,1,bonds]
+                    B              0            -0             = 
+   100 NA_x_ctr[1,5,2,stock]
+                    B              0            -0             = 
+   101 NA_x_ctr[1,5,2,bonds]
+                    B              0            -0             = 
+   102 NA_x_ctr[1,5,3,stock]
+                    B              0            -0             = 
+   103 NA_x_ctr[1,5,3,bonds]
+                    B              0            -0             = 
+   104 NA_x_ctr[1,5,4,stock]
+                    B              0            -0             = 
+   105 NA_x_ctr[1,5,4,bonds]
+                    B              0            -0             = 
+   106 NA_x_ctr[1,5,5,stock]
+                    B              0            -0             = 
+   107 NA_x_ctr[1,5,5,bonds]
+                    B              0            -0             = 
+   108 NA_x_ctr[1,5,6,stock]
+                    B              0            -0             = 
+   109 NA_x_ctr[1,5,6,bonds]
+                    NS             0            -0             =     -0.073028 
+   110 NA_x_ctr[1,5,7,stock]
+                    B              0            -0             = 
+   111 NA_x_ctr[1,5,7,bonds]
+                    B              0            -0             = 
+   112 NA_x_ctr[1,5,8,stock]
+                    B              0            -0             = 
+   113 NA_x_ctr[1,5,8,bonds]
+                    B              0            -0             = 
+   114 NA_x_ctr[1,6,1,stock]
+                    B              0            -0             = 
+   115 NA_x_ctr[1,6,1,bonds]
+                    B              0            -0             = 
+   116 NA_x_ctr[1,6,2,stock]
+                    B              0            -0             = 
+   117 NA_x_ctr[1,6,2,bonds]
+                    B              0            -0             = 
+   118 NA_x_ctr[1,6,3,stock]
+                    B              0            -0             = 
+   119 NA_x_ctr[1,6,3,bonds]
+                    B              0            -0             = 
+   120 NA_x_ctr[1,6,4,stock]
+                    B              0            -0             = 
+   121 NA_x_ctr[1,6,4,bonds]
+                    B              0            -0             = 
+   122 NA_x_ctr[1,6,5,stock]
+                    B              0            -0             = 
+   123 NA_x_ctr[1,6,5,bonds]
+                    B              0            -0             = 
+   124 NA_x_ctr[1,6,6,stock]
+                    B              0            -0             = 
+   125 NA_x_ctr[1,6,6,bonds]
+                    B              0            -0             = 
+   126 NA_x_ctr[1,6,7,stock]
+                    B              0            -0             = 
+   127 NA_x_ctr[1,6,7,bonds]
+                    NS             0            -0             =    -0.0440124 
+   128 NA_x_ctr[1,6,8,stock]
+                    B              0            -0             = 
+   129 NA_x_ctr[1,6,8,bonds]
+                    B              0            -0             = 
+   130 NA_x_ctr[1,7,1,stock]
+                    B              0            -0             = 
+   131 NA_x_ctr[1,7,1,bonds]
+                    B              0            -0             = 
+   132 NA_x_ctr[1,7,2,stock]
+                    B              0            -0             = 
+   133 NA_x_ctr[1,7,2,bonds]
+                    B              0            -0             = 
+   134 NA_x_ctr[1,7,3,stock]
+                    B              0            -0             = 
+   135 NA_x_ctr[1,7,3,bonds]
+                    B              0            -0             = 
+   136 NA_x_ctr[1,7,4,stock]
+                    B              0            -0             = 
+   137 NA_x_ctr[1,7,4,bonds]
+                    B              0            -0             = 
+   138 NA_x_ctr[1,7,5,stock]
+                    B              0            -0             = 
+   139 NA_x_ctr[1,7,5,bonds]
+                    B              0            -0             = 
+   140 NA_x_ctr[1,7,6,stock]
+                    B              0            -0             = 
+   141 NA_x_ctr[1,7,6,bonds]
+                    B              0            -0             = 
+   142 NA_x_ctr[1,7,7,stock]
+                    B              0            -0             = 
+   143 NA_x_ctr[1,7,7,bonds]
+                    B              0            -0             = 
+   144 NA_x_ctr[1,7,8,stock]
+                    B              0            -0             = 
+   145 NA_x_ctr[1,7,8,bonds]
+                    NS             0            -0             =    -0.0184608 
+   146 NA_x_ctr[1,8,1,stock]
+                    B              0            -0             = 
+   147 NA_x_ctr[1,8,1,bonds]
+                    B              0            -0             = 
+   148 NA_x_ctr[1,8,2,stock]
+                    B              0            -0             = 
+   149 NA_x_ctr[1,8,2,bonds]
+                    B              0            -0             = 
+   150 NA_x_ctr[1,8,3,stock]
+                    B              0            -0             = 
+   151 NA_x_ctr[1,8,3,bonds]
+                    B              0            -0             = 
+   152 NA_x_ctr[1,8,4,stock]
+                    B              0            -0             = 
+   153 NA_x_ctr[1,8,4,bonds]
+                    B              0            -0             = 
+   154 NA_x_ctr[1,8,5,stock]
+                    B              0            -0             = 
+   155 NA_x_ctr[1,8,5,bonds]
+                    B              0            -0             = 
+   156 NA_x_ctr[1,8,6,stock]
+                    B              0            -0             = 
+   157 NA_x_ctr[1,8,6,bonds]
+                    B              0            -0             = 
+   158 NA_x_ctr[1,8,7,stock]
+                    B              0            -0             = 
+   159 NA_x_ctr[1,8,7,bonds]
+                    B              0            -0             = 
+   160 NA_x_ctr[1,8,8,stock]
+                    B              0            -0             = 
+   161 NA_x_ctr[1,8,8,bonds]
+                    B              0            -0             = 
+   162 NA_x_ctr[2,1,1,stock]
+                    B              0            -0             = 
+   163 NA_x_ctr[2,1,1,bonds]
+                    B              0            -0             = 
+   164 NA_x_ctr[2,1,2,stock]
+                    B              0            -0             = 
+   165 NA_x_ctr[2,1,2,bonds]
+                    B              0            -0             = 
+   166 NA_x_ctr[2,1,3,stock]
+                    B              0            -0             = 
+   167 NA_x_ctr[2,1,3,bonds]
+                    B              0            -0             = 
+   168 NA_x_ctr[2,1,4,stock]
+                    NS             0            -0             =     0.0163625 
+   169 NA_x_ctr[2,1,4,bonds]
+                    B              0            -0             = 
+   170 NA_x_ctr[2,2,1,stock]
+                    B              0            -0             = 
+   171 NA_x_ctr[2,2,1,bonds]
+                    B              0            -0             = 
+   172 NA_x_ctr[2,2,2,stock]
+                    B              0            -0             = 
+   173 NA_x_ctr[2,2,2,bonds]
+                    B              0            -0             = 
+   174 NA_x_ctr[2,2,3,stock]
+                    B              0            -0             = 
+   175 NA_x_ctr[2,2,3,bonds]
+                    NS             0            -0             =       -0.0154 
+   176 NA_x_ctr[2,2,4,stock]
+                    B              0            -0             = 
+   177 NA_x_ctr[2,2,4,bonds]
+                    B              0            -0             = 
+   178 NA_x_ctr[2,3,1,stock]
+                    B              0            -0             = 
+   179 NA_x_ctr[2,3,1,bonds]
+                    B              0            -0             = 
+   180 NA_x_ctr[2,3,2,stock]
+                    B              0            -0             = 
+   181 NA_x_ctr[2,3,2,bonds]
+                    B              0            -0             = 
+   182 NA_x_ctr[2,3,3,stock]
+                    B              0            -0             = 
+   183 NA_x_ctr[2,3,3,bonds]
+                    B              0            -0             = 
+   184 NA_x_ctr[2,3,4,stock]
+                    B              0            -0             = 
+   185 NA_x_ctr[2,3,4,bonds]
+                    NS             0            -0             =      -0.00685 
+   186 NA_x_ctr[2,4,1,stock]
+                    B              0            -0             = 
+   187 NA_x_ctr[2,4,1,bonds]
+                    B              0            -0             = 
+   188 NA_x_ctr[2,4,2,stock]
+                    B              0            -0             = 
+   189 NA_x_ctr[2,4,2,bonds]
+                    B              0            -0             = 
+   190 NA_x_ctr[2,4,3,stock]
+                    B              0            -0             = 
+   191 NA_x_ctr[2,4,3,bonds]
+                    B              0            -0             = 
+   192 NA_x_ctr[2,4,4,stock]
+                    B              0            -0             = 
+   193 NA_x_ctr[2,4,4,bonds]
+                    B              0            -0             = 
+   194 NA_x_ctr[2,5,5,stock]
+                    B              0            -0             = 
+   195 NA_x_ctr[2,5,5,bonds]
+                    B              0            -0             = 
+   196 NA_x_ctr[2,5,6,stock]
+                    B              0            -0             = 
+   197 NA_x_ctr[2,5,6,bonds]
+                    B              0            -0             = 
+   198 NA_x_ctr[2,5,7,stock]
+                    B              0            -0             = 
+   199 NA_x_ctr[2,5,7,bonds]
+                    B              0            -0             = 
+   200 NA_x_ctr[2,5,8,stock]
+                    NS             0            -0             =      0.015675 
+   201 NA_x_ctr[2,5,8,bonds]
+                    B              0            -0             = 
+   202 NA_x_ctr[2,6,5,stock]
+                    B              0            -0             = 
+   203 NA_x_ctr[2,6,5,bonds]
+                    B              0            -0             = 
+   204 NA_x_ctr[2,6,6,stock]
+                    B              0            -0             = 
+   205 NA_x_ctr[2,6,6,bonds]
+                    B              0            -0             = 
+   206 NA_x_ctr[2,6,7,stock]
+                    B              0            -0             = 
+   207 NA_x_ctr[2,6,7,bonds]
+                    NS             0            -0             =    -0.0425563 
+   208 NA_x_ctr[2,6,8,stock]
+                    B              0            -0             = 
+   209 NA_x_ctr[2,6,8,bonds]
+                    B              0            -0             = 
+   210 NA_x_ctr[2,7,5,stock]
+                    B              0            -0             = 
+   211 NA_x_ctr[2,7,5,bonds]
+                    B              0            -0             = 
+   212 NA_x_ctr[2,7,6,stock]
+                    B              0            -0             = 
+   213 NA_x_ctr[2,7,6,bonds]
+                    B              0            -0             = 
+   214 NA_x_ctr[2,7,7,stock]
+                    B              0            -0             = 
+   215 NA_x_ctr[2,7,7,bonds]
+                    B              0            -0             = 
+   216 NA_x_ctr[2,7,8,stock]
+                    B              0            -0             = 
+   217 NA_x_ctr[2,7,8,bonds]
+                    NS             0            -0             =    -0.0184509 
+   218 NA_x_ctr[2,8,5,stock]
+                    B              0            -0             = 
+   219 NA_x_ctr[2,8,5,bonds]
+                    B              0            -0             = 
+   220 NA_x_ctr[2,8,6,stock]
+                    B              0            -0             = 
+   221 NA_x_ctr[2,8,6,bonds]
+                    B              0            -0             = 
+   222 NA_x_ctr[2,8,7,stock]
+                    B              0            -0             = 
+   223 NA_x_ctr[2,8,7,bonds]
+                    B              0            -0             = 
+   224 NA_x_ctr[2,8,8,stock]
+                    B              0            -0             = 
+   225 NA_x_ctr[2,8,8,bonds]
+                    B              0            -0             = 
+   226 NA_x_ctr[3,1,1,stock]
+                    B              0            -0             = 
+   227 NA_x_ctr[3,1,1,bonds]
+                    B              0            -0             = 
+   228 NA_x_ctr[3,1,2,stock]
+                    NS             0            -0             =        0.0075 
+   229 NA_x_ctr[3,1,2,bonds]
+                    B              0            -0             = 
+   230 NA_x_ctr[3,2,1,stock]
+                    B              0            -0             = 
+   231 NA_x_ctr[3,2,1,bonds]
+                    B              0            -0             = 
+   232 NA_x_ctr[3,2,2,stock]
+                    B              0            -0             = 
+   233 NA_x_ctr[3,2,2,bonds]
+                    B              0            -0             = 
+   234 NA_x_ctr[3,3,3,stock]
+                    B              0            -0             = 
+   235 NA_x_ctr[3,3,3,bonds]
+                    B              0            -0             = 
+   236 NA_x_ctr[3,3,4,stock]
+                    NS             0            -0             =     0.0207254 
+   237 NA_x_ctr[3,3,4,bonds]
+                    B              0            -0             = 
+   238 NA_x_ctr[3,4,3,stock]
+                    B              0            -0             = 
+   239 NA_x_ctr[3,4,3,bonds]
+                    B              0            -0             = 
+   240 NA_x_ctr[3,4,4,stock]
+                    B              0            -0             = 
+   241 NA_x_ctr[3,4,4,bonds]
+                    B              0            -0             = 
+   242 NA_x_ctr[3,5,5,stock]
+                    B              0            -0             = 
+   243 NA_x_ctr[3,5,5,bonds]
+                    B              0            -0             = 
+   244 NA_x_ctr[3,5,6,stock]
+                    NS             0            -0             =     0.0207254 
+   245 NA_x_ctr[3,5,6,bonds]
+                    B              0            -0             = 
+   246 NA_x_ctr[3,6,5,stock]
+                    B              0            -0             = 
+   247 NA_x_ctr[3,6,5,bonds]
+                    B              0            -0             = 
+   248 NA_x_ctr[3,6,6,stock]
+                    B              0            -0             = 
+   249 NA_x_ctr[3,6,6,bonds]
+                    B              0            -0             = 
+   250 NA_x_ctr[3,7,7,stock]
+                    B              0            -0             = 
+   251 NA_x_ctr[3,7,7,bonds]
+                    B              0            -0             = 
+   252 NA_x_ctr[3,7,8,stock]
+                    NS             0            -0             =     0.0387658 
+   253 NA_x_ctr[3,7,8,bonds]
+                    B              0            -0             = 
+   254 NA_x_ctr[3,8,7,stock]
+                    B              0            -0             = 
+   255 NA_x_ctr[3,8,7,bonds]
+                    B              0            -0             = 
+   256 NA_x_ctr[3,8,8,stock]
+                    B              0            -0             = 
+   257 NA_x_ctr[3,8,8,bonds]
+                    B              0            -0             = 
+
+   No. Column name  St   Activity     Lower bound   Upper bound    Marginal
+------ ------------ -- ------------- ------------- ------------- -------------
+     1 x[1,1,stock] B        41479.3             0               
+     2 x[1,1,bonds] B        13520.7             0               
+     3 x[1,2,stock] B        41479.3             0               
+     4 x[1,2,bonds] B        13520.7             0               
+     5 x[1,3,stock] B        41479.3             0               
+     6 x[1,3,bonds] B        13520.7             0               
+     7 x[1,4,stock] B        41479.3             0               
+     8 x[1,4,bonds] B        13520.7             0               
+     9 x[1,5,stock] B        41479.3             0               
+    10 x[1,5,bonds] B        13520.7             0               
+    11 x[1,6,stock] B        41479.3             0               
+    12 x[1,6,bonds] B        13520.7             0               
+    13 x[1,7,stock] B        41479.3             0               
+    14 x[1,7,bonds] B        13520.7             0               
+    15 x[1,8,stock] B        41479.3             0               
+    16 x[1,8,bonds] B        13520.7             0               
+    17 x[2,1,stock] B        65094.6             0               
+    18 x[2,1,bonds] B        2168.14             0               
+    19 x[2,2,stock] B        65094.6             0               
+    20 x[2,2,bonds] B        2168.14             0               
+    21 x[2,3,stock] B        65094.6             0               
+    22 x[2,3,bonds] B        2168.14             0               
+    23 x[2,4,stock] B        65094.6             0               
+    24 x[2,4,bonds] B        2168.14             0               
+    25 x[2,5,stock] B        36743.2             0               
+    26 x[2,5,bonds] B          22368             0               
+    27 x[2,6,stock] B        36743.2             0               
+    28 x[2,6,bonds] B          22368             0               
+    29 x[2,7,stock] B        36743.2             0               
+    30 x[2,7,bonds] B          22368             0               
+    31 x[2,8,stock] B        36743.2             0               
+    32 x[2,8,bonds] B          22368             0               
+    33 x[3,1,stock] B        83839.9             0               
+    34 x[3,1,bonds] NL             0             0                    -0.00625 
+    35 x[3,2,stock] B        83839.9             0               
+    36 x[3,2,bonds] B              0             0               
+    37 x[3,3,stock] NL             0             0                 -0.00697545 
+    38 x[3,3,bonds] B        71428.6             0               
+    39 x[3,4,stock] B              0             0               
+    40 x[3,4,bonds] B        71428.6             0               
+    41 x[3,5,stock] NL             0             0                 -0.00697545 
+    42 x[3,5,bonds] B        71428.6             0               
+    43 x[3,6,stock] B              0             0               
+    44 x[3,6,bonds] B        71428.6             0               
+    45 x[3,7,stock] B          64000             0               
+    46 x[3,7,bonds] B              0             0               
+    47 x[3,8,stock] B          64000             0               
+    48 x[3,8,bonds] NL             0             0                 -0.00876583 
+    49 y[1]         B        24799.9             0               
+    50 y[2]         B         8870.3             0               
+    51 y[3]         B        1428.57             0               
+    52 y[4]         NL             0             0                   -0.220424 
+    53 y[5]         B        1428.57             0               
+    54 y[6]         NL             0             0                   -0.220424 
+    55 y[7]         NL             0             0                   -0.227417 
+    56 y[8]         NL             0             0                      -0.375 
+    57 w[1]         NL             0             0                      -0.375 
+    58 w[2]         NL             0             0                      -0.375 
+    59 w[3]         NL             0             0                      -0.375 
+    60 w[4]         NL             0             0                   -0.154576 
+    61 w[5]         NL             0             0                      -0.375 
+    62 w[6]         NL             0             0                   -0.154576 
+    63 w[7]         NL             0             0                   -0.147583 
+    64 w[8]         B          12160             0               
+
+Karush-Kuhn-Tucker optimality conditions:
+
+KKT.PE: max.abs.err = 1.46e-11 on row 13
+        max.rel.err = 1.23e-16 on row 13
+        High quality
+
+KKT.PB: max.abs.err = 3.64e-12 on row 165
+        max.rel.err = 3.64e-12 on row 165
+        High quality
+
+KKT.DE: max.abs.err = 1.11e-16 on column 8
+        max.rel.err = 6.00e-17 on column 29
+        High quality
+
+KKT.DB: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+End of output
