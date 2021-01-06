@@ -56,9 +56,9 @@ var v{c in P, t in T, S : (t <= (H - gamma[c]))} binary;
 
 var x{c in A, t in T, S : (t <= (tau[c] - 1))} binary;
 
-s.t. balance0{s in S}: ((y0 + a[1]) + u[1, s]) = ((d[1, s] + w[1, s]) + y[1, s]);
+s.t. balance0{s in S}: ((y0 + a[1]) + u[1, s]) == ((d[1, s] + w[1, s]) + y[1, s]);
 
-s.t. balance{t in (T diff {1}), s in S}: ((y[(t - 1), s] + a[t]) + u[t, s]) = ((d[t, s] + w[t, s]) + y[t, s]);
+s.t. balance{t in (T diff {1}), s in S}: ((y[(t - 1), s] + a[t]) + u[t, s]) == ((d[t, s] + w[t, s]) + y[t, s]);
 
 s.t. inventory{t in T, s in S}: ymin <= y[t, s] <= ymax;
 
@@ -66,21 +66,21 @@ s.t. singleAcquisition{c in P, s in S}: (sum{t in T : (t <= (H - gamma[c]))} v[c
 
 s.t. singleCancellation{c in A, s in S}: (sum{t in T : (t <= (tau[c] - 1))} x[c, t, s]) <= 1;
 
-s.t. acquiredFuel{t in T, s in S}: u[t, s] = (sum{c in P : (gamma[c] <= (t - 1))} (q[c] * v[c, (t - gamma[c]), s]));
+s.t. acquiredFuel{t in T, s in S}: u[t, s] == (sum{c in P : (gamma[c] <= (t - 1))} (q[c] * v[c, (t - gamma[c]), s]));
 
-s.t. cancelledFuel{t in T, s in S}: w[t, s] = (sum{c in A : (tau[c] == t)} (q[c] * (sum{tp in T : (tp <= (tau[c] - 1))} x[c, tp, s])));
+s.t. cancelledFuel{t in T, s in S}: w[t, s] == (sum{c in A : (tau[c] == t)} (q[c] * (sum{tp in T : (tp <= (tau[c] - 1))} x[c, tp, s])));
 
 minimize cost: (sum{t in T, s in S} (pi[s] * (((sum{c in P : (t <= (H - gamma[c]))} ((ca[c] * q[c]) * v[c, t, s])) + (sum{c in A : (t <= (tau[c] - 1))} (((cc[c] - ca[c]) * q[c]) * x[c, t, s]))) + (h[t] * y[t, s]))));
 
-s.t. NA_u_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: u[t, s1] = u[t, s2];
+s.t. NA_u_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: u[t, s1] == u[t, s2];
 
-s.t. NA_w_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: w[t, s1] = w[t, s2];
+s.t. NA_w_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: w[t, s1] == w[t, s2];
 
-s.t. NA_y_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: y[t, s1] = y[t, s2];
+s.t. NA_y_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: y[t, s1] == y[t, s2];
 
-s.t. NA_v_ctr{t in T, s1 in S, s2 in S, c in P : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t <= (H - gamma[c])))}: v[c, t, s1] = v[c, t, s2];
+s.t. NA_v_ctr{t in T, s1 in S, s2 in S, c in P : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t <= (H - gamma[c])))}: v[c, t, s1] == v[c, t, s2];
 
-s.t. NA_x_ctr{t in T, s1 in S, s2 in S, c in A : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t <= (tau[c] - 1)))}: x[c, t, s1] = x[c, t, s2];
+s.t. NA_x_ctr{t in T, s1 in S, s2 in S, c in A : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t <= (tau[c] - 1)))}: x[c, t, s1] == x[c, t, s2];
 
 
 data;

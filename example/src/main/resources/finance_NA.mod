@@ -36,15 +36,15 @@ var y{S} >= 0;
 
 var w{S} >= 0;
 
-s.t. budget{s in S}: (sum{i in I} x[1, s, i]) = b;
+s.t. budget{s in S}: (sum{i in I} x[1, s, i]) == b;
 
-s.t. balance{t in 2 .. (H - 1), s in S}: (sum{i in I} (xi[t, s, i] * x[(t - 1), s, i])) = (sum{i in I} x[t, s, i]);
+s.t. balance{t in 2 .. (H - 1), s in S}: (sum{i in I} (xi[t, s, i] * x[(t - 1), s, i])) == (sum{i in I} x[t, s, i]);
 
-s.t. goal{s in S}: (((sum{i in I} (xi[H, s, i] * x[(H - 1), s, i])) - y[s]) + w[s]) = G;
+s.t. goal{s in S}: (((sum{i in I} (xi[H, s, i] * x[(H - 1), s, i])) - y[s]) + w[s]) == G;
 
 maximize utility: (sum{s in S} (pi[s] * ((q * y[s]) - (r * w[s]))));
 
-s.t. NA_x_ctr{t in T, s1 in S, s2 in S, i_ in I : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t < H))}: x[t, s1, i_] = x[t, s2, i_];
+s.t. NA_x_ctr{t in T, s1 in S, s2 in S, i_ in I : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t < H))}: x[t, s1, i_] == x[t, s2, i_];
 
 data;
 
