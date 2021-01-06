@@ -63,7 +63,7 @@ trait ShowInstances {
 
     case EqConstraintStat(name, alias, domain, left, right) =>
       val nameAliasDomainShows = showStat(name, alias, domain)
-      s"s.t. $nameAliasDomainShows: ${left.shows} = ${right.shows};"
+      s"s.t. $nameAliasDomainShows: ${left.shows} == ${right.shows};"
 
     case LTEConstraintStat(name, alias, domain, left, right) =>
       val nameAliasDomainShows = showStat(name, alias, domain)
@@ -440,7 +440,7 @@ trait ShowInstances {
       s"(${left.shows} <> ${right.shows})"
 
     case Eq(left, right) =>
-      s"(${left.shows} = ${right.shows})"
+      s"(${left.shows} == ${right.shows})"
 
     case NotIn(values, set) =>
       val valuesShow = showTuple(values)
