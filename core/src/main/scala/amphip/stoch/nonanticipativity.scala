@@ -1,6 +1,6 @@
 package amphip.stoch
 
-import scalaz._, Scalaz._
+import cats.syntax.option._
 
 import spire.math
 import spire.implicits._
@@ -11,10 +11,103 @@ import amphip.model.dimen
 
 object nonanticipativity {
 
+  def apply(xvar: VarStat, T: SetStat, S: SetStat, na: AdaptedNAMode): Option[ConstraintStat] = {
+
+    for {
+      IndExpr(entries0, predicate0) <- xvar.domain 
+        if isStochastic(entries0, T, S)
+    } yield {
+      val tIdeal = dummy("t")
+      val sIdeal = dummy("s")
+
+      val (entries, t, s) = assignIndices(entries0, T, S, tIdeal, sIdeal)
+      val subscript       = entries.flatMap(_.indices)
+      
+      val s1 = uniqueDummy(subscript, s, 1)
+      val s2 = uniqueDummy(subscript, s, 2)
+      val ancfEq = na.ancf(s1, t) === na.ancf(s2, t)
+      
+      val detEntries = entries.filterNot(e => List(T(), S()).contains(e.set))
+      
+      val indexing = IndExpr(
+          (t in T) :: (s1 in S) :: (s2 in S) :: detEntries, 
+          predicate0.fold(ancfEq)(ancfEq && _).some)
+
+      val subscript1 = subscript.map(x => if (x == s) s1 else x)
+      val subscript2 = subscript.map(x => if (x == s) s2 else x)
+
+      st(s"NA_${xvar.name}_ctr", indexing) {
+        xvar(subscript1) === xvar(subscript2)
+      }
+    }
+  }
+
+  def isStochastic(entries: List[IndEntry], T: SetStat, S: SetStat): Boolean = {
+    val dependsOnT = entries.exists(_.set == T())
+    val dependsOnS = entries.exists(_.set == S())
+    dependsOnT && dependsOnS
+  }
+
+  /* Calculate the indices needed for each set expression in the entries 
+   * and return assigned indices to T and S sets.
+   */
+  def assignIndices(entries0: List[IndEntry], T: SetStat, S: SetStat, tIdeal: DummyIndDecl, sIdeal: DummyIndDecl): (List[IndEntry], DummyIndDecl, DummyIndDecl) = {
+    val gen = newGen
+
+    // to avoid collisions
+    val indices = entries0.flatMap(_.indices)
+    val tIdealA = indices.find(_ == tIdeal).fold(tIdeal) { _ =>
+      DummyIndDecl(gen.dummy(tIdeal.name).freshName, synthetic = true)
+    }
+    val sIdealA = indices.find(_ == sIdeal).fold(sIdeal) { _ =>
+      DummyIndDecl(gen.dummy(sIdeal.name).freshName, synthetic = true)
+    }
+
+    val TExpr = T()
+    val SExpr = S()
+
+    val (revEntries, tA, sA) = 
+      entries0.foldLeft((List.empty[IndEntry], tIdealA, sIdealA)) { case ((res, t, s), entry) => 
+        val indices = entry.indices
+
+        val ind0 =
+          if (indices.isEmpty) {
+            val dim = dimen(entry.set)
+            List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
+          } else {
+            indices
+          }
+
+        // uses tIdealA and sIdealA if possible
+        val (indA, tA, sA) = 
+          (entry.set, ind0) match {
+            // index was generated, replace
+            case (TExpr, List(t0)) if t0.synthetic  => (List(t), t , s)
+            case (SExpr, List(s0)) if s0.synthetic  => (List(s), t , s)
+            // index was not generted, update tIdealA and sIdealA
+            case (TExpr, List(t0)) if !t0.synthetic => (ind0   , t0, s)
+            case (SExpr, List(s0)) if !s0.synthetic => (ind0   , t , s0)
+            // not T or S
+            case _                                  => (ind0   , t , s)
+          }
+
+        (IndEntry(indA, entry.set, entry.predicate) :: res, tA, sA)
+      }
+
+    (revEntries.reverse, tA, sA)
+  }
+
   /* hint to use as name of the dummy index */
-  def nameHint(expr: SetExpr): Option[SymName] = expr match {
-    case SetRef(SetStat(name, _, _, _), _) => Some(name.toLowerCase)
-    case _ => None
+  def nameHint(expr: SetExpr): Option[SymName] = {
+    def isValidChar(c: Char) = c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_'
+    import scalaz.syntax.show._
+    val str = expr.shows
+    str.filter(isValidChar).take(1).toLowerCase.some
+  }
+
+  def uniqueDummy(subscript: List[DummyIndDecl], base: DummyIndDecl, target: Int): DummyIndDecl = {
+    val name = s"${maxStartingWith(subscript, base.name + target, base.name)}$target"
+    DummyIndDecl(name, synthetic = true)
   }
 
   /* juggling to avoid name colisions */
@@ -22,40 +115,13 @@ object nonanticipativity {
     subscript.filter(_.name.startsWith(start)).map(_.name).fold(default)(math.max[String])
   }
 
-  /* calculate the indices needed for each set expression in the entries */
-  def assignIndices(entries0: List[IndEntry], T: SetStat, S: SetStat, sIdeal: DummyIndDecl, tIdeal: DummyIndDecl): List[IndEntry] = {
-    val gen = newGen
-
-    for {
-      entry <- entries0
-      indices = entry.indices
-    } yield {
-
-      val TExpr = T()
-      val SExpr = S()
-
-      val effInd0 =
-        if (indices.isEmpty) {
-          val dim = dimen(entry.set)
-          List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
-        } else {
-          indices
-        }
-
-      val effInd = (entry.set, effInd0) match {
-        case (TExpr, List(t)) if t.synthetic => List(tIdeal)
-        case (SExpr, List(s)) if s.synthetic => List(sIdeal)
-        case _ => effInd0
-      }
-
-      IndEntry(effInd, entry.set, entry.predicate)
-    }
-  }
+  // old implementations
 
   def apply(xvar: VarStat, T: SetStat, S: SetStat, link: SetStat): Option[ConstraintStat] = {
 
     for {
       IndExpr(entries0, predicate) <- xvar.domain
+        if isStochastic(entries0, T, S)
     } yield {
 
       val TExpr = T()
@@ -64,10 +130,8 @@ object nonanticipativity {
       val tIdeal = dummy("t")
       val sIdeal = dummy("s")
 
-      val entries = assignIndices(entries0, T, S, sIdeal, tIdeal)
+      val (entries, t, s) = assignIndices(entries0, T, S, tIdeal, sIdeal)
       val subscript = entries.flatMap(_.indices)
-      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption | tIdeal // `tIdeal' shouldn't be needed here ...
-      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption | sIdeal // `sIdeal' shouldn't be needed here ...
 
       val s1 = dummy(maxStartingWith(subscript, s"${s.name}1", s.name) + "1")
       val s2 = dummy(maxStartingWith(subscript, s"${s.name}2", s.name) + "2")
@@ -81,48 +145,10 @@ object nonanticipativity {
           ((s1, s2) in link(t)) :: 
           (s in SExpr) :: 
           entries.filterNot(e => List(SExpr, TExpr).contains(e.set)), 
-          predicate.cata(naPred && _, naPred).some)
+          predicate.fold(naPred)(naPred && _).some)
 
       st(s"NA_${xvar.name}", indexing) {
         xvar(subscript) === xvar(subscript1)
-      }
-    }
-  }
-
-  def apply(xvar: VarStat, T: SetStat, S: SetStat, na: AdaptedNAMode): Option[ConstraintStat] = {
-
-    for {
-      IndExpr(entries0, predicate) <- xvar.domain
-    } yield {
-
-      val TExpr = T()
-      val SExpr = S()
-
-      val tIdeal = dummy("t")
-      val sIdeal = dummy("s")
-
-      val entries = assignIndices(entries0, T, S, sIdeal, tIdeal)
-      val subscript = entries.flatMap(_.indices)
-      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption | tIdeal // `tIdeal' shouldn't be needed here ...
-      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption | sIdeal // `sIdeal' shouldn't be needed here ...
-
-      val s1 = dummy(maxStartingWith(subscript, s"${s.name}1", s.name) + "1")
-      val s2 = dummy(maxStartingWith(subscript, s"${s.name}2", s.name) + "2")
-
-      val subscript1 = subscript.map(x => if (x == s) s1 else x)
-      val subscript2 = subscript.map(x => if (x == s) s2 else x)
-
-      val naPred = na.ancf(s1, t) === na.ancf(s2, t)
-
-      val indexing = IndExpr(
-          (t in TExpr) :: 
-          (s1 in SExpr) :: 
-          (s2 in SExpr) :: 
-          entries.filterNot(e => List(SExpr, TExpr).contains(e.set)), 
-          predicate.cata(naPred && _, naPred).some)
-
-      st(s"NA_${xvar.name}_ctr", indexing) {
-        xvar(subscript1) === xvar(subscript2)
       }
     }
   }
@@ -132,6 +158,7 @@ object nonanticipativity {
 
     for {
       IndExpr(entries0, predicate) <- xvar.domain
+        if isStochastic(entries0, T, S)
     } yield {
 
       val SExpr = S()
@@ -169,8 +196,8 @@ object nonanticipativity {
 
       val entries = assignIndices
       val subscript = entries.flatMap(_.indices)
-      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption | sIdeal // `sIdeal' shouldn't be needed here ...
-      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption | tIdeal // `tIdeal' shouldn't be needed here ...
+      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption getOrElse sIdeal // `sIdeal' shouldn't be needed here ...
+      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption getOrElse tIdeal // `tIdeal' shouldn't be needed here ...
 
       val s1 = dummy(maxStartingWith(subscript, s"${s.name}1", s.name) + "1")
       val s2 = dummy(maxStartingWith(subscript, s"${s.name}2", s.name) + "2")

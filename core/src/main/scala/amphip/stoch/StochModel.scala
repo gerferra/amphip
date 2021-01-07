@@ -68,16 +68,11 @@ case class AdaptedNAMode(T: SetStat, S: SetStat) extends NAMode {
     for {
       IndExpr(entries0, predicate) <- param.domain
     } yield {
-      val TExpr = T()
-      val SExpr = S()
-
       val tIdeal = dummy("t")
       val sIdeal = dummy("s")
 
-      val entries = nonanticipativity.assignIndices(entries0, T, S, sIdeal, tIdeal)
-      val subscript = entries.flatMap(_.indices)
-      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption getOrElse tIdeal 
-      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption getOrElse sIdeal 
+      val (entries, t, s) = nonanticipativity.assignIndices(entries0, T, S, tIdeal, sIdeal)
+      val subscript       = entries.flatMap(_.indices)
 
       val param0 = param.copy(domain = IndExpr(entries, predicate).some)
 
@@ -86,7 +81,7 @@ case class AdaptedNAMode(T: SetStat, S: SetStat) extends NAMode {
         and allows to specify the parameter values in a more compact way.
        */
       val NA_param = 
-        replace(param0, SExpr, ST(t))
+        replace(param0, S(), ST(t))
         .copy(name = s"NA_${param0.name}")
 
       val subscript1: List[SimpleExpr] = subscript.map(x => if (x == s) ancf(s,t) else x: SimpleExpr)
