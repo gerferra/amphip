@@ -538,7 +538,7 @@ class TestShow {
           List(i, j),
           Diff(T, U))): LogicExpr).shows)
 
-    assertEquals("(a = b)",
+    assertEquals("(a == b)",
       (Eq(a, b): LogicExpr).shows)
 
     assertEquals("(forall{t in T} (p[t] and ((exists{i in I} q[i]) or (a > b))))",
@@ -560,7 +560,7 @@ class TestShow {
     assertEquals("""set E within (V cross V);""",
       SetStat("E", atts = List(SetWithin(Cross(V, V)))).shows)
 
-    assertEquals("""set step{s in 1 .. maxiter} dimen 2, := (if (s = 1) then E else (step[(s - 1)] union (setof{k in V, (i, k) in step[(s - 1)], (k, j) in step[(s - 1)]} (i, j))));""",
+    assertEquals("""set step{s in 1 .. maxiter} dimen 2, := (if (s == 1) then E else (step[(s - 1)] union (setof{k in V, (i, k) in step[(s - 1)], (k, j) in step[(s - 1)]} (i, j))));""",
       SetStat(
         name = "step",
         domain =
@@ -646,7 +646,7 @@ class TestShow {
             ParamGTE(NumLit(0)),
             ParamLTE(NumLit(100)))).shows)
 
-    assertEquals("""param comb "n choose k" {n in 0 .. N, k in 0 .. n} := (if ((k = 0) or (k = n)) then 1 else (comb[(n - 1), (k - 1)] + comb[(n - 1), k]));""",
+    assertEquals("""param comb "n choose k" {n in 0 .. N, k in 0 .. n} := (if ((k == 0) or (k == n)) then 1 else (comb[(n - 1), (k - 1)] + comb[(n - 1), k]));""",
       ParamStat(
         name = "comb",
         alias = Some(StringLit("n choose k")),
@@ -766,7 +766,7 @@ class TestShow {
         left = LinSum(IndExpr(List(IndEntry(List(j), prd))), make(j, t)),
         right = max_prd): ConstraintStat).shows)
 
-    assertEquals("""s.t. balance{i in raw, t in 1 .. N}: store[i, (t + 1)] = (store[i, t] - (sum{j in prd} (units[i, j] * make[j, t])));""",
+    assertEquals("""s.t. balance{i in raw, t in 1 .. N}: store[i, (t + 1)] == (store[i, t] - (sum{j in prd} (units[i, j] * make[j, t])));""",
       (EqConstraintStat(
         name = "balance",
         domain =
@@ -812,7 +812,7 @@ class TestShow {
       					 |
       					 |minimize D: (2 * x);
       					 |
-      					 |s.t. E: 1 = 1;
+      					 |s.t. E: 1 == 1;
       					 |
       					 |end;""".stripMargin,
       Model(List(
