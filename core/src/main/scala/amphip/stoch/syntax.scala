@@ -58,7 +58,7 @@ trait AllSyntax {
 
     def relax: StochModel = update(m.model.relax)
 
-    def replace[A: Manifest](target: A, replacement: A): StochModel = update(m.model.replace(target, replacement))
+    def replace[A](target: A, replacement: A): StochModel = update(m.model.replace(target, replacement))
 
     def statements: List[Stat] = m.model.statements ++ nonanticipativityConstraints
 
@@ -303,44 +303,78 @@ trait AllSyntax {
                   })
                   .paramDataList(stochData.parametersData)
 
-              case naMode: STAdapter =>
-                import naMode.{ST, pred, H, ancf}
+              case na: STAdapter =>
+                import amphip.model.{replace => replacef}
+                import na.{ST, pred, H, ancf}
 
-                val adaptedParams = 
-                  model01.stochasticParameters.flatMap(naMode.adaptParam)
-                val (_, st_params) = adaptedParams.unzip
+                val adaptedParams = model01.stochasticParameters.flatMap(na.adaptParam)
+                val st_params     = adaptedParams.unzip._2
                   
-                val model02 =
-                  (ancf :: st_params) ++: model01
+                val model02 = (ancf :: st_params) ++: model01
 
-                val S_ = S default ST(H)
-                val p_ = amphip.model.replace(p, S, S_)
+                val SA      = S default ST(H)
+                val model03 = model02.replace(S, SA)
+                val pA      = amphip.model.replace(p, S, SA)
 
-                val model03 = 
-                  model02
-                    .replace(S, S_)
-                    .setData(ST, stochData.STData)
-                    .paramData(pred, stochData.predecessorsData)
-                    .paramData(p_, stochData.probabilityData)
+                val model04 = model03
+                  .setData(ST, stochData.STData)
+                  .paramData(pred, stochData.predecessorsData)
+                  .paramData(pA  , stochData.probabilityData)
 
                 /* 
                   Replaces parameter with version which defaults to adaptation 
                   without separated scenarios, and specify the parameter values
                   only on adapted version.
                  */
-                val model04 = 
-                  model03.stochasticParameters.zip(adaptedParams)
-                    .foldLeft(model03) { case (model, (param, (param_, st_param))) =>
-                      model
-                        .replace(param, param_)
-                        .paramData(st_param, stochData.paramDataST(param))
-                    }                
+                val model05 = model04.stochasticParameters.zip(adaptedParams)
+                  .foldLeft(model04) { case (model, (param, (paramA0, st_param))) =>
+                    val paramA1 = replacef(paramA0, S, SA)
+                    model
+                      .replace(param, paramA1)
+                      .paramData(st_param, stochData.paramDataST(param))
+                  }                
 
-                model04
+                model05
             }
         }
 
       model1.model
+    }
+
+    def mip2: ModelWithData = ((m: StochModel): @unchecked) match {
+      case model0 @ MultiStageStochModel(_, stochData, T @ _, S @ _, pi, na: STAdapter) =>
+        import amphip.model.{replace => replacef}
+        import na.{ST, pred, H, ancf}
+
+        // adds ST, H, pred, ancf which are collected from the
+        // non anticipativity constraints
+        val model1 = (model0 :++ nonanticipativityConstraints)
+
+        val adaptedParams = model1.stochasticParameters.flatMap(na.adaptParam)
+        val st_params     = adaptedParams.unzip._2
+
+        // ancf is added to move before the parameters declarations
+        val model2 = (ancf :: st_params) ++: model1
+
+        val SA     = S default ST(H)
+        val model3 = model2.replace(S, SA)
+        val piA    = model3.param(pi.name) // pi using the new S
+
+        val model4 = model3
+          .setData(T , stochData.TData)
+          .setData(ST, stochData.STData)
+          .paramData(pred, stochData.predecessorsData)
+          .paramData(piA , stochData.probabilityData)
+
+        val model5 = model4.stochasticParameters.zip(adaptedParams)
+          .foldLeft(model4) { case (model, (param, (paramA0, st_param))) =>
+            val paramA1 = replacef(paramA0, S, SA)
+            model
+              .replace(param, paramA1)
+              .paramData(st_param, stochData.paramDataST(param))
+          }                
+
+        model5.model
     }
 
     def data = mip.data

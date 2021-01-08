@@ -18,6 +18,29 @@ sealed trait StochModel {
   def p: ParamStat
 
 }
+
+case class TwoStageStochModel(model: ModelWithData, stochData: StochData, S: SetStat, p: ParamStat) extends StochModel {
+  checkDomain(p.name, p.domain, List(S))
+}
+
+case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: SetStat, S: SetStat, p: ParamStat, naMode: NAMode) extends StochModel {
+  checkDomain(p.name, p.domain, List(S))
+
+  naMode match {
+    case DenseNAMode(link, _) =>
+      checkDomain(link.name, link.domain, List(S, S, T))
+
+    case CompressedNAMode(link) =>
+      checkDomain(link.name, link.domain, List(T))
+
+    case STAdapter(innerT, innerS) => 
+      require(innerT == T, s"STAdapter stages set is different to model stages set (${innerT.shows} vs ${T.shows})")
+      require(innerS == S, s"STAdapter scenarios set is different to model scenarios set (${innerS.shows} vs ${S.shows})")
+
+  }
+  
+}
+
 object StochModel {
   def checkDomain(name: String, domain: Option[IndExpr], targetDomain: List[SetExpr]): Unit = 
     require({
@@ -137,18 +160,16 @@ case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
       val sIdeal = dummy("s")
 
       val (entries, t, s) = assignIndices(entries0, T, S, tIdeal, sIdeal)
-      val subscript       = entries.flatMap(_.indices)
-
-      val param0 = param.copy(domain = IndExpr(entries, predicate0).some)
-
+      val param0          = param.copy(domain = IndExpr(entries, predicate0).some)
+      
       /* 
-        Adapted version of the parameter which don't have separated scenarios 
-        and allows to specify the parameter values in a more compact way.
-       */
+      Adapted version of the parameter which don't have separated scenarios 
+      and allows to specify the parameter values in a more compact way.
+      */
       val ST_param = 
-        replace(param0, S(), ST(t))
-        .copy(name = s"ST_${param0.name}")
-
+        replace(param0, S(), ST(t)).copy(name = s"ST_${param0.name}")
+      
+      val subscript  = entries.flatMap(_.indices)
       val subscript1 = subscript.map(x => if (x == s) ancf(s,t) else x: SimpleExpr)
 
       val paramA = param0 default ST_param(subscript1)
@@ -162,26 +183,4 @@ sealed trait NAForm
 object NAForm {
   case object X extends NAForm
   case object Z extends NAForm
-}
-
-case class TwoStageStochModel(model: ModelWithData, stochData: StochData, S: SetStat, p: ParamStat) extends StochModel {
-  checkDomain(p.name, p.domain, List(S))
-}
-
-case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: SetStat, S: SetStat, p: ParamStat, naMode: NAMode) extends StochModel {
-  checkDomain(p.name, p.domain, List(S))
-
-  naMode match {
-    case DenseNAMode(link, _) =>
-      checkDomain(link.name, link.domain, List(S, S, T))
-
-    case CompressedNAMode(link) =>
-      checkDomain(link.name, link.domain, List(T))
-
-    case STAdapter(innerT, innerS) => 
-      require(innerT == T, s"STAdapter stages set is different to model stages set (${innerT.shows} vs ${T.shows})")
-      require(innerS == S, s"STAdapter scenarios set is different to model scenarios set (${innerS.shows} vs ${S.shows})")
-
-  }
-  
 }
