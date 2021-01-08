@@ -17,35 +17,35 @@ class TestNA {
     val I  = set
     
     val x1  = xvar(T,S)
-    val (entries1, tA1, sA1) = nonanticipativity.assignIndices(x1.domain.get.entries, T, S, t, s)
+    val (entries1, tA1, sA1) = StochModel.assignIndices(x1.domain.get.entries, T, S, t, s)
     assertEquals(List(t,s), entries1.flatMap(_.indices))
     assertEquals(tA1, t)
     assertEquals(sA1, s)
     
     val i_ = dummy("i_", synthetic = true)
     val x2a = xvar(T,S,I)
-    val (entries2a, tA2a, sA2a) = nonanticipativity.assignIndices(x2a.domain.get.entries, T, S, t, s)
+    val (entries2a, tA2a, sA2a) = StochModel.assignIndices(x2a.domain.get.entries, T, S, t, s)
     assertEquals(List(t,s,i_), entries2a.flatMap(_.indices))
     assertEquals(tA2a, t)
     assertEquals(sA2a, s)
     
     val i  = dummy
     val x2b = xvar(T, S, i in I)
-    val (entries2b, tA2b, sA2b) = nonanticipativity.assignIndices(x2b.domain.get.entries, T, S, t, s)
+    val (entries2b, tA2b, sA2b) = StochModel.assignIndices(x2b.domain.get.entries, T, S, t, s)
     assertEquals(List(t,s,i), entries2b.flatMap(_.indices))
     assertEquals(tA2b, t)
     assertEquals(sA2b, s)
 
     val i1_ = dummy("i1_", synthetic = true)
     val x3 = xvar(T, S, I * I)
-    val (entries3, tA3, sA3) = nonanticipativity.assignIndices(x3.domain.get.entries, T, S, t, s)
+    val (entries3, tA3, sA3) = StochModel.assignIndices(x3.domain.get.entries, T, S, t, s)
     assertEquals(List(t, s, i_, i1_), entries3.flatMap(_.indices))
     assertEquals(tA3, t)
     assertEquals(sA3, s)
 
     val i2_ = dummy("i2_", synthetic = true)
     val x4 = xvar(T, S, I * I, I)
-    val (entries4, tA4, sA4) = nonanticipativity.assignIndices(x4.domain.get.entries, T, S, t, s)
+    val (entries4, tA4, sA4) = StochModel.assignIndices(x4.domain.get.entries, T, S, t, s)
     assertEquals(List(t, s, i_, i1_, i2_), entries4.flatMap(_.indices))
     assertEquals(tA4, t)
     assertEquals(sA4, s)
@@ -62,19 +62,19 @@ class TestNA {
     val i2 = dummy
 
     val x1  = xvar(i1 in T, i2 in S)
-    val (entries1, tA1, sA1) = nonanticipativity.assignIndices(x1.domain.get.entries, T, S, t, s)
+    val (entries1, tA1, sA1) = StochModel.assignIndices(x1.domain.get.entries, T, S, t, s)
     assertEquals(List(i1,i2), entries1.flatMap(_.indices))
     assertEquals(tA1, i1)
     assertEquals(sA1, i2)
 
     val x2a = xvar(i1 in T, S)
-    val (entries2a, tA2a, sA2a) = nonanticipativity.assignIndices(x2a.domain.get.entries, T, S, t, s)
+    val (entries2a, tA2a, sA2a) = StochModel.assignIndices(x2a.domain.get.entries, T, S, t, s)
     assertEquals(List(i1,s), entries2a.flatMap(_.indices))
     assertEquals(tA2a, i1)
     assertEquals(sA2a, s)
 
     val x2b = xvar(T, i2 in S)
-    val (entries2b, tA2b, sA2b) = nonanticipativity.assignIndices(x2b.domain.get.entries, T, S, t, s)
+    val (entries2b, tA2b, sA2b) = StochModel.assignIndices(x2b.domain.get.entries, T, S, t, s)
     assertEquals(List(t,i2), entries2b.flatMap(_.indices))
     assertEquals(tA2b, t)
     assertEquals(sA2b, i2)
@@ -92,19 +92,19 @@ class TestNA {
     val I  = set 
 
     val x1  = xvar(T, S, t in I)
-    val (entries1, tA1, sA1) = nonanticipativity.assignIndices(x1.domain.get.entries, T, S, t, s)
+    val (entries1, tA1, sA1) = StochModel.assignIndices(x1.domain.get.entries, T, S, t, s)
     assertEquals(List(t_, s, t), entries1.flatMap(_.indices))
     assertEquals(tA1, t_)
     assertEquals(sA1, s)
 
     val x2  = xvar(T, S, s in I)
-    val (entries2, tA2, sA2) = nonanticipativity.assignIndices(x2.domain.get.entries, T, S, t, s)
+    val (entries2, tA2, sA2) = StochModel.assignIndices(x2.domain.get.entries, T, S, t, s)
     assertEquals(List(t, s_, s), entries2.flatMap(_.indices))
     assertEquals(tA2, t)
     assertEquals(sA2, s_)
 
     val x3  = xvar(T, S, t in I, s in I)
-    val (entries3, tA3, sA3) = nonanticipativity.assignIndices(x3.domain.get.entries, T, S, t, s)
+    val (entries3, tA3, sA3) = StochModel.assignIndices(x3.domain.get.entries, T, S, t, s)
     assertEquals(List(t_, s_, t, s), entries3.flatMap(_.indices))
     assertEquals(tA3, t_)
     assertEquals(sA3, s_)

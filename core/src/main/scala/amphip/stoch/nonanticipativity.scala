@@ -7,7 +7,7 @@ import spire.implicits._
 
 import amphip.dsl._
 import amphip.model.ast._
-import amphip.model.dimen
+import amphip.stoch.StochModel.{isStochastic, assignIndices}
 
 object nonanticipativity {
 
@@ -39,69 +39,6 @@ object nonanticipativity {
         xvar(subscript1) === xvar(subscript2)
       }
     }
-  }
-
-  def isStochastic(entries: List[IndEntry], T: SetStat, S: SetStat): Boolean = {
-    val dependsOnT = entries.exists(_.set == T())
-    val dependsOnS = entries.exists(_.set == S())
-    dependsOnT && dependsOnS
-  }
-
-  /* Calculate the indices needed for each set expression in the entries 
-   * and return assigned indices to T and S sets.
-   */
-  def assignIndices(entries0: List[IndEntry], T: SetStat, S: SetStat, tIdeal: DummyIndDecl, sIdeal: DummyIndDecl): (List[IndEntry], DummyIndDecl, DummyIndDecl) = {
-    val gen = newGen
-
-    // to avoid collisions
-    val indices = entries0.flatMap(_.indices)
-    val tIdealA = indices.find(_ == tIdeal).fold(tIdeal) { _ =>
-      DummyIndDecl(gen.dummy(tIdeal.name).freshName, synthetic = true)
-    }
-    val sIdealA = indices.find(_ == sIdeal).fold(sIdeal) { _ =>
-      DummyIndDecl(gen.dummy(sIdeal.name).freshName, synthetic = true)
-    }
-
-    val TExpr = T()
-    val SExpr = S()
-
-    val (revEntries, tA, sA) = 
-      entries0.foldLeft((List.empty[IndEntry], tIdealA, sIdealA)) { case ((res, t, s), entry) => 
-        val indices = entry.indices
-
-        val ind0 =
-          if (indices.isEmpty) {
-            val dim = dimen(entry.set)
-            List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
-          } else {
-            indices
-          }
-
-        // uses tIdealA and sIdealA if possible
-        val (indA, tA, sA) = 
-          (entry.set, ind0) match {
-            // index was generated, replace
-            case (TExpr, List(t0)) if t0.synthetic  => (List(t), t , s)
-            case (SExpr, List(s0)) if s0.synthetic  => (List(s), t , s)
-            // index was not generted, update tIdealA and sIdealA
-            case (TExpr, List(t0)) if !t0.synthetic => (ind0   , t0, s)
-            case (SExpr, List(s0)) if !s0.synthetic => (ind0   , t , s0)
-            // not T or S
-            case _                                  => (ind0   , t , s)
-          }
-
-        (IndEntry(indA, entry.set, entry.predicate) :: res, tA, sA)
-      }
-
-    (revEntries.reverse, tA, sA)
-  }
-
-  /* hint to use as name of the dummy index */
-  def nameHint(expr: SetExpr): Option[SymName] = {
-    def isValidChar(c: Char) = c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_'
-    import scalaz.syntax.show._
-    val str = expr.shows
-    str.filter(isValidChar).take(1).toLowerCase.some
   }
 
   def uniqueDummy(subscript: List[DummyIndDecl], base: DummyIndDecl, target: Int): DummyIndDecl = {
@@ -160,46 +97,14 @@ object nonanticipativity {
         if isStochastic(entries0, T, S)
     } yield {
 
-      val SExpr = S()
-      val TExpr = T()
-
       val sIdeal = dummy("s")
       val tIdeal = dummy("t")
 
-      /* calculate the indices needed for each set expression in the entries */
-      def assignIndices: List[IndEntry] = {
-        val gen = newGen
-
-        for {
-          entry <- entries0
-          indices = entry.indices
-        } yield {
-
-          val effInd0 =
-            if (indices.isEmpty) {
-              val dim = dimen(entry.set)
-              List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
-            } else {
-              indices
-            }
-
-          val effInd = (entry.set, effInd0) match {
-            case (SExpr, List(s)) if s.synthetic => List(sIdeal)
-            case (TExpr, List(t)) if t.synthetic => List(tIdeal)
-            case _ => effInd0
-          }
-
-          IndEntry(effInd, entry.set, entry.predicate)
-        }
-      }
-
-      val entries = assignIndices
+      val (entries, t, s) = assignIndices(entries0, T, S, tIdeal, sIdeal)
       val subscript = entries.flatMap(_.indices)
-      val s = entries.find(_.set == SExpr).toList.flatMap(_.indices).headOption getOrElse sIdeal // `sIdeal' shouldn't be needed here ...
-      val t = entries.find(_.set == TExpr).toList.flatMap(_.indices).headOption getOrElse tIdeal // `tIdeal' shouldn't be needed here ...
 
-      val s1 = dummy(maxStartingWith(subscript, s"${s.name}1", s.name) + "1")
-      val s2 = dummy(maxStartingWith(subscript, s"${s.name}2", s.name) + "2")
+      val s1 = uniqueDummy(subscript, s, 1)
+      val s2 = uniqueDummy(subscript, s, 2)
 
       val subscript1 = subscript.map(x => if (x == s) s1 else x)
       val subscript2 = subscript.map(x => if (x == s) s2 else x)

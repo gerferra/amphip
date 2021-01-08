@@ -3,8 +3,9 @@ package amphip.stoch
 import scalaz.syntax.show._
 import cats.syntax.option._
 
+import amphip.dsl._
 import amphip.model.ast._
-import amphip.model.dsl._
+import amphip.model.dimen
 import amphip.model.replace
 import amphip.data._
 import amphip.stoch.StochModel._
@@ -23,6 +24,68 @@ object StochModel {
       domain.fold(false)(_.entries.map(_.set) == targetDomain)
     }, s"`$name' must be indexed " + ind(targetDomain.map(x => x: IndEntry): _*).shows + " but was: " + domain.fold("not-indexed")(_.shows))
 
+  def isStochastic(entries: List[IndEntry], T: SetStat, S: SetStat): Boolean = {
+    val dependsOnT = entries.exists(_.set == T())
+    val dependsOnS = entries.exists(_.set == S())
+    dependsOnT && dependsOnS
+  }
+
+  /* Calculate the indices needed for each set expression in the entries 
+   * and return assigned indices to T and S sets.
+   */
+  def assignIndices(entries0: List[IndEntry], T: SetStat, S: SetStat, tIdeal: DummyIndDecl, sIdeal: DummyIndDecl): (List[IndEntry], DummyIndDecl, DummyIndDecl) = {
+    val gen = newGen
+
+    // to avoid collisions
+    val indices = entries0.flatMap(_.indices)
+    val tIdealA = indices.find(_ == tIdeal).fold(tIdeal) { _ =>
+      DummyIndDecl(gen.dummy(tIdeal.name).freshName, synthetic = true)
+    }
+    val sIdealA = indices.find(_ == sIdeal).fold(sIdeal) { _ =>
+      DummyIndDecl(gen.dummy(sIdeal.name).freshName, synthetic = true)
+    }
+
+    val TExpr = T()
+    val SExpr = S()
+
+    val (revEntries, tA, sA) = 
+      entries0.foldLeft((List.empty[IndEntry], tIdealA, sIdealA)) { case ((res, t, s), entry) => 
+        val indices = entry.indices
+
+        val ind0 =
+          if (indices.isEmpty) {
+            val dim = dimen(entry.set)
+            List.fill(dim)(DummyIndDecl(gen.dummy(nameHint(entry.set)).freshName, synthetic = true))
+          } else {
+            indices
+          }
+
+        // uses tIdealA and sIdealA if possible
+        val (indA, tA, sA) = 
+          (entry.set, ind0) match {
+            // index was generated, replace
+            case (TExpr, List(t0)) if t0.synthetic  => (List(t), t , s)
+            case (SExpr, List(s0)) if s0.synthetic  => (List(s), t , s)
+            // index was not generted, update tIdealA and sIdealA
+            case (TExpr, List(t0)) if !t0.synthetic => (ind0   , t0, s)
+            case (SExpr, List(s0)) if !s0.synthetic => (ind0   , t , s0)
+            // not T or S
+            case _                                  => (ind0   , t , s)
+          }
+
+        (IndEntry(indA, entry.set, entry.predicate) :: res, tA, sA)
+      }
+
+    (revEntries.reverse, tA, sA)
+  }
+
+  /* hint to use as name of the dummy index */
+  def nameHint(expr: SetExpr): Option[SymName] = {
+    def isValidChar(c: Char) = c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_'
+    import scalaz.syntax.show._
+    val str = expr.shows
+    str.filter(isValidChar).take(1).toLowerCase.some
+  }
 }
 
 /* 
@@ -65,15 +128,15 @@ case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
     param("ST_ancf", s in ST(H), t in T) in ST(t) := anc(H, s, t)
   }
 
-  def adaptParam(param: ParamStat): Option[(ParamStat, ParamStat)] =
+  def adaptParam(param: ParamStat): Option[(ParamStat, ParamStat)] = {
     for {
       IndExpr(entries0, predicate0) <- param.domain
-        if nonanticipativity.isStochastic(entries0, T, S)
+        if isStochastic(entries0, T, S)
     } yield {
       val tIdeal = dummy("t")
       val sIdeal = dummy("s")
 
-      val (entries, t, s) = nonanticipativity.assignIndices(entries0, T, S, tIdeal, sIdeal)
+      val (entries, t, s) = assignIndices(entries0, T, S, tIdeal, sIdeal)
       val subscript       = entries.flatMap(_.indices)
 
       val param0 = param.copy(domain = IndExpr(entries, predicate0).some)
@@ -92,6 +155,7 @@ case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
 
       paramA -> ST_param
     }
+  }
 }
 
 sealed trait NAForm
