@@ -262,14 +262,14 @@ trait AllSyntax {
     def mip: ModelWithData = {
       val model0 = m: StochModel
 
-      import model0.{stochData, S, p}
+      import model0.{stochData, S, pi}
 
       val model1 =
         model0 match {
           case model0: TwoStageStochModel =>
             model0
               .setData(S, stochData.SData)
-              .paramData(p, stochData.probabilityData) 
+              .paramData(pi, stochData.probabilityData) 
               .paramDataList(stochData.parametersData.map {
                 case (param, data) => param -> data.map {
                   case (subscript, data) => subscript.drop(1) -> data // removes stage index in two-stage model
@@ -292,14 +292,14 @@ trait AllSyntax {
               case DenseNAMode(link, _) => 
                 model01
                   .setData(S, stochData.SData)
-                  .paramData(p, stochData.probabilityData) 
+                  .paramData(pi, stochData.probabilityData) 
                   .paramData(link, stochData.linkData)
                   .paramDataList(stochData.parametersData)
 
               case CompressedNAMode(link) => 
                 model01
                   .setData(S, stochData.SData)
-                  .paramData(p, stochData.probabilityData) 
+                  .paramData(pi, stochData.probabilityData) 
                   .setData(link, stochData.linkSetDataBounds.map {
                     case (t, tupList) => t -> tupList.map(tup => List(tup._1, tup._2))
                   })
@@ -316,7 +316,7 @@ trait AllSyntax {
 
                 val SA      = S default ST(H)
                 val model03 = model02.replace(S, SA)
-                val pA      = model03.p // pi using the new S
+                val pA      = model03.pi // pi using the new S
 
                 val model04 = model03
                   .setData(ST, stochData.STData)
@@ -360,7 +360,7 @@ trait AllSyntax {
 
         val SA     = S default ST(H)
         val model3 = model2.replace(S, SA)
-        val piA    = model3.p // pi using the new S
+        val piA    = model3.pi // pi using SA
 
         val model4 = model3
           .setData(T , stochData.TData)

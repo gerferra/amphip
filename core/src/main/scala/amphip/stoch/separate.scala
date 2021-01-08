@@ -45,7 +45,7 @@ object separate {
     val m1 = detVarsNames.foldLeft(m) { (m, name) => separateDetVar(m, name) }
 
     val obj = m1.objective
-    val newObj = separateObjective(detVarsNames, m1.S, m1.p, obj)
+    val newObj = separateObjective(detVarsNames, m1.S, m1.pi, obj)
     val m2 = m1.replace(obj, newObj)
 
     val m2mip = m2.mip // to generate stochastic data
@@ -108,9 +108,9 @@ object separate {
     }
   }
 
-  def separateObjective(detVarsNames: List[String], S: SetStat, p: ParamStat, o: ObjectiveStat): ObjectiveStat = o match {
-    case x: Minimize => x.copy(expr = separateLinExpr(detVarsNames, S, p, x.expr))
-    case x: Maximize => x.copy(expr = separateLinExpr(detVarsNames, S, p, x.expr))
+  def separateObjective(detVarsNames: List[String], S: SetStat, pi: ParamStat, o: ObjectiveStat): ObjectiveStat = o match {
+    case x: Minimize => x.copy(expr = separateLinExpr(detVarsNames, S, pi, x.expr))
+    case x: Maximize => x.copy(expr = separateLinExpr(detVarsNames, S, pi, x.expr))
   }
 
   def separateDomain(S: SetStat, domain: Option[IndExpr]): (DummyIndDecl, IndExpr) = {
@@ -140,7 +140,7 @@ object separate {
       s -> ind(s in S))
   }
 
-  def separateLinExpr(detVarsNames: List[String], S: SetStat, p: ParamStat, expr: LinExpr): LinExpr = {
+  def separateLinExpr(detVarsNames: List[String], S: SetStat, pi: ParamStat, expr: LinExpr): LinExpr = {
     val SExpr = S()
     val comps = summands(expr)
     val (stoch, det) = comps.partition {
@@ -166,8 +166,8 @@ object separate {
           val s = dummy(gen.dummy("s").freshName)
           val newDetSum = detVarsNames.foldLeft(detSum)((detSum, name) => fixSubscript(name, s, detSum))
           optStochSum.cata(
-            stochSum => sum(s in S)(p(s) * newDetSum) + stochSum,
-            sum(s in S)(p(s) * newDetSum))
+            stochSum => sum(s in S)(pi(s) * newDetSum) + stochSum,
+            sum(s in S)(pi(s) * newDetSum))
         },
         optStochSum | expr)
 

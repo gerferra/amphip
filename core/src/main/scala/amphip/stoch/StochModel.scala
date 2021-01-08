@@ -15,16 +15,16 @@ sealed trait StochModel {
   def model: ModelWithData
   def stochData: StochData
   def S: SetStat
-  def p: ParamStat
+  def pi: ParamStat
 
 }
 
-case class TwoStageStochModel(model: ModelWithData, stochData: StochData, S: SetStat, p: ParamStat) extends StochModel {
-  checkDomain(p.name, p.domain, List(S))
+case class TwoStageStochModel(model: ModelWithData, stochData: StochData, S: SetStat, pi: ParamStat) extends StochModel {
+  checkDomain(pi.name, pi.domain, List(S))
 }
 
-case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: SetStat, S: SetStat, p: ParamStat, naMode: NAMode) extends StochModel {
-  checkDomain(p.name, p.domain, List(S))
+case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: SetStat, S: SetStat, pi: ParamStat, naMode: NAMode) extends StochModel {
+  checkDomain(pi.name, pi.domain, List(S))
 
   naMode match {
     case DenseNAMode(link, _) =>
