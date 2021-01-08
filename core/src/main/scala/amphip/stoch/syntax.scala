@@ -4,15 +4,16 @@ import scalaz.std.option._, optionSyntax._
 
 import spire.math._, spire.implicits._
 
+import amphip.base.LinkedMap
+import amphip.base.implicits._
 import amphip.model.ast._
 import amphip.model.dsl._
+import amphip.model.collect
 import amphip.data._
 import amphip.data.dsl._
 import amphip.data.ops._
-import amphip.model.collect
+import amphip.stoch.instances._
 import amphip.solver
-import amphip.base.LinkedMap
-import amphip.base.implicits._
 
 object syntax extends AllSyntax
 
@@ -58,7 +59,8 @@ trait AllSyntax {
 
     def relax: StochModel = update(m.model.relax)
 
-    def replace[A](target: A, replacement: A): StochModel = update(m.model.replace(target, replacement))
+    def replace[A](target: A, replacement: A): StochModel = 
+      amphip.model.replace(m: StochModel, target, replacement)
 
     def statements: List[Stat] = m.model.statements ++ nonanticipativityConstraints
 
@@ -314,7 +316,7 @@ trait AllSyntax {
 
                 val SA      = S default ST(H)
                 val model03 = model02.replace(S, SA)
-                val pA      = amphip.model.replace(p, S, SA)
+                val pA      = model03.p // pi using the new S
 
                 val model04 = model03
                   .setData(ST, stochData.STData)
@@ -342,7 +344,7 @@ trait AllSyntax {
     }
 
     def mip2: ModelWithData = ((m: StochModel): @unchecked) match {
-      case model0 @ MultiStageStochModel(_, stochData, T @ _, S @ _, pi, na: STAdapter) =>
+      case model0 @ MultiStageStochModel(_, stochData, T @ _, S @ _, _, na: STAdapter) =>
         import amphip.model.{replace => replacef}
         import na.{ST, pred, H, ancf}
 
@@ -358,7 +360,7 @@ trait AllSyntax {
 
         val SA     = S default ST(H)
         val model3 = model2.replace(S, SA)
-        val piA    = model3.param(pi.name) // pi using the new S
+        val piA    = model3.p // pi using the new S
 
         val model4 = model3
           .setData(T , stochData.TData)

@@ -2,7 +2,6 @@ package amphip.data
 
 import scala.language.implicitConversions
 
-//import scalaz.std.list.listSyntax._
 import cats.syntax.list._
 
 import amphip.model.ast._

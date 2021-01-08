@@ -17,7 +17,7 @@ object replace {
   * separates the case when the thing being replaced is the `x' itself (x == pv)
   * from other cases, so Scala can do exhaustiveness check on the `otherwise' match
   */
-  private def rep_[A, B](x: A, pv: B, nv: B)(otherwise: A => A): A = x match {
+  def rep_[A, B](x: A, pv: B, nv: B)(otherwise: A => A): A = x match {
     case `pv` => nv.asInstanceOf[A] // x is an A /\ pv is a B /\ x == pv ===> A is B ===> nv is an A
     case _ => otherwise(x)
   }
