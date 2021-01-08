@@ -22,7 +22,7 @@ trait AllSyntax {
     def relax(xvar: VarStat): ModelWithData = update(m.model.relax(xvar))
     def relax: ModelWithData = update(m.model.relax)
 
-    def replace[A: Manifest](target: A, replacement: A): ModelWithData = update(m.model.replace(target, replacement))
+    def replace[A](target: A, replacement: A): ModelWithData = update(m.model.replace(target, replacement))
 
     def statements: List[Stat] = m.model.statements
     def variables: List[VarStat] = m.model.variables
