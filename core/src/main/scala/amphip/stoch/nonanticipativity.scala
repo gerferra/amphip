@@ -11,8 +11,7 @@ import amphip.model.dimen
 
 object nonanticipativity {
 
-  def apply(xvar: VarStat, T: SetStat, S: SetStat, na: AdaptedNAMode): Option[ConstraintStat] = {
-
+  def apply(xvar: VarStat, T: SetStat, S: SetStat, na: STAdapter): Option[ConstraintStat] = {
     for {
       IndExpr(entries0, predicate0) <- xvar.domain 
         if isStochastic(entries0, T, S)

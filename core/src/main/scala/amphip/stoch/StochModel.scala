@@ -34,39 +34,41 @@ object StochModel {
     - Maybe retain "adapted" and add parameter to specify if the non anticipative 
       version of variables and parameters should replace the originals 
       (this is implicit non anticipativity).
+    - Using "STAdapter" for now
  */
 sealed trait NAMode
 case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
 case class CompressedNAMode(link: SetStat) extends NAMode
-case class AdaptedNAMode(T: SetStat, S: SetStat) extends NAMode {
-  val ST: SetStat = set("NA_ST", T)
+case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
+  val ST: SetStat = set("ST_ST", T)
   
   val pred: ParamStat = {
     val t = dummy("t")
-    param("NA_pred", t in T &~ List(1), ST(t)) in ST(t-1)
+    param("ST_pred", t in T &~ List(1), ST(t)) in ST(t-1)
   }
   
   lazy val anc: ParamStat = {
     val (t, tp) = (dummy("t"), dummy("tp"))
     val s = dummy("s")
-    param("NA_anc", ind(t in T, s in ST(t), tp in T) | tp <= t) in ST(tp) :=
+    param("ST_anc", ind(t in T, s in ST(t), tp in T) | tp <= t) in ST(tp) :=
       xif (tp === t) { s } { anc(t-1, pred(t,s), tp) }
   }
 
   val H: ParamStat = {
     val t = dummy("t")
-    param("NA_H") := max(t in T)(t)
+    param("ST_H") := max(t in T)(t)
   }
 
   val ancf: ParamStat = {
     val t = dummy("t")
     val s = dummy("s")
-    param("NA_ancf", s in ST(H), t in T) in ST(t) := anc(H, s, t)
+    param("ST_ancf", s in ST(H), t in T) in ST(t) := anc(H, s, t)
   }
 
   def adaptParam(param: ParamStat): Option[(ParamStat, ParamStat)] =
     for {
-      IndExpr(entries0, predicate) <- param.domain
+      IndExpr(entries0, predicate0) <- param.domain
+        if nonanticipativity.isStochastic(entries0, T, S)
     } yield {
       val tIdeal = dummy("t")
       val sIdeal = dummy("s")
@@ -74,21 +76,21 @@ case class AdaptedNAMode(T: SetStat, S: SetStat) extends NAMode {
       val (entries, t, s) = nonanticipativity.assignIndices(entries0, T, S, tIdeal, sIdeal)
       val subscript       = entries.flatMap(_.indices)
 
-      val param0 = param.copy(domain = IndExpr(entries, predicate).some)
+      val param0 = param.copy(domain = IndExpr(entries, predicate0).some)
 
       /* 
         Adapted version of the parameter which don't have separated scenarios 
         and allows to specify the parameter values in a more compact way.
        */
-      val NA_param = 
+      val ST_param = 
         replace(param0, S(), ST(t))
-        .copy(name = s"NA_${param0.name}")
+        .copy(name = s"ST_${param0.name}")
 
-      val subscript1: List[SimpleExpr] = subscript.map(x => if (x == s) ancf(s,t) else x: SimpleExpr)
+      val subscript1 = subscript.map(x => if (x == s) ancf(s,t) else x: SimpleExpr)
 
-      val param_ = param0 default NA_param(subscript1)
+      val paramA = param0 default ST_param(subscript1)
 
-      param_ -> NA_param
+      paramA -> ST_param
     }
 }
 
@@ -112,9 +114,9 @@ case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: S
     case CompressedNAMode(link) =>
       checkDomain(link.name, link.domain, List(T))
 
-    case AdaptedNAMode(innerT, innerS) => 
-      require(innerT == T, s"Adapted NA mode stages set is different to model stages set (${innerT.shows} vs ${T.shows})")
-      require(innerS == S, s"Adapted NA mode scenarios set is different to model scenarios set (${innerS.shows} vs ${S.shows})")
+    case STAdapter(innerT, innerS) => 
+      require(innerT == T, s"STAdapter stages set is different to model stages set (${innerT.shows} vs ${T.shows})")
+      require(innerS == S, s"STAdapter scenarios set is different to model scenarios set (${innerS.shows} vs ${S.shows})")
 
   }
   

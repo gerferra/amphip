@@ -1,18 +1,18 @@
 set T;
 
-set NA_ST{T};
+set ST_ST{T};
 
-param NA_H := (max{t in T} t);
+param ST_H := (max{t in T} t);
 
-param NA_pred{t in (T diff {1}), NA_ST[t]} in NA_ST[(t - 1)];
+param ST_pred{t in (T diff {1}), ST_ST[t]} in ST_ST[(t - 1)];
 
-param NA_anc{t in T, s in NA_ST[t], tp in T : (tp <= t)} in NA_ST[tp], := (if (tp == t) then s else NA_anc[(t - 1), NA_pred[t, s], tp]);
+param ST_anc{t in T, s in ST_ST[t], tp in T : (tp <= t)} in ST_ST[tp], := (if (tp == t) then s else ST_anc[(t - 1), ST_pred[t, s], tp]);
 
-param NA_ancf{s in NA_ST[NA_H], t in T} in NA_ST[t], := NA_anc[NA_H, s, t];
+param ST_ancf{s in ST_ST[ST_H], t in T} in ST_ST[t], := ST_anc[ST_H, s, t];
 
-param NA_d{t in T, s in NA_ST[t]};
+param ST_d{t in T, s in ST_ST[t]};
 
-set S default NA_ST[NA_H];
+set S default ST_ST[ST_H];
 
 param pi{S};
 
@@ -30,7 +30,7 @@ param q{C};
 
 param a{t in T} := (sum{c in A : (tau[c] == t)} q[c]);
 
-param d{t in T, s in S} default NA_d[t, NA_ancf[s, t]];
+param d{t in T, s in S} default ST_d[t, ST_ancf[s, t]];
 
 param ymin;
 
@@ -72,16 +72,15 @@ s.t. cancelledFuel{t in T, s in S}: w[t, s] == (sum{c in A : (tau[c] == t)} (q[c
 
 minimize cost: (sum{t in T, s in S} (pi[s] * (((sum{c in P : (t <= (H - gamma[c]))} ((ca[c] * q[c]) * v[c, t, s])) + (sum{c in A : (t <= (tau[c] - 1))} (((cc[c] - ca[c]) * q[c]) * x[c, t, s]))) + (h[t] * y[t, s]))));
 
-s.t. NA_u_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: u[t, s1] == u[t, s2];
+s.t. NA_u_ctr{t in T, s1 in S, s2 in S : (ST_ancf[s1, t] == ST_ancf[s2, t])}: u[t, s1] == u[t, s2];
 
-s.t. NA_w_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: w[t, s1] == w[t, s2];
+s.t. NA_w_ctr{t in T, s1 in S, s2 in S : (ST_ancf[s1, t] == ST_ancf[s2, t])}: w[t, s1] == w[t, s2];
 
-s.t. NA_y_ctr{t in T, s1 in S, s2 in S : (NA_ancf[s1, t] == NA_ancf[s2, t])}: y[t, s1] == y[t, s2];
+s.t. NA_y_ctr{t in T, s1 in S, s2 in S : (ST_ancf[s1, t] == ST_ancf[s2, t])}: y[t, s1] == y[t, s2];
 
-s.t. NA_v_ctr{t in T, s1 in S, s2 in S, c in P : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t <= (H - gamma[c])))}: v[c, t, s1] == v[c, t, s2];
+s.t. NA_v_ctr{t in T, s1 in S, s2 in S, c in P : ((ST_ancf[s1, t] == ST_ancf[s2, t]) and (t <= (H - gamma[c])))}: v[c, t, s1] == v[c, t, s2];
 
-s.t. NA_x_ctr{t in T, s1 in S, s2 in S, c in A : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t <= (tau[c] - 1)))}: x[c, t, s1] == x[c, t, s2];
-
+s.t. NA_x_ctr{t in T, s1 in S, s2 in S, c in A : ((ST_ancf[s1, t] == ST_ancf[s2, t]) and (t <= (tau[c] - 1)))}: x[c, t, s1] == x[c, t, s2];
 
 data;
 
@@ -91,9 +90,9 @@ set A := "A1" "A2";
 
 set P := "P1" "P2" "P3" "P4";
 
-set NA_ST[1] := 1;
-set NA_ST[2] := 1 2;
-set NA_ST[3] := 1 2 3 4;
+set ST_ST[1] := 1;
+set ST_ST[2] := 1 2;
+set ST_ST[3] := 1 2 3 4;
 
 param y0 := 20;
 
@@ -113,13 +112,13 @@ param cc := "A1" 32, "A2" 42;
 
 param h := 1 1, 2 1, 3 1;
 
-param NA_pred :=
+param ST_pred :=
 [2, *] := 1 1, 2 1
 [3, *] := 1 1, 2 1, 3 2, 4 2;
 
 param pi := 1 0.15624999999999994, 2 0.34375, 3 0.34375000000000006, 4 0.15625;
 
-param NA_d :=
+param ST_d :=
 [1, *] := 1 35
 [2, *] := 1 38, 2 17
 [3, *] := 1 43, 2 24, 3 34, 4 44;

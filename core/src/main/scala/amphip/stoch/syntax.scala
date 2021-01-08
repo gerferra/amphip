@@ -23,7 +23,7 @@ trait AllSyntax {
 
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat): StochModel = {
       val prevStat = List[Stat](S, T, prob).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, AdaptedNAMode(T, S))
+      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, STAdapter(T, S))
     }
 
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat, link: SetStat): StochModel = {
@@ -147,7 +147,7 @@ trait AllSyntax {
       import amphip.stoch.nonanticipativity._
       (m: StochModel) match {          
         case m: MultiStageStochModel => m.naMode match {
-          case na: AdaptedNAMode => amphip.stoch.nonanticipativity(xvar, m.T, m.S, na)
+          case na: STAdapter => amphip.stoch.nonanticipativity(xvar, m.T, m.S, na)
           case CompressedNAMode(link) => amphip.stoch.nonanticipativity(xvar, m.T, m.S, link)
           case DenseNAMode(link, NAForm.X) => nonanticipativityTemplate(xvar, m.T, m.S, link, nonanticipativityXFunc)
           case DenseNAMode(link, NAForm.Z) => nonanticipativityTemplate(xvar, m.T, m.S, link, nonanticipativityZFunc)
@@ -303,7 +303,7 @@ trait AllSyntax {
                   })
                   .paramDataList(stochData.parametersData)
 
-              case naMode: AdaptedNAMode =>
+              case naMode: STAdapter =>
                 import naMode.{ST, pred, H, ancf}
 
                 val adaptedParams = 

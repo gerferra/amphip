@@ -1,20 +1,20 @@
 set T;
 
-set NA_ST{T};
+set ST_ST{T};
 
-param NA_H := (max{t in T} t);
+param ST_H := (max{t in T} t);
 
-param NA_pred{t in (T diff {1}), NA_ST[t]} in NA_ST[(t - 1)];
+param ST_pred{t in (T diff {1}), ST_ST[t]} in ST_ST[(t - 1)];
 
-param NA_anc{t in T, s in NA_ST[t], tp in T : (tp <= t)} in NA_ST[tp], := (if (tp == t) then s else NA_anc[(t - 1), NA_pred[t, s], tp]);
+param ST_anc{t in T, s in ST_ST[t], tp in T : (tp <= t)} in ST_ST[tp], := (if (tp == t) then s else ST_anc[(t - 1), ST_pred[t, s], tp]);
 
-param NA_ancf{s in NA_ST[NA_H], t in T} in NA_ST[t], := NA_anc[NA_H, s, t];
+param ST_ancf{s in ST_ST[ST_H], t in T} in ST_ST[t], := ST_anc[ST_H, s, t];
 
 set I;
 
-param NA_xi{t in T, s in NA_ST[t], i_ in I : (t > 1)};
+param ST_xi{t in T, s in ST_ST[t], i_ in I : (t > 1)};
 
-set S default NA_ST[NA_H];
+set S default ST_ST[ST_H];
 
 param pi{S};
 
@@ -22,7 +22,7 @@ param H := (max{t in T} t);
 
 param b;
 
-param xi{t in T, s in S, i_ in I : (t > 1)} default NA_xi[t, NA_ancf[s, t], i_];
+param xi{t in T, s in S, i_ in I : (t > 1)} default ST_xi[t, ST_ancf[s, t], i_];
 
 param G;
 
@@ -44,7 +44,7 @@ s.t. goal{s in S}: (((sum{i in I} (xi[H, s, i] * x[(H - 1), s, i])) - y[s]) + w[
 
 maximize utility: (sum{s in S} (pi[s] * ((q * y[s]) - (r * w[s]))));
 
-s.t. NA_x_ctr{t in T, s1 in S, s2 in S, i_ in I : ((NA_ancf[s1, t] == NA_ancf[s2, t]) and (t < H))}: x[t, s1, i_] == x[t, s2, i_];
+s.t. NA_x_ctr{t in T, s1 in S, s2 in S, i_ in I : ((ST_ancf[s1, t] == ST_ancf[s2, t]) and (t < H))}: x[t, s1, i_] == x[t, s2, i_];
 
 data;
 
@@ -52,10 +52,10 @@ set I := "stock" "bonds";
 
 set T := 1 2 3 4;
 
-set NA_ST[1] := 1;
-set NA_ST[2] := 1 2;
-set NA_ST[3] := 1 2 3 4;
-set NA_ST[4] := 1 2 3 4 5 6 7 8;
+set ST_ST[1] := 1;
+set ST_ST[2] := 1 2;
+set ST_ST[3] := 1 2 3 4;
+set ST_ST[4] := 1 2 3 4 5 6 7 8;
 
 param G := 80000;
 
@@ -65,14 +65,14 @@ param q := 1;
 
 param r := 4;
 
-param NA_pred :=
+param ST_pred :=
 [2, *] := 1 1, 2 1
 [3, *] := 1 1, 2 1, 3 2, 4 2
 [4, *] := 1 1, 2 1, 3 2, 4 2, 5 3, 6 3, 7 4, 8 4;
 
 param pi := 1 0.125, 2 0.125, 3 0.125, 4 0.125, 5 0.125, 6 0.125, 7 0.125, 8 0.125;
 
-param NA_xi :=
+param ST_xi :=
 [2, 1, *] := "stock" 1.25, "bonds" 1.14
 [2, 2, *] := "stock" 1.06, "bonds" 1.12
 [3, 1, *] := "stock" 1.25, "bonds" 1.14
