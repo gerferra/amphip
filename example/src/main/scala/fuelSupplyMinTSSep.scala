@@ -16,6 +16,141 @@ object fuelSupplyMinTSSep {
 
   import randomData._
 
+  object full {
+    // sets (and sets parameters)
+    val t  = dummy
+    val tp = dummy
+    val T = set
+    val H = param := max(t in T)(t)
+
+    val c = dummy
+    val A = set
+    val P = set
+    val C = set := A | P
+
+    val s = dummy
+    val S = set
+
+    // parameters
+    val d    = param(T, S)
+    val y0   = param
+    val ymin = param
+    val ymax = param
+
+    val tau   = param(A) in T
+    val gamma = param(P) in (0 to H - 1)
+    val q     = param(C)
+
+    val ca = param(C) 
+    val cc = param(A)
+    val h  = param(T)
+
+    val a = param(t in T) :=
+      sum(ind(c in A) | tau(c) === t) { q(c) }
+
+    val pi = param(S)
+
+    // variables
+    val y = xvar(T, S) >= 0
+    val v = xvar(ind(c in P, t in T, S) | t <= H - gamma(c)).binary
+    val x = xvar(ind(c in A, t in T, S) | t <= tau(c) - 1).binary
+
+    val u = xvar(T, S) >= 0
+    val w = xvar(T, S) >= 0
+
+    // objective function
+    val cost = minimize { 
+      sum(t in T, s in S) {
+        pi(s) * (
+          sum(ind(c in P) | t <= H-gamma(c)) { 
+            ca(c) * q(c) * v(c,t,s) 
+          } +
+          sum(ind(c in A) | t <= tau(c)-1) { 
+            (cc(c) - ca(c)) * q(c) * x(c,t,s) 
+          } +
+          h(t) * y(t,s)
+        )
+      } 
+    }
+
+    // constraints
+    val balance0 = st(            s in S         ) { 
+      y0        + a(1) + u(1,s) === d(1,s) + w(1,s) + y(1,s) 
+    }
+    val balance  = st(ind(t in T, s in S) | t > 1) { 
+      y(t-1, s) + a(t) + u(t,s) === d(t,s) + w(t,s) + y(t,s) 
+    }
+
+    val inventory = st(t in T, s in S) { dlte(ymin, y(t,s), ymax) }
+
+    val singleAcquisition = st(c in P, s in S) { 
+      sum(ind(t in T) | t <= H - gamma(c)) { v(c,t,s) } <= 1 
+    }
+    val singleCancellation = st(c in A, s in S) { 
+      sum(ind(t in T) | t <= tau(c) - 1  ) { x(c,t,s) } <= 1 
+    }
+
+    val acquiredFuel = st(t in T, s in S) {
+      u(t,s) ===  sum(ind(c in P) | gamma(c) <= t-1) { 
+                    q(c) * v(c, t-gamma(c), s) 
+                  }
+    }
+
+    val cancelledFuel = st(t in T, s in S) {
+      w(t,s) ===  sum(ind(c in A) | tau(c) === t) { 
+                    q(c) * sum(ind(tp in T) | tp <= tau(c)-1) { x(c,tp,s) } 
+                  }
+    }
+
+    // model
+    val stochModel = 
+      model(cost, 
+        balance0, balance, inventory, 
+        singleAcquisition, singleCancellation, 
+        acquiredFuel, cancelledFuel
+      ).stochastic(T, S, pi)
+
+    // data
+    val (t1, t2, t3) = (Stage("1"), Stage("2"), Stage("3"))
+    val (init, bsa, bsb) = (BasicScenario("init"), BasicScenario("a"), BasicScenario("b"))
+
+    val stochModelBS = stochModel
+      .stochStages(t1, t2, t3)
+      .stochBasicScenarios(t1, init -> r"1")
+      .stochBasicScenarios(t2, bsa -> r"1/2", bsb -> r"1/2")
+      .stochBasicScenarios(t3, bsa -> r"1/2", bsb -> r"1/2")
+      
+    val stages         = stochModelBS.stages
+    val scenarios      = stochModelBS.scenarios
+    val finalScenarios = stochModelBS.finalScenarios
+
+    val AData = List("A1", "A2")
+    val PData = List("P1", "P2", "P3", "P4")
+
+    val stochModelWData = stochModelBS
+      .setData(A, AData)
+      .setData(P, PData)
+      .paramData(y0  , 20)
+      .paramData(ymin,  0)
+      .paramData(ymax, 80)
+      .paramData(tau, "A1" -> 1, "A2" -> 2)
+      .paramData(gamma, PData.map(_ -> 1))
+      .paramData(q , uniform(2)( 10,  50)(AData ::: PData))
+      .paramData(ca, uniform(3)(150, 250)(AData ::: PData))
+      .paramData(cc, uniform(4)( 30,  50)(AData))
+      .paramData(h, stages.indices.map(_ + 1 -> 1))
+      .stochScenarioData(d, uniformL(1)(10, 50)(scenarios))
+      .stochProbabilities(betaR(2, 2)(finalScenarios))
+
+    // mip equivalent
+    val mipEquiv = stochModelWData.mip2
+
+    val modelStr = amphip.sem.mathprog.genModel(mipEquiv.model)
+    val dataStr  = amphip.sem.mathprog.genData (mipEquiv.data)
+
+    val (sout, out) = mipEquiv.solve
+  }
+
   object base {
     // sets (and sets parameters)
     val t = dummy
@@ -31,7 +166,7 @@ object fuelSupplyMinTSSep {
     val s = dummy
     val S = set
 
-    // parameters (and sets derived from parameters)
+    // parameters 
     val d = param(T, S)
 
     val y0 = param

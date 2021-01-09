@@ -58,7 +58,7 @@ var x{c in A, t in T, S : (t <= (tau[c] - 1))} binary;
 
 s.t. balance0{s in S}: ((y0 + a[1]) + u[1, s]) == ((d[1, s] + w[1, s]) + y[1, s]);
 
-s.t. balance{t in (T diff {1}), s in S}: ((y[(t - 1), s] + a[t]) + u[t, s]) == ((d[t, s] + w[t, s]) + y[t, s]);
+s.t. balance{t in T, s in S : (t > 1)}: ((y[(t - 1), s] + a[t]) + u[t, s]) == ((d[t, s] + w[t, s]) + y[t, s]);
 
 s.t. inventory{t in T, s in S}: ymin <= y[t, s] <= ymax;
 
