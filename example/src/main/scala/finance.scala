@@ -133,7 +133,7 @@ object finance {
       init        : BasicScenario, 
       alternatives: Iterable[BasicScenario]): StochModel = {
 
-      m.stochStages.toNel.fold(m) { nel =>
+      m.stages.toNel.fold(m) { nel =>
         val m1 = m.stochBasicScenarios(nel.head, init -> r"1")
 
         val den     = alternatives.size

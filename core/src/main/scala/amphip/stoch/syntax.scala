@@ -167,8 +167,15 @@ trait AllSyntax {
 
     import StochData._
 
-    def stochStages(ts: Stage*): StochModel = update(m.stochData.stages(ts: _*))
-    def stochStages                         = m.stochData.stages
+    def stochStages(ts: Stage*): StochModel = {
+      val newStochData = m.stochData.stages(ts: _*)
+      (m: StochModel) match {
+        case m: TwoStageStochModel   => m.copy(stochData = newStochData)
+        case m: MultiStageStochModel => 
+          m.copy(stochData = newStochData).setData(m.T, newStochData.TData)
+      }
+    }
+    def stages = m.stochData.stages
 
     def stochBasicScenarios(t: Stage, bss: (BasicScenario, Rational)*): StochModel = {
       update(m.stochData.basicScenarios(t, bss: _*))
@@ -191,7 +198,7 @@ trait AllSyntax {
      */
     def stochProbabilities(sp: Iterable[(Scenario, Rational)]): StochModel = {
       // history size on each stage
-      val hSize = m.stochStages.indices
+      val hSize = m.stages.indices
 
       // StochData after assignig custom probabilities to every possible history
       // and basic scenarios 
