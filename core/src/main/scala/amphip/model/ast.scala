@@ -1,5 +1,6 @@
 package amphip.model
 
+// TODO add `extends Product with Serializable` where applicable.
 object ast {
 
   final case class Model(statements: List[Stat])
@@ -7,7 +8,7 @@ object ast {
   /*
    * DECLARATIONS
    */
-  sealed trait Decl {
+  sealed trait Decl extends Product with Serializable {
     def name: SymName
   }
 
