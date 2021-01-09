@@ -19,11 +19,11 @@ sealed trait StochModel {
 
 }
 
-case class TwoStageStochModel(model: ModelWithData, stochData: StochData, S: SetStat, pi: ParamStat) extends StochModel {
+final case class TwoStageStochModel(model: ModelWithData, stochData: StochData, S: SetStat, pi: ParamStat) extends StochModel {
   checkDomain(pi.name, pi.domain, List(S))
 }
 
-case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: SetStat, S: SetStat, pi: ParamStat, naMode: NAMode) extends StochModel {
+final case class MultiStageStochModel(model: ModelWithData, stochData: StochData, T: SetStat, S: SetStat, pi: ParamStat, naMode: NAMode) extends StochModel {
   checkDomain(pi.name, pi.domain, List(S))
 
   naMode match {
@@ -123,9 +123,9 @@ object StochModel {
     - Using "STAdapter" for now
  */
 sealed trait NAMode
-case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
-case class CompressedNAMode(link: SetStat) extends NAMode
-case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
+final case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
+final case class CompressedNAMode(link: SetStat) extends NAMode
+final case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
   val ST: SetStat = set("ST_ST", T)
   
   val pred: ParamStat = {
