@@ -8,7 +8,6 @@ import amphip.base.LinkedMap
 import amphip.base.implicits._
 import amphip.model.ast._
 import amphip.model.dsl._
-import amphip.model.collect
 import amphip.data._
 import amphip.data.dsl._
 import amphip.data.ops._
@@ -20,21 +19,19 @@ object syntax extends AllSyntax
 trait AllSyntax {
 
   implicit class ModelWithDataStochSyntax[M](m: M)(implicit conv: M => ModelWithData) {
-    private def update(model: Model): ModelWithData = m.copy(model = model)
-
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat): StochModel = {
-      val prevStat = List[Stat](S, T, prob).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, STAdapter(T, S))
+      val newDataModel = List(S, T, prob) ++: m 
+      MultiStageStochModel(newDataModel, StochData(), T, S, prob, STAdapter(T, S))
     }
 
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat, link: SetStat): StochModel = {
-      val prevStat = List[Stat](S, T, prob, link).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, CompressedNAMode(link))
+      val newDataModel = List(S, T, prob, link) ++: m 
+      MultiStageStochModel(newDataModel, StochData(), T, S, prob, CompressedNAMode(link))
     }
 
     def stochastic(T: SetStat, S: SetStat, prob: ParamStat, link: ParamStat, naForm: NAForm): StochModel = {
-      val prevStat = List[Stat](S, T, prob, link).flatMap(collect(_, { case s: Stat => s }))
-      MultiStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), T, S, prob, DenseNAMode(link, naForm))
+      val newDataModel = List(S, T, prob, link) ++: m 
+      MultiStageStochModel(newDataModel, StochData(), T, S, prob, DenseNAMode(link, naForm))
     }
 
     /**
@@ -42,8 +39,8 @@ trait AllSyntax {
      * scenarios set `S` and the probabilities parameter `prob`.
      */
     def stochastic(S: SetStat, prob: ParamStat): StochModel = {
-      val prevStat = List[Stat](S, prob).flatMap(collect(_, { case s: Stat => s }))
-      val base = TwoStageStochModel(update(Model((prevStat ::: m.model.statements).distinct)), StochData(), S, prob)
+      val newDataModel = List(S, prob) ++: m 
+      val base = TwoStageStochModel(newDataModel, StochData(), S, prob)
       base.stochStages(Stage("single"))
     }
 
