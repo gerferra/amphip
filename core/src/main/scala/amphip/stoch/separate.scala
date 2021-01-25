@@ -44,12 +44,16 @@ object separate {
 
     val m1 = detVarsNames.foldLeft(m) { (m, name) => separateDetVar(m, name) }
 
-    val obj = m1.objective
+    val obj    = m1.objective
     val newObj = separateObjective(detVarsNames, m1.S, m1.pi, obj)
-    val m2 = m1.replace(obj, newObj)
+    val m2     = m1.replace(obj, newObj)
 
-    val m2mip = m2.mip // to generate stochastic data
-    ModelWithData(m2.model.model, m2mip.data)
+    val m2mip    = m2.mip // to generate stochastic data
+    // final model must contain the (possible) adaptations made to generate the mip model
+    // but not the nonanticipativity contraints
+    val nactrSet = m2.nonanticipativityConstraints.map(_.name).toSet
+    val stmts    = m2mip.statements.filterNot(x => nactrSet(x.name))
+    ModelWithData(Model(stmts), m2mip.data)
   }
 
   /**
@@ -67,11 +71,6 @@ object separate {
 
     val replacements =
       m1.statements.collect {
-        // XXX this isn't needed. VarAtt's expr type is NumExpr, not LinExpr
-        case x: VarStat if references(varName, x).nonEmpty =>
-          val (s, newVar) = separateVar(m1.S, x)
-          x -> fixSubscript(varName, s, newVar)
-
         case x: ConstraintStat if references(varName, x).nonEmpty =>
           val (s, newCtr) = separateConstraint(m1.S, x)
           x -> fixSubscript(varName, s, newCtr)

@@ -117,9 +117,131 @@ object finance {
     val mipEquiv = stochModelBasicData.mip
 
     val modelStr = amphip.sem.mathprog.genModel(mipEquiv.model)
-    val dataStr = amphip.sem.mathprog.genData(mipEquiv.data)
+    val dataStr  = amphip.sem.mathprog.genData(mipEquiv.data)
 
     val (sout, out) = mipEquiv.solve
+  }
+
+  object value {    
+    object RP {
+      val problem     = extendedAPI.stochModelBasicData
+      val (sout, out) = problem.solve 
+      val value       = -1514 
+    }
+    
+    object WS {
+      val problem     = RP.problem.separate
+      val (sout, out) = problem.solve 
+      val value       = 10497 
+    }
+
+    val EVPI = WS.value - RP.value // 12011
+    
+    object EEV1 {
+      import base.t1
+      object EV {
+        val problem     = amphip.stoch.EV(RP.problem, t1)
+        val (sout, out) = problem.solve
+        val value       = 4744 
+        /*
+          x[1,1,stock] = 55000
+          x[1,1,bonds] =     0
+        */
+      }
+
+      val problem = {
+        import base.{t, T, s, S, i, I, stock, bonds, x}
+
+        val xbar1 = param(ind(t in T, S, I) | t === 1)
+        val fixX1 = st(s in S, i in I) { x(1,s,i) === xbar1(1,s,i) }
+
+        val List(s1) = RP.problem.stochData.scenariosByStage(t1)
+        (RP.problem :+ fixX1)
+          .stochScenarioData(xbar1, s1,
+            stock -> 55000, 
+            bonds ->     0)
+      }
+      val (sout, out) = problem.solve
+      val value       = -1963 
+    }
+
+    object EEV2 {
+      import base.t2
+      object EV {
+        val problem     = amphip.stoch.EV(EEV1.problem, t2)
+        val (sout, out) = problem.solve
+        val value       = -235256 
+        /*
+          x[2,1,stock] = 68750
+          x[2,1,bonds] =     0
+          x[2,2,stock] = 58300
+          x[2,2,bonds] =     0
+        */
+      }
+
+      val problem = {
+        import base.{t, T, s, S, i, I, stock, bonds, x}
+
+        val xbar2 = param(ind(t in T, S, I) | t === 2)
+        val fixX2 = st(s in S, i in I) { x(2,s,i) === xbar2(2,s,i) }
+
+        val List(s1, s2) = EEV1.problem.stochData.scenariosByStage(t2)
+        (EEV1.problem :+ fixX2)
+          .stochScenarioData(xbar2, s1,
+            stock -> 68750, 
+            bonds ->     0)
+          .stochScenarioData(xbar2, s2,
+            stock -> 58300, 
+            bonds ->     0)
+      }
+      val (sout, out) = problem.solve
+      val value       = -2297
+    }
+
+    object EEV3 {
+      import base.t3
+      object EV {
+        val problem     = amphip.stoch.EV(EEV2.problem, t3)
+        val (sout, out) = problem.solve
+        val value       = -235256 
+        /*
+          x[3,1,stock] = 85937.5
+          x[3,1,bonds] =     0.0
+          x[3,2,stock] = 72875
+          x[3,2,bonds] =     0
+          x[3,3,stock] = 72875
+          x[3,3,bonds] =     0
+          x[3,4,stock] = 61798
+          x[3,4,bonds] =     0
+        */
+      }
+
+      val problem = {
+        import base.{t, T, s, S, i, I, stock, bonds, x}
+
+        val xbar3 = param(ind(t in T, S, I) | t === 3)
+        val fixX3 = st(s in S, i in I) { x(3,s,i) === xbar3(3,s,i) }
+
+        val List(s1, s2, s3, s4) = EEV2.problem.stochData.scenariosByStage(t3)
+        (EEV2.problem :+ fixX3)
+          .stochScenarioData(xbar3, s1,
+            stock -> 85937.5, 
+            bonds ->     0.0)
+          .stochScenarioData(xbar3, s2,
+            stock -> 72875, 
+            bonds ->     0)
+          .stochScenarioData(xbar3, s3,
+            stock -> 72875, 
+            bonds ->     0)
+          .stochScenarioData(xbar3, s4,
+            stock -> 61798, 
+            bonds ->     0)
+      }
+      val (sout, out) = problem.solve
+      val value       = -3788
+    }
+
+    val VSS = RP.value - EEV3.value // 2274
   }
 
   object aux {

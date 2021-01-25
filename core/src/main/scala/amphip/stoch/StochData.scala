@@ -95,6 +95,12 @@ case class StochData private (
     copy(scenarioData = newScenarioData)
   }
 
+  def scenarioData(scen: Scenario, paramData: Iterable[(ParamStat, ParamStatData)]): StochData = {
+    paramData.foldLeft(this) { 
+      case (model, (p, values)) => model.scenarioData(scen, p, values)
+    }
+  }
+
   def separated(x: Boolean): StochData = copy(separated = x)
 
   lazy private[this] val balancedTreeIdent: List[List[(BasicScenario, Rational)]] = balancedTree(List.empty, identity)
@@ -131,6 +137,15 @@ case class StochData private (
         }
     }
     tree.map(_.reverse)
+  }
+
+  lazy val finalScenariosIdent: List[List[(BasicScenario, Rational)]] = {
+    for {
+      s <- finalScenarios
+      p <- finalProbabilities
+    } yield {
+      s.zip(p)
+    }
   }
 
   lazy val finalScenarios: List[Scenario] = {
@@ -280,7 +295,7 @@ case class StochData private (
     probs
   }
 
-  def probabilityData: List[Double] = {
+  lazy val probabilityData: List[Double] = {
     for {
       path <- finalProbabilities
     } yield {
@@ -579,6 +594,36 @@ case class StochData private (
       }
 
     scenariosData 
+  }
+
+  def paramData(scen: Scenario): LinkedMap[ParamStat, ParamStatData] = {
+    val paramsData =
+      for {
+        stage       <- stages.lift(scen.size - 1).toList
+        bs          <- scen.lastOption.toList
+        param       <- parameters
+        cData = 
+          for {
+            cbss <- scenarioData.get(scen)
+            data <- cbss.get(param)
+          } yield {
+            data
+          }
+        bData = 
+          for {
+            bss  <- basicData.get(stage)
+            ds   <- bss.get(bs)
+            data <- ds.get(param)
+          } yield {
+            data
+          }
+        defaultData  = defaults.get(param)
+        pData       <- cData.orElse(bData).orElse(defaultData).toList
+      } yield {
+        param -> pData
+      }
+
+    LinkedMap() ++ paramsData
   }
 
   //// AUX

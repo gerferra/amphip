@@ -188,8 +188,45 @@ object farmer {
     val (sout, out) = stochRPModel.solve // 108390
   }
 
-  object WS {
-    val (sout, out) = RP.stochRPModel.separate.solve // 115406
+  object value {
+    object RP {
+      val problem     = farmer.RP.stochRPModel
+      val (sout, out) = problem.solve 
+      val value       = 108390 
+    }
+
+    object WS {
+      val problem     = RP.problem.separate
+      val (sout, out) = problem.solve
+      val value       = 115406 
+    }
+
+    val EVPI = WS.value - RP.value // 7016
+
+    // generated EV
+    object EV {
+      val problem     = amphip.stoch.EV(RP.problem)
+      val (sout, out) = problem.solve
+      val value       = 118600 
+    }
+
+    object EEV {
+      val problem = {
+        import farmer.EV._
+        val xbar = param(Crops)
+        val fixX = st(c in Crops) { x(c) === xbar(c) }
+        
+        (RP.problem :+ fixX)
+          .paramData(xbar,
+            W -> 120,
+            C ->  80,
+            B -> 300)
+      }
+      val (sout, out) = problem.solve
+      val value       = 107240 
+    }
+
+    val VSS = RP.value - EEV.value // 1150
   }
 
   object RP_byHand extends RPBase {
