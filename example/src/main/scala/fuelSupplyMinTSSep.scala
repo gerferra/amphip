@@ -151,6 +151,95 @@ object fuelSupplyMinTSSep {
     val (sout, out) = mipEquiv.solve
   }
 
+  object value {
+    object RP {
+      val problem     = full.stochModelWData
+      val (sout, out) = problem.solve 
+      val value       = 5935 
+    }
+
+    object WS {
+      val problem     = amphip.stoch.separate(RP.problem)
+      val (sout, out) = problem.solve 
+      val value       = 2738
+    }
+
+    val EVPI = RP.value - WS.value // 3197
+
+    object EV1 {
+      val problem     = amphip.stoch.EV(RP.problem, full.t1)
+      val (sout, out) = problem.solve
+      val value       = 2444
+      /*
+        v[P1,1,1] = 0
+        v[P2,1,1] = 0
+        v[P3,1,1] = 0
+        v[P4,1,1] = 1
+        x[A2,1,1] = 1
+      */
+    }
+
+    object EEV1 {
+      val problem = {
+        import full._
+
+        val vbar1 = param(ind(t in T, S, P) | t === 1)
+        val xbar1 = param(ind(t in T, S, A) | t === 1)
+  
+        val fixV1 = st(ind(s in S, c in P) | gamma(c) <= H-1) { v(c,1,s) === vbar1(1,s,c) }
+        val fixX1 = st(ind(s in S, c in A) | tau(c)   >= 2)   { x(c,1,s) === xbar1(1,s,c) }
+
+        val List(s1) = RP.problem.stochData.scenariosByStage(t1)
+        (RP.problem :++ List(fixV1, fixX1))
+          .stochScenarioData(vbar1, s1, 
+            "P1" -> 0, 
+            "P2" -> 0, 
+            "P3" -> 0, 
+            "P4" -> 1)
+          .stochScenarioData(xbar1, s1, 
+            "A2" -> 1)
+      }
+      val (sout, out) = problem.solve
+      val value       = 5935
+    }
+
+    object EV2 {
+      val problem     = amphip.stoch.EV(EEV1.problem, full.t2)
+      val (sout, out) = problem.solve
+      val value       = 2461
+      /*
+        v[P1,2,1] = 0
+        v[P1,2,2] = 0
+        v[P2,2,1] = 0
+        v[P2,2,2] = 0
+        v[P3,2,1] = 0
+        v[P3,2,2] = 0
+        v[P4,2,1] = 0
+        v[P4,2,2] = 0
+      */
+    }
+
+    object EEV2 {
+      val problem = {
+        import full._
+
+        val vbar2 = param(ind(t in T, S, P) | t === 2)
+        val fixV2 = st(ind(s in S, c in P) | gamma(c) <= H-2) { v(c,2,s) === vbar2(2,s,c) }
+
+        val List(s1, s2) = EEV1.problem.stochData.scenariosByStage(t2)
+        (EEV1.problem :+ fixV2)
+          .stochScenarioData(vbar2, s1, PData.map(_ -> 0))
+          .stochScenarioData(vbar2, s2, PData.map(_ -> 0))
+      }
+      val (sout, out) = problem.solve
+      val value       = Double.PositiveInfinity // infeasible
+    }
+
+    val VSS = EEV2.value - RP.value // +inf
+  }
+
+  // alternative ways to generate nonanticipativity constraints an specify parameter data
+
   object base {
     // sets (and sets parameters)
     val t = dummy
