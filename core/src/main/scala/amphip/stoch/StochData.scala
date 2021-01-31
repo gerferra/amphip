@@ -141,8 +141,7 @@ case class StochData private (
 
   lazy val finalScenariosIdent: List[List[(BasicScenario, Rational)]] = {
     for {
-      s <- finalScenarios
-      p <- finalProbabilities
+      (s,p) <- finalScenarios.zip(finalProbabilities)
     } yield {
       s.zip(p)
     }
