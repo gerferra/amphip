@@ -35,13 +35,13 @@ object fuelSupplyMinDet {
   val h = param(T)
 
   val a = param(t in T) :=
-    sum(ind(c in A) | tau(c) === t) { q(c) }
+    sum((c in A) | tau(c) === t) { q(c) }
 
   // variables
   val y = xvar(T) >= 0
 
-  val v = xvar(ind(c in P, t in T) | t <= H - gamma(c)).binary
-  val x = xvar(ind(c in A, t in T) | t <= tau(c) - 1).binary
+  val v = xvar(c in P, t in (1 to H - gamma(c))).binary
+  val x = xvar(c in A, t in (1 to tau(c) - 1)  ).binary
 
   val u = xvar(T) >= 0
   val w = xvar(T) >= 0
@@ -49,27 +49,27 @@ object fuelSupplyMinDet {
   // objective function
   val cost = minimize {
     sum(t in T) {
-      sum(ind(c in P) | t <= H - gamma(c)) {  ca(c)          * q(c) * v(c,t) } +
-      sum(ind(c in A) | t <= tau(c) - 1  ) { (cc(c) - ca(c)) * q(c) * x(c,t) } +
+      sum((c in P) | t <= H - gamma(c)) {  ca(c)          * q(c) * v(c,t) } +
+      sum((c in A) | t <= tau(c) - 1  ) { (cc(c) - ca(c)) * q(c) * x(c,t) } +
       h(t) * y(t)
     }
   }
 
   // constraints
   val balance0 = st                   { y0     + a(1) + u(1) === d(1) + w(1) + y(1) }
-  val balance  = st(ind(t in T) | t > 1) { y(t-1) + a(t) + u(t) === d(t) + w(t) + y(t) }
+  val balance  = st((t in T) | t > 1) { y(t-1) + a(t) + u(t) === d(t) + w(t) + y(t) }
 
   val inventory = st(t in T) { dlte(ymin, y(t), ymax) }
 
-  val singleAcquisition  = st(c in P) { sum(ind(t in T) | t <= H - gamma(c)) { v(c,t) } <= 1 }
-  val singleCancellation = st(c in A) { sum(ind(t in T) | t <= tau(c) - 1  ) { x(c,t) } <= 1 }
+  val singleAcquisition  = st(c in P) { sum(t in (1 to H - gamma(c))) { v(c,t) } <= 1 }
+  val singleCancellation = st(c in A) { sum(t in (1 to tau(c) - 1)  ) { x(c,t) } <= 1 }
 
   val acquiredFuel = st(t in T) {
-    u(t) === sum(ind(c in P) | gamma(c) <= t-1) { q(c) * v(c, t-gamma(c)) }
+    u(t) === sum((c in P) | gamma(c) <= t-1) { q(c) * v(c, t-gamma(c)) }
   }
 
   val cancelledFuel = st(t in T) {
-    w(t) === sum(ind(c in A) | tau(c) === t) { q(c) * sum(ind(tp in T) | tp <= tau(c) - 1) { x(c,tp) } }
+    w(t) === sum((c in A) | tau(c) === t) { q(c) * sum(tp in (1 to tau(c) - 1)) { x(c,tp) } }
   }
 
   // model

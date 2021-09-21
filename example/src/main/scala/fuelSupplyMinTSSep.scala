@@ -46,7 +46,7 @@ object fuelSupplyMinTSSep {
     val h  = param(T)
 
     val a = param(t in T) :=
-      sum(ind(c in A) | tau(c) === t) { q(c) }
+      sum((c in A) | tau(c) === t) { q(c) }
 
     val pi = param(S)
 
@@ -62,10 +62,10 @@ object fuelSupplyMinTSSep {
     val cost = minimize { 
       sum(t in T, s in S) {
         pi(s) * (
-          sum(ind(c in P) | t <= H-gamma(c)) { 
-            ca(c) * q(c) * v(c,t,s) 
+          sum((c in P) | t <= H-gamma(c)) { 
+                     ca(c)  * q(c) * v(c,t,s) 
           } +
-          sum(ind(c in A) | t <= tau(c)-1) { 
+          sum((c in A) | t <= tau(c)-1) { 
             (cc(c) - ca(c)) * q(c) * x(c,t,s) 
           } +
           h(t) * y(t,s)
@@ -84,21 +84,21 @@ object fuelSupplyMinTSSep {
     val inventory = st(t in T, s in S) { dlte(ymin, y(t,s), ymax) }
 
     val singleAcquisition = st(c in P, s in S) { 
-      sum(ind(t in T) | t <= H - gamma(c)) { v(c,t,s) } <= 1 
+      sum(t in (1 to H - gamma(c))) { v(c,t,s) } <= 1 
     }
     val singleCancellation = st(c in A, s in S) { 
-      sum(ind(t in T) | t <= tau(c) - 1  ) { x(c,t,s) } <= 1 
+      sum(t in (1 to tau(c) - 1)  ) { x(c,t,s) } <= 1 
     }
 
     val acquiredFuel = st(t in T, s in S) {
-      u(t,s) ===  sum(ind(c in P) | gamma(c) <= t-1) { 
+      u(t,s) ===  sum((c in P) | gamma(c) <= t-1) { 
                     q(c) * v(c, t-gamma(c), s) 
                   }
     }
 
     val cancelledFuel = st(t in T, s in S) {
-      w(t,s) ===  sum(ind(c in A) | tau(c) === t) { 
-                    q(c) * sum(ind(tp in T) | tp <= tau(c)-1) { x(c,tp,s) } 
+      w(t,s) ===  sum((c in A) | tau(c) === t) { 
+                    q(c) * sum(tp in (1 to tau(c)-1)) { x(c,tp,s) } 
                   }
     }
 
@@ -272,7 +272,7 @@ object fuelSupplyMinTSSep {
     val h = param(T)
 
     val a = param(t in T) :=
-      sum(ind(c in A) | tau(c) === t) { q(c) }
+      sum((c in A) | tau(c) === t) { q(c) }
 
     val pi = param(S)
 
@@ -289,8 +289,8 @@ object fuelSupplyMinTSSep {
     val cost = minimize {
       sum(t in T, s in S) {
         pi(s) * (
-          sum(ind(c in P) | t <= H - gamma(c)) {  ca(c)          * q(c) * v(c,t,s) } +
-          sum(ind(c in A) | t <= tau(c) - 1  ) { (cc(c) - ca(c)) * q(c) * x(c,t,s) } +
+          sum((c in P) | t <= H - gamma(c)) {  ca(c)          * q(c) * v(c,t,s) } +
+          sum((c in A) | t <= tau(c) - 1  ) { (cc(c) - ca(c)) * q(c) * x(c,t,s) } +
           h(t) * y(t,s)
         )
       }
@@ -302,15 +302,15 @@ object fuelSupplyMinTSSep {
 
     val inventory = st(t in T, s in S) { dlte(ymin, y(t,s), ymax) }
 
-    val singleAcquisition  = st(c in P, s in S) { sum(ind(t in T) | t <= H - gamma(c)) { v(c,t,s) } <= 1 }
-    val singleCancellation = st(c in A, s in S) { sum(ind(t in T) | t <= tau(c) - 1  ) { x(c,t,s) } <= 1 }
+    val singleAcquisition  = st(c in P, s in S) { sum(t in (1 to H - gamma(c))) { v(c,t,s) } <= 1 }
+    val singleCancellation = st(c in A, s in S) { sum(t in (1 to tau(c) - 1)  ) { x(c,t,s) } <= 1 }
 
     val acquiredFuel = st(t in T, s in S) {
-      u(t,s) === sum(ind(c in P) | gamma(c) <= t-1) { q(c) * v(c, t-gamma(c), s) }
+      u(t,s) === sum((c in P) | gamma(c) <= t-1) { q(c) * v(c, t-gamma(c), s) }
     }
 
     val cancelledFuel = st(t in T, s in S) {
-      w(t,s) === sum(ind(c in A) | tau(c) === t) { q(c) * sum(ind(tp in T) | tp <= tau(c) - 1) { x(c,tp,s) } }
+      w(t,s) === sum((c in A) | tau(c) === t) { q(c) * sum(tp in (1 to tau(c) - 1)) { x(c,tp,s) } }
     }
 
     // model
