@@ -1,7 +1,7 @@
 # https://scalacenter.github.io/bloop/docs/performance-guide
 -Xmx2g
 -XX:MaxInlineLevel=20
--XX:+UseParallelGC
+-XX:+UseG1GC
 
 # Enable Graal JIT
 -XX:+UnlockExperimentalVMOptions
