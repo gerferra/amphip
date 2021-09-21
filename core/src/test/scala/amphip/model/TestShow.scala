@@ -338,6 +338,12 @@ class TestShow {
         SymNumExpr(NumMult(NumLit(10), b(i, j))),
         StringLit(".bis")): SymExpr).shows)
 
+    assertEquals("s in S",
+      IndEntry(List(s), S).shows)
+
+    assertEquals("s in S : (s > 3)",
+      IndEntry(List(s), S, Some(GT(s,NumLit(3)))).shows)
+    
     assertEquals("{s in S, t in T}",
       IndExpr(
         List(

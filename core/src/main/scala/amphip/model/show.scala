@@ -391,12 +391,14 @@ trait ShowInstances {
 
     case IndEntry(indices, expr, Some(predicate)) =>
 
-      val map = IndEntry.extract(predicate)
+      val map            = IndEntry.extract(predicate)
+      val simplifiedPred = IndEntry.simplify(predicate)
+      val predicateShows = simplifiedPred.fold("")(x => s" : ${x.shows}")
 
       val indExpr = indices.map { x => map.get(x).toLeftDisjunction(x) }
       val indicesShows = showTupleDisj(indExpr)
 
-      s"$indicesShows in ${expr.shows}"
+      s"$indicesShows in ${expr.shows}$predicateShows"
 
   }
 

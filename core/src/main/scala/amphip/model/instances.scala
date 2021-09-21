@@ -768,6 +768,14 @@ trait PipeInstances {
     }
   }
 
+  /* alternative to disallow predicates on entries at the syntax level
+  implicit def IndEntryPipeOp[A](implicit conv: A => LogicExpr): PipeOp[IndEntry, A, IndExpr] = new PipeOp[IndEntry, A, IndExpr] {
+    def pipe(lhe: IndEntry, rhe: A) = {
+      IndExpr(List(lhe), conv(rhe).some)
+    }
+  }
+  */
+
 }
 
 trait DiffInstances {

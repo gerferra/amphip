@@ -372,6 +372,17 @@ object ast {
       case Eq(DummyIndRef(ind), expr: SimpleExpr) => Map(ind -> expr)
       case _ => Map()
     }
+
+    def simplify(pred: LogicExpr): Option[LogicExpr] = pred match {
+      case Conj(expr1: LogicExpr, expr2: LogicExpr) => 
+        (simplify(expr1), simplify(expr2)) match {
+          case (Some(se1), Some(se2)) => Some(Conj(se1, se2))
+          case (x        , None     ) => x
+          case (_        , y        ) => y
+        }
+      case Eq(DummyIndRef(_), _: SimpleExpr) => Option.empty
+      case x => Some(x)
+    }
   }
 
   /*
