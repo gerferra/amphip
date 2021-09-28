@@ -295,5 +295,31 @@ class TestEval {
       val evResult = eval(fib, ModelData())
       assertEquals(resMap, evResult)
     }
+
+    {
+      import amphip.model.ast.ParamStat 
+      val N = param := 5
+      val n = dummy 
+      lazy val f: ParamStat = {
+        param(n in (0 to N)) :=
+          xif (n === N) { 
+            3 
+          } { 
+            1 + f(n + 1)
+          }
+      }
+      val resMap =
+        LinkedMap(
+          key("f", 0) -> (param("f") := 8),
+          key("f", 1) -> (param("f") := 7),
+          key("f", 2) -> (param("f") := 6),
+          key("f", 3) -> (param("f") := 5),
+          key("f", 4) -> (param("f") := 4),
+          key("f", 5) -> (param("f") := 3)
+        )
+
+      val evResult = eval(f, ModelData())
+      assertEquals(resMap, evResult)
+    }
   }
 }
