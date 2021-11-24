@@ -126,28 +126,28 @@ sealed trait NAMode
 final case class DenseNAMode(link: ParamStat, naForm: NAForm) extends NAMode
 final case class CompressedNAMode(link: SetStat) extends NAMode
 final case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
-  val ST: SetStat = set("ST_ST", T)
+  val ST = set("ST_ST", T)
   
-  val pred: ParamStat = {
-    val t = dummy("t")
+  val pred = {
+    val t = dummy
     param("ST_pred", t in T &~ List(1), ST(t)) in ST(t-1)
   }
   
   lazy val anc: ParamStat = {
     val (t, tp) = (dummy("t"), dummy("tp"))
-    val s = dummy("s")
+    val s = dummy
     param("ST_anc", ind(t in T, s in ST(t), tp in T) | tp <= t) in ST(tp) :=
       xif (tp === t) { s } { anc(t-1, pred(t,s), tp) }
   }
 
-  val H: ParamStat = {
-    val t = dummy("t")
+  val H = {
+    val t = dummy
     param("ST_H") := max(t in T)(t)
   }
 
-  val ancf: ParamStat = {
-    val t = dummy("t")
-    val s = dummy("s")
+  val ancf = {
+    val t = dummy
+    val s = dummy
     param("ST_ancf", s in ST(H), t in T) in ST(t) := anc(H, s, t)
   }
 
