@@ -258,8 +258,8 @@ object finance {
       m.stages.toNel.fold(m) { nel =>
         val m1 = m.stochBasicScenarios(nel.head, init -> r"1")
 
-        val den     = alternatives.size
-        val prob    = r"1" / den
+        val altSize = alternatives.size
+        val prob    = r"1" / altSize
         val altProb = alternatives.map(_ -> prob)
 
         nel.tail.foldLeft(m1) { (model, t) =>
