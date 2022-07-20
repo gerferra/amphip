@@ -136,7 +136,7 @@ final case class STAdapter(T: SetStat, S: SetStat) extends NAMode {
   lazy val anc: ParamStat = {
     val (t, tp) = (dummy("t"), dummy("tp"))
     val s = dummy
-    param("ST_anc", ind(t in T, s in ST(t), tp in T) | tp <= t) in ST(tp) :=
+    param("ST_anc", t in T, s in ST(t), (tp in T) | tp <= t) in ST(tp) :=
       xif (tp === t) { s } { anc(t-1, pred(t,s), tp) }
   }
 
