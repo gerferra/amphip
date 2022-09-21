@@ -73,9 +73,9 @@ lazy val commonSettings = Seq(
       "-XX:MaxInlineLevel=18",
 
       // requires recent opejdk (>= 10?)
-      "-XX:+UnlockExperimentalVMOptions",
-      "-XX:+EnableJVMCI",
-      "-XX:+UseJVMCICompiler"
+      //"-XX:+UnlockExperimentalVMOptions",
+      //"-XX:+EnableJVMCI",
+      //"-XX:+UseJVMCICompiler"
     )
 )
 

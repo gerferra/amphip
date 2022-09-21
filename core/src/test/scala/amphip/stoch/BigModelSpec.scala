@@ -90,7 +90,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
     val prob = param(S)
     //val link = param(S, S, T) default 0
     val ST = set(T) within S * S
-    val p1 = param(S, T)
+    val p1 = param(T, S)
     val x1 = xvar(S, T)
     val obj = minimize(p1 * x1)
 
