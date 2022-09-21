@@ -1,9 +1,10 @@
 
 package amphip.stoch
 
-//import scalax.file.Path
-
-import scalaz._, Scalaz._
+import cats.Show
+import cats.syntax.show._
+import cats.instances.all._
+import mouse.boolean._
 import spire.implicits._
 
 
@@ -17,12 +18,12 @@ object BigModelSpec extends App /* extends FunSuite */ {
   import System.{currentTimeMillis => millis}
   import StochData._
 
-  implicit def LinkedMapShow[K: Show, V: Show]: Show[LinkedMap[K, V]] = Show.shows { map =>
-    map.map(_.shows).toString
+  implicit def LinkedMapShow[K: Show, V: Show]: Show[LinkedMap[K, V]] = Show.show { map =>
+    map.map(_.show).toString
   }
 
-  implicit val StageShow: Show[Stage] = Show.shows(_.name)
-  implicit val BSShow: Show[BasicScenario] = Show.shows(_.name)
+  implicit val StageShow: Show[Stage] = Show.show(_.name)
+  implicit val BSShow: Show[BasicScenario] = Show.show(_.name)
 
   def lazyStochData(sd: StochData) = new {
 
@@ -95,11 +96,11 @@ object BigModelSpec extends App /* extends FunSuite */ {
 
     val base = millis
 
-    println(S.shows)
-    println(T.shows)
-    println(prob.shows)
-    println(ST.shows)
-    println(p1.shows)
+    println(S.show)
+    println(T.show)
+    println(prob.show)
+    println(ST.show)
+    println(p1.show)
     println()
 
     val numStages = 18
@@ -215,7 +216,7 @@ object BigModelSpec extends App /* extends FunSuite */ {
 
     /*println()
     println("linkSetDataBounds:")
-    linkSetDataBounds.foreach(x => println(x.shows))
+    linkSetDataBounds.foreach(x => println(x.show))
     println()*/
 
     val start2 = millis

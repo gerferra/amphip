@@ -1,6 +1,6 @@
 package amphip.data
 
-import scalaz.std.option.optionSyntax._
+import cats.syntax.option._
 
 import org.junit.Assert._
 import org.junit.Test

@@ -1,8 +1,8 @@
 package amphip.stoch
 
-//import scalaz._, Scalaz._
-import scalaz.Scalaz.{ToListOpsFromList => _, _}
 import cats.syntax.list._
+import cats.syntax.option._
+import mouse.option._
 
 import amphip.dsl._
 import amphip.model.ast._
@@ -122,7 +122,7 @@ object separate {
       { indexing =>
         val newEntries = indexing.entries.map {
           case entry @ IndEntry(indices, set, _) if set == SExpr =>
-            entry.copy(indices = indices.toNel.map(_.toList) | List(s))
+            entry.copy(indices = indices.toNel.map(_.toList).getOrElse(List(s)))
           case x => x
         }
 
@@ -168,7 +168,7 @@ object separate {
             stochSum => sum(s in S)(pi(s) * newDetSum) + stochSum,
             sum(s in S)(pi(s) * newDetSum))
         },
-        optStochSum | expr)
+        optStochSum.getOrElse(expr))
 
     newExpr
   }

@@ -1,5 +1,5 @@
 import spire.implicits._
-import scalaz.syntax.show._
+import cats.syntax.show._
 
 import amphip.dsl._
 import amphip.base.LinkedMap

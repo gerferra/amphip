@@ -1,6 +1,6 @@
 package amphip.model
 
-import scalaz.{ Failure => _, Success => _, Forall => _, _ }, Scalaz._
+import cats.syntax.option._
 
 import org.junit.Assert._
 import org.junit.Test
@@ -19,9 +19,9 @@ class TestParser {
   implicit class TestRun[A](result: ParseResult[S[A]]) {
 
     def isTypeMismatch(implicit symTab: SymTab): Boolean = result.run2 match {
-      case -\/(-\/(_)) => false
-      case -\/(\/-(err)) => err.isInstanceOf[TypeMismatch]
-      case \/-(_) => false
+      case Left(Left(_))    => false
+      case Left(Right(err)) => err.isInstanceOf[TypeMismatch]
+      case Right(_)         => false
     }
 
   }

@@ -1,6 +1,6 @@
 package amphip.sem.mathprog
 
-import scalaz._, Scalaz._
+import cats.syntax.show._
 
 import amphip.base.implicits._
 import amphip.data._
@@ -27,10 +27,10 @@ object genData {
         key0.subscript match {
 
           case Nil =>
-            s"param $name := ${value0.shows};\n"
+            s"param $name := ${value0.show};\n"
 
           case _ :: Nil =>
-            s"param $name := ${valuesNE.map { case (k, v) => s"${k.subscript(0).shows} ${v.shows}" }.mkString(", ")};\n"
+            s"param $name := ${valuesNE.map { case (k, v) => s"${k.subscript(0).show} ${v.show}" }.mkString(", ")};\n"
 
           case _ :: _ :: Nil =>
             if (isTabular(valuesNE)) {
@@ -48,7 +48,7 @@ object genData {
                 for {
                   (qual, valuesNE) <- valuesByQual
                 } yield {
-                  s"""[*, *, ${qual.map(_.shows).mkString(", ")}]:
+                  s"""[*, *, ${qual.map(_.show).mkString(", ")}]:
                   |${tableString(name, valuesNE)}""".stripMargin
                 }
 
@@ -85,8 +85,8 @@ object genData {
       for {
         (qual, valuesNE) <- valuesByQual
       } yield {
-        val values = valuesNE.map { case (k, v) => s"${k.subscript.last.shows} ${v.shows}" }.mkString(", ")
-        s"""[${qual.map(_.shows).mkString(", ")}, *] := $values"""
+        val values = valuesNE.map { case (k, v) => s"${k.subscript.last.show} ${v.show}" }.mkString(", ")
+        s"""[${qual.map(_.show).mkString(", ")}, *] := $values"""
       }
 
     s"""param $pName :=
@@ -121,9 +121,9 @@ object genData {
         }
       }
     val rowsSize = rows.size
-    val R = rows.map(_.shows.length).max
-    val C0 = cols.map(_.shows.length).max
-    val V = values.map(_.shows.length).max
+    val R = rows.map(_.show.length).max
+    val C0 = cols.map(_.show.length).max
+    val V = values.map(_.show.length).max
     val C = math.max(C0, V)
 
     val res = new StringBuilder()
@@ -132,7 +132,7 @@ object genData {
     for {
       c <- cols
     } {
-      res.append(s"%${C}s ".format(c.shows))
+      res.append(s"%${C}s ".format(c.show))
     }
     res.append(f":= %n")
     // other rows
@@ -140,7 +140,7 @@ object genData {
       (r, i) <- rows.zipWithIndex
     } {
       res.append("  ")
-      res.append(s"%${R}s ".format(r.shows))
+      res.append(s"%${R}s ".format(r.show))
       for {
         c <- cols
       } {
@@ -149,10 +149,10 @@ object genData {
           .recover {
             case _: NoSuchElementException =>
               val info = if (!isTabular(valuesNE)) ". Data is not tabular" else ""
-              throw new NoSuchElementException(s"no value for $pName[${r.shows},${c.shows}...]$info")
+              throw new NoSuchElementException(s"no value for $pName[${r.show},${c.show}...]$info")
           }
         val value = tryValue.get 
-        res.append(s"%${C}s ".format(value.shows))
+        res.append(s"%${C}s ".format(value.show))
       }
       res.append(if (rowsSize == (i + 1)) f"" else f"%n")
     }
@@ -170,7 +170,7 @@ object genData {
           for {
             (k, v) <- valuesNE
           } yield {
-            s"set ${k.shows} := ${v.shows};"
+            s"set ${k.show} := ${v.show};"
           }
 
         indStr.mkString("", f"%n", f"%n")

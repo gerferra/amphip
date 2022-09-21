@@ -1,6 +1,6 @@
 package amphip.model
 
-import scalaz.{Forall => _, _}, Scalaz._, scalaz.syntax._
+import cats.syntax.show._
 
 import amphip.dsl._
 import amphip.model.ast._
@@ -53,9 +53,9 @@ object TestSyntax {
 
   val s1: SetExpr = List(List(a, b), List(a, c))
 
-  s1.shows
+  s1.show
   val s2: SetExpr = List(List(1, 2), List(3, 4))
-  s2.shows
+  s2.show
 
   val range = a to 2
 
@@ -63,7 +63,7 @@ object TestSyntax {
 
   sum(ind(I))(i + x)
   ind(I, J)
-  (ind(i in I, j in J) | i <= j && i =!= 3).shows
+  (ind(i in I, j in J) | i <= j && i =!= 3).show
 
   z(i, j)
   z(List(i, j))
@@ -94,7 +94,7 @@ object TestSyntax {
 
   sum(i in I, j in J)(i - j)
 
-  sum(I, J)(i less j).shows
+  sum(I, J)(i less j).show
 
   xif(a > b)(1)(3)
 
@@ -156,7 +156,7 @@ object TestSyntax {
 
   -x() / +b()
 
-  (-x() / +b()).shows
+  (-x() / +b()).show
 
   x <= y
 

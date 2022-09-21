@@ -4,7 +4,9 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.input.Position
 import scala.util.parsing.input.CharArrayReader.EofCh
 
-import scalaz.{ \/, -\/, \/-, StateT, Scalaz }, Scalaz._
+import cats.data.StateT
+import cats.instances.all._
+import cats.syntax.all._
 
 import amphip.base._
 import amphip.model.ast._
@@ -31,11 +33,11 @@ class Parser extends RegexParsers with PackratParsers {
   // STATEMENTS 
 
   lazy val pStat: PP[Stat] =
-    pSetStat.as[Stat] |
-      pParamStat.as[Stat] |
-      pVarStat.as[Stat] |
-      pConstraintStat.as[Stat] |
-      pObjectiveStat.as[Stat]
+    pSetStat       .as[Stat] |
+    pParamStat     .as[Stat] |
+    pVarStat       .as[Stat] |
+    pConstraintStat.as[Stat] |
+    pObjectiveStat .as[Stat]
 
   lazy val pSetStat: PP[SetStat] =
     "set" ~> wpos(pSymName) ~ opt(pStringLit) ~ opt(pIndExpr) ~ (opt(",") ~> repsep(pSetAtt, opt(","))) <~ ";" ^^ {
@@ -56,7 +58,7 @@ class Parser extends RegexParsers with PackratParsers {
         for {
           p <- scoped(domainS.sequence, attsS.sequence)
           domain = p._1
-          atts = p._2
+          atts   = p._2
           param <- putDecl(ParamStat(name, alias, domain, atts), pos)
         } yield {
           param
@@ -69,7 +71,7 @@ class Parser extends RegexParsers with PackratParsers {
         for {
           p <- scoped(domainS.sequence, attsS.sequence)
           domain = p._1
-          atts = p._2
+          atts   = p._2
           xvar <- putDecl(VarStat(name, alias, domain, atts), pos)
         } yield {
           xvar
@@ -149,7 +151,7 @@ class Parser extends RegexParsers with PackratParsers {
       case name ~ alias ~ domainS ~ _ ~ expressionS =>
         for {
           p <- scoped(domainS.sequence, expressionS)
-          domain = p._1
+          domain     = p._1
           expression = p._2
         } yield {
           Maximize(name, alias, domain, expression): ObjectiveStat
@@ -159,7 +161,7 @@ class Parser extends RegexParsers with PackratParsers {
         case name ~ alias ~ domainS ~ _ ~ expressionS =>
           for {
             p <- scoped(domainS.sequence, expressionS)
-            domain = p._1
+            domain     = p._1
             expression = p._2
           } yield {
             Minimize(name, alias, domain, expression): ObjectiveStat
@@ -167,51 +169,51 @@ class Parser extends RegexParsers with PackratParsers {
       }
 
   lazy val pSetAtt: PP[SetAtt] =
-    "dimen" ~> pDimen ^^ (x => ev.state(SetDimen(x): SetAtt)) |
-      "within" ~> pSetExpr ^^ (_.map(SetWithin(_): SetAtt)) |
-      ":=" ~> pSetExpr ^^ (_.map(SetAssign(_): SetAtt)) |
-      "default" ~> pSetExpr ^^ (_.map(SetDefault(_): SetAtt))
+    "dimen"   ~> pDimen   ^^ (x => ev.pure(SetDimen(x): SetAtt)) |
+    "within"  ~> pSetExpr ^^ (_.map(SetWithin(_): SetAtt)) |
+    ":="      ~> pSetExpr ^^ (_.map(SetAssign(_): SetAtt)) |
+    "default" ~> pSetExpr ^^ (_.map(SetDefault(_): SetAtt))
 
   lazy val pParamAtt: PP[ParamAtt] =
-    "integer" ^^^ (ev.state(Integer: ParamAtt)) |
-      "binary" ^^^ (ev.state(Binary: ParamAtt)) |
-      "symbolic" ^^^ (ev.state(Symbolic: ParamAtt)) |
-      "<" ~> pSimpleExpr ^^ (_.map(ParamLT(_): ParamAtt)) |
-      "<=" ~> pSimpleExpr ^^ (_.map(ParamLTE(_): ParamAtt)) |
-      ">" ~> pSimpleExpr ^^ (_.map(ParamGT(_): ParamAtt)) |
-      ">=" ~> pSimpleExpr ^^ (_.map(ParamGTE(_): ParamAtt)) |
-      ("==" | "=") ~> pSimpleExpr ^^ (_.map(ParamEq(_): ParamAtt)) |
-      ("<>" | "!=") ~> pSimpleExpr ^^ (_.map(ParamNEq(_): ParamAtt)) |
-      "in" ~> pSetExpr ^^ (_.map(ParamIn(_): ParamAtt)) |
-      ":=" ~> pSimpleExpr ^^ (_.map(ParamAssign(_): ParamAtt)) |
-      "default" ~> pSimpleExpr ^^ (_.map(ParamDefault(_): ParamAtt))
+    "integer"  ^^^ (ev.pure(Integer: ParamAtt)) |
+    "binary"   ^^^ (ev.pure(Binary: ParamAtt)) |
+    "symbolic" ^^^ (ev.pure(Symbolic: ParamAtt)) |
+    "<"           ~> pSimpleExpr ^^ (_.map(ParamLT(_): ParamAtt)) |
+    "<="          ~> pSimpleExpr ^^ (_.map(ParamLTE(_): ParamAtt)) |
+    ">"           ~> pSimpleExpr ^^ (_.map(ParamGT(_): ParamAtt)) |
+    ">="          ~> pSimpleExpr ^^ (_.map(ParamGTE(_): ParamAtt)) |
+    ("==" | "=")  ~> pSimpleExpr ^^ (_.map(ParamEq(_): ParamAtt)) |
+    ("<>" | "!=") ~> pSimpleExpr ^^ (_.map(ParamNEq(_): ParamAtt)) |
+    "in"          ~> pSetExpr    ^^ (_.map(ParamIn(_): ParamAtt)) |
+    ":="          ~> pSimpleExpr ^^ (_.map(ParamAssign(_): ParamAtt)) |
+    "default"     ~> pSimpleExpr ^^ (_.map(ParamDefault(_): ParamAtt))
 
   lazy val pVarAtt: PP[VarAtt] =
-    "integer" ^^^ (ev.state(Integer: VarAtt)) |
-      "binary" ^^^ (ev.state(Binary: VarAtt)) |
-      "<=" ~> pNumExpr ^^ (_.map(VarLTE(_): VarAtt)) |
-      ">=" ~> pNumExpr ^^ (_.map(VarGTE(_): VarAtt)) |
-      ("==" | "=") ~> pNumExpr ^^ (_.map(VarEq(_): VarAtt))
+    "integer" ^^^ (ev.pure(Integer: VarAtt)) |
+    "binary"  ^^^ (ev.pure(Binary: VarAtt)) |
+    "<="         ~> pNumExpr ^^ (_.map(VarLTE(_): VarAtt)) |
+    ">="         ~> pNumExpr ^^ (_.map(VarGTE(_): VarAtt)) |
+    ("==" | "=") ~> pNumExpr ^^ (_.map(VarEq(_): VarAtt))
 
   ////
   // EXPRESSIONS 
 
   lazy val pExpr: PP[Expr] =
-    pNumExpr.as[Expr] |
-      pSymExpr.as[Expr] |
-      pSetExpr.as[Expr] |
-      pLogicExpr.as[Expr] |
-      pLinExpr.as[Expr]
+    pNumExpr  .as[Expr] |
+    pSymExpr  .as[Expr] |
+    pSetExpr  .as[Expr] |
+    pLogicExpr.as[Expr] |
+    pLinExpr  .as[Expr]
 
   // SIMPLE
 
   lazy val pSimpleExpr: PP[SimpleExpr] = pNumExpr.as[SimpleExpr] | pSymExpr.as[SimpleExpr]
 
-  lazy val pSimpleExprOrDummyIndDecl: PP[SimpleExpr \/ DummyIndDecl] = Parser { in =>
+  lazy val pSimpleExprOrDummyIndDecl: PP[Either[SimpleExpr, DummyIndDecl]] = Parser { in =>
     val resSimpleExpr = pSimpleExpr(in)
     val resSymName = pRefSymName(in)
 
-    val resSimpleExprAsDisj = resSimpleExpr.map(_.map(_.left[DummyIndDecl]))
+    val resSimpleExprAsDisj = resSimpleExpr.map(_.map(_.asLeft[DummyIndDecl]))
 
     resSymName match {
       case Success(name, nName) => resSimpleExprAsDisj match {
@@ -223,9 +225,9 @@ class Parser extends RegexParsers with PackratParsers {
           val newSExprS =
             for {
               symTab <- ev.get
-              x <- if (symTab.contains(name)) sexprS else putDecl(DummyIndDecl(name), nSExpr.pos).map(_.right)
+              x <- if (symTab.contains(name)) sexprS else putDecl(DummyIndDecl(name), nSExpr.pos).map(_.asRight)
             } yield {
-              x: SimpleExpr \/ DummyIndDecl
+              x: Either[SimpleExpr, DummyIndDecl]
             }
 
           Success(newSExprS, nSExpr)
@@ -244,8 +246,8 @@ class Parser extends RegexParsers with PackratParsers {
       } yield {
 
         disj match {
-          case -\/(a) => ParamRef(a): NumExpr with SymExpr
-          case \/-(b) => DummyIndRef(b): NumExpr with SymExpr
+          case  Left(a) =>    ParamRef(a): NumExpr with SymExpr
+          case Right(b) => DummyIndRef(b): NumExpr with SymExpr
         }
 
       }
@@ -265,7 +267,7 @@ class Parser extends RegexParsers with PackratParsers {
   lazy val pSubscriptedParamRef: PP[ParamRef] = wpos(pRefSymName) ~ pSubscript ^^ {
     case (name, pos) ~ subscriptS =>
       for {
-        param <- ref[ParamStat](name, pos)
+        param     <- ref[ParamStat](name, pos)
         subscript <- subscriptS
       } yield {
         ParamRef(param, subscript)
@@ -281,23 +283,23 @@ class Parser extends RegexParsers with PackratParsers {
       }
   }
 
-  lazy val pSubscript: PP[List[SimpleExpr]] = "[" ~> rep1sep(pSimpleExpr, ",") <~ "]" ^^ (ev.sequence(_))
+  lazy val pSubscript: PP[List[SimpleExpr]] = "[" ~> rep1sep(pSimpleExpr, ",") <~ "]" ^^ (_.sequence)
 
-  lazy val pTuple: PP[Tuple] = "(" ~> rep1sep(pSimpleExpr, ",") <~ ")" ^^ (ev.sequence(_))
+  lazy val pTuple: PP[Tuple] = "(" ~> rep1sep(pSimpleExpr, ",") <~ ")" ^^ (_.sequence)
 
   ////
   // NUMERIC
 
   lazy val pNumExpr: PP[NumExpr] =
     pCondNumExpr |
-      pNumExpr6
+    pNumExpr6
 
   lazy val pCondNumExpr: PP[NumExpr] =
     ("if" ~> pLogicExpr <~ "then") ~ pNumExpr6 ~ opt("else" ~> pNumExpr6) ^^ {
       case testS ~ ifTrueS ~ otherwiseS =>
         for {
-          test <- testS
-          ifTrue <- ifTrueS
+          test      <- testS
+          ifTrue    <- ifTrueS
           otherwise <- otherwiseS.sequence
         } yield {
           CondNumExpr(test, ifTrue, otherwise): NumExpr
@@ -308,18 +310,18 @@ class Parser extends RegexParsers with PackratParsers {
     pNumExpr5 ~ rep(("+" | "-" | "less") ~ pNumExpr5) ^^ {
       case numS ~ listP =>
         for {
-          num <- numS
-          p = listP.map { case op ~ exprS => (op, exprS) }.unzip
-          ops = p._1
+          num  <- numS
+          p     = listP.map { case op ~ exprS => (op, exprS) }.unzip
+          ops   = p._1
           listS = p._2
           list <- listS.sequence.map(ops.zip(_))
         } yield {
           list.foldLeft(num) {
             case (exp, (oper, num)) => oper match {
-              case "+" => NumAdd(exp, num)
-              case "-" => NumSub(exp, num)
+              case "+"    => NumAdd (exp, num)
+              case "-"    => NumSub (exp, num)
               case "less" => NumLess(exp, num)
-              case _ => sys.error(s"""Found `$oper' expecting `("+" | "-" | "less")' on pre-validated String. This is a bug.""")
+              case _      => sys.error(s"""Found `$oper' expecting `("+" | "-" | "less")' on pre-validated String. This is a bug.""")
             }
           }
         }
@@ -327,22 +329,22 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pNumExpr5: PP[NumExpr] =
     pIterNumExpr |
-      pNumExpr4
+    pNumExpr4
 
   lazy val pIterNumExpr: PP[NumExpr] =
     ("sum" | "prod" | "min" | "max") ~ pIndExpr ~ pNumExpr4 ^^ {
       case op ~ indexingS ~ integrandS =>
         for {
           p <- scoped(indexingS, integrandS)
-          indexing = p._1
+          indexing  = p._1
           integrand = p._2
         } yield {
           (op match {
-            case "sum" => NumSum(indexing, integrand)
+            case "sum"  => NumSum (indexing, integrand)
             case "prod" => NumProd(indexing, integrand)
-            case "min" => NumMin(indexing, integrand)
-            case "max" => NumMax(indexing, integrand)
-            case _ => sys.error(s"""Found `$op' expecting `("sum" | "prod" | "min" | "max")' on pre-validated String. This is a bug.""")
+            case "min"  => NumMin (indexing, integrand)
+            case "max"  => NumMax (indexing, integrand)
+            case _      => sys.error(s"""Found `$op' expecting `("sum" | "prod" | "min" | "max")' on pre-validated String. This is a bug.""")
           }): NumExpr
         }
     }
@@ -351,19 +353,19 @@ class Parser extends RegexParsers with PackratParsers {
     pNumExpr3 ~ rep(("*" | "/" | "div" | "mod") ~ pNumExpr3) ^^ {
       case numS ~ listP =>
         for {
-          num <- numS
-          p = listP.map { case op ~ exprS => (op, exprS) }.unzip
-          ops = p._1
+          num  <- numS
+          p     = listP.map { case op ~ exprS => (op, exprS) }.unzip
+          ops   = p._1
           listS = p._2
           list <- listS.sequence.map(ops.zip(_))
         } yield {
           list.foldLeft(num) {
             case (exp, (oper, num)) => oper match {
-              case "*" => NumMult(exp, num)
-              case "/" => NumDiv(exp, num)
+              case "*"   => NumMult    (exp, num)
+              case "/"   => NumDiv     (exp, num)
               case "div" => NumDivExact(exp, num)
-              case "mod" => NumMod(exp, num)
-              case _ => sys.error(s"""Found `$oper' expecting `("*" | "/" | "div" | "mod")' on pre-validated String. This is a bug.""")
+              case "mod" => NumMod     (exp, num)
+              case _     => sys.error(s"""Found `$oper' expecting `("*" | "/" | "div" | "mod")' on pre-validated String. This is a bug.""")
             }
           }
         }
@@ -377,9 +379,9 @@ class Parser extends RegexParsers with PackratParsers {
             exp <- exprS
           } yield {
             (op match {
-              case "+" => NumUnaryPlus(exp)
+              case "+" => NumUnaryPlus (exp)
               case "-" => NumUnaryMinus(exp)
-              case _ => sys.error(s"""Found `$op' expecting `("+" | "-")' on pre-validated String. This is a bug.""")
+              case _   => sys.error(s"""Found `$op' expecting `("+" | "-")' on pre-validated String. This is a bug.""")
             }): NumExpr
           }
       }
@@ -388,8 +390,8 @@ class Parser extends RegexParsers with PackratParsers {
     pNumExpr1 ~ rep(("**" | "^") ~> pNumExpr1) ^^ {
       case numS ~ listS =>
         for {
-          num <- numS
-          list <- ev.sequence(listS)
+          num  <- numS
+          list <- listS.sequence
         } yield {
           (num :: list).reduceRight((num, exp) => NumRaise(num, exp))
         }
@@ -397,35 +399,35 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pNumExpr1: PP[NumExpr] =
     pNumRef |
-      pNumFuncRef |
-      pNumLit.map(x => ev.state(x: NumExpr)) |
-      "(" ~> pNumExpr <~ ")" |
-      pNumExpr
+    pNumFuncRef |
+    pNumLit.map(x => ev.pure(x: NumExpr)) |
+    "(" ~> pNumExpr <~ ")" |
+    pNumExpr
 
   lazy val pNumRef: PP[NumExpr] = pSubscriptedParamRef.as[NumExpr] | pSimpleRef.as[NumExpr]
 
   lazy val pNumFuncRef: PP[NumExpr] =
-    "abs" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Abs(_): NumExpr)) |
-      "atan" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Atan(_): NumExpr)) |
-      "atan" ~> "(" ~> (pNumExpr ~ "," ~ pNumExpr) <~ ")" ^^ { case xS ~ _ ~ yS => for { x <- xS; y <- yS } yield Atan2(x, y): NumExpr } |
-      "card" ~> "(" ~> pSetExpr <~ ")" ^^ (_.map(Card(_): NumExpr)) |
-      "ceil" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Ceil(_): NumExpr)) |
-      "cos" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Cos(_): NumExpr)) |
-      "exp" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Exp(_): NumExpr)) |
-      "floor" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Floor(_): NumExpr)) |
-      "gmtime" ~ "(" ~ ")" ^^^ (ev.state(Gmtime(): NumExpr)) |
-      "length" ~> "(" ~> pSymExpr <~ ")" ^^ (_.map(Length(_): NumExpr)) |
-      "log" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Log(_): NumExpr)) |
-      "log10" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Log10(_): NumExpr)) |
-      "max" ~> "(" ~> rep1sep(pNumExpr, ",") <~ ")" ^^ (xS => for { x <- ev.sequence(xS) } yield Max(x: _*): NumExpr) |
-      "min" ~> "(" ~> rep1sep(pNumExpr, ",") <~ ")" ^^ (xS => for { x <- ev.sequence(xS) } yield Min(x: _*): NumExpr) |
-      "round" ~> "(" ~> pNumExpr ~ opt("," ~> pNumExpr) <~ ")" ^^ { case xS ~ yS => for { x <- xS; y <- ev.sequence(yS) } yield Round(x, y): NumExpr } |
-      "sin" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Sin(_): NumExpr)) |
-      "sqrt" ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Sqrt(_): NumExpr)) |
-      "str2time" ~> "(" ~> pSymExpr ~ "," ~ pSymExpr <~ ")" ^^ { case xS ~ _ ~ yS => for { x <- xS; y <- yS } yield Str2time(x, y): NumExpr } |
-      "trunc" ~> "(" ~> pNumExpr ~ opt("," ~> pNumExpr) <~ ")" ^^ { case xS ~ yS => for { x <- xS; y <- ev.sequence(yS) } yield Trunc(x, y): NumExpr } |
-      "Irand224" ~ "(" ~ ")" ^^^ (ev.state(Irand224(): NumExpr)) |
-      "Uniform01" ~ "(" ~ ")" ^^^ (ev.state(Uniform01(): NumExpr))
+    "abs"      ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Abs(_): NumExpr)) |
+    "atan"     ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Atan(_): NumExpr)) |
+    "atan"     ~> "(" ~> (pNumExpr ~ "," ~ pNumExpr) <~ ")" ^^ { case xS ~ _ ~ yS => for { x <- xS; y <- yS } yield Atan2(x, y): NumExpr } |
+    "card"     ~> "(" ~> pSetExpr <~ ")" ^^ (_.map(Card(_): NumExpr)) |
+    "ceil"     ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Ceil(_): NumExpr)) |
+    "cos"      ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Cos(_): NumExpr)) |
+    "exp"      ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Exp(_): NumExpr)) |
+    "floor"    ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Floor(_): NumExpr)) |
+    "gmtime"    ~ "(" ~ ")" ^^^ (ev.pure(Gmtime(): NumExpr)) |
+    "length"   ~> "(" ~> pSymExpr <~ ")" ^^ (_.map(Length(_): NumExpr)) |
+    "log"      ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Log(_): NumExpr)) |
+    "log10"    ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Log10(_): NumExpr)) |
+    "max"      ~> "(" ~> rep1sep(pNumExpr, ",") <~ ")" ^^ (xS => for { x <- xS.sequence } yield Max(x: _*): NumExpr) |
+    "min"      ~> "(" ~> rep1sep(pNumExpr, ",") <~ ")" ^^ (xS => for { x <- xS.sequence } yield Min(x: _*): NumExpr) |
+    "round"    ~> "(" ~> pNumExpr ~ opt("," ~> pNumExpr) <~ ")" ^^ { case xS ~ yS => for { x <- xS; y <- yS.sequence } yield Round(x, y): NumExpr } |
+    "sin"      ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Sin(_): NumExpr)) |
+    "sqrt"     ~> "(" ~> pNumExpr <~ ")" ^^ (_.map(Sqrt(_): NumExpr)) |
+    "str2time" ~> "(" ~> pSymExpr ~ "," ~ pSymExpr <~ ")" ^^ { case xS ~ _ ~ yS => for { x <- xS; y <- yS } yield Str2time(x, y): NumExpr } |
+    "trunc"    ~> "(" ~> pNumExpr ~ opt("," ~> pNumExpr) <~ ")" ^^ { case xS ~ yS => for { x <- xS; y <- yS.sequence } yield Trunc(x, y): NumExpr } |
+    "Irand224"  ~ "(" ~ ")" ^^^ (ev.pure(Irand224(): NumExpr)) |
+    "Uniform01" ~ "(" ~ ")" ^^^ (ev.pure(Uniform01(): NumExpr))
 
   /**
    * MathProg numeric literal are very similar to Java BigDecimal string representation.
@@ -445,14 +447,14 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pSymExpr: PP[SymExpr] =
     pCondSymExpr |
-      pSymExpr8
+    pSymExpr8
 
   lazy val pCondSymExpr: PP[SymExpr] =
     ("if" ~> pLogicExpr <~ "then") ~ (pSymExpr) ~ opt("else" ~> (pSymExpr)) ^^ {
       case testS ~ ifTrueS ~ otherwiseS =>
         for {
-          test <- testS
-          ifTrue <- ifTrueS
+          test      <- testS
+          ifTrue    <- ifTrueS
           otherwise <- otherwiseS.sequence
         } yield {
           CondSymExpr(test, ifTrue, otherwise): SymExpr
@@ -463,7 +465,7 @@ class Parser extends RegexParsers with PackratParsers {
     pSymExpr1 ~ rep("&" ~> pSymExpr1) ^^ {
       case symS ~ listS =>
         for {
-          sym <- symS
+          sym  <- symS
           list <- listS.sequence
         } yield {
           (sym :: list).reduceLeft((exp, sym) => Concat(exp, sym))
@@ -472,11 +474,11 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pSymExpr1: PP[SymExpr] =
     pSymRef |
-      pSymFuncRef |
-      pStringLit.map(ev.state(_: SymExpr)) |
-      pNumExpr ^^ (_.map(SymNumExpr(_): SymExpr)) |
-      "(" ~> pSymExpr <~ ")" | 
-      pSymExpr
+    pSymFuncRef |
+    pStringLit.map(ev.pure(_: SymExpr)) |
+    pNumExpr ^^ (_.map(SymNumExpr(_): SymExpr)) |
+    "(" ~> pSymExpr <~ ")" | 
+    pSymExpr
 
   lazy val pSymRef: PP[SymExpr] = pSubscriptedParamRef.as[SymExpr] | pSimpleRef.as[SymExpr]
 
@@ -507,7 +509,7 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pSetExpr: PP[SetExpr] =
     pCondSetExpr |
-      pSetExpr13
+    pSetExpr13
 
   lazy val pCondSetExpr: PP[SetExpr] =
     ("if" ~> pLogicExpr <~ "then") ~ pSetExpr13 ~ ("else" ~> pSetExpr13) ^^ {
@@ -518,18 +520,18 @@ class Parser extends RegexParsers with PackratParsers {
     pSetExpr12 ~ rep(("union" | "diff" | "symdiff") ~ pSetExpr12) ^^ {
       case setS ~ listP =>
         for {
-          set <- setS
-          p = listP.map { case op ~ exprS => (op, exprS) }.unzip
-          ops = p._1
+          set  <- setS
+          p     = listP.map { case op ~ exprS => (op, exprS) }.unzip
+          ops   = p._1
           listS = p._2
           list <- listS.sequence.map(ops.zip(_))
         } yield {
           list.foldLeft(set) {
             case (exp, (oper, set)) => oper match {
-              case "union" => Union(exp, set)
-              case "diff" => Diff(exp, set)
+              case "union"   => Union  (exp, set)
+              case "diff"    => Diff   (exp, set)
               case "symdiff" => SymDiff(exp, set)
-              case _ => sys.error(s"""Found `$oper' expecting `("union" | "diff" | "symdiff")' on pre-validated String. This is a bug.""")
+              case _         => sys.error(s"""Found `$oper' expecting `("union" | "diff" | "symdiff")' on pre-validated String. This is a bug.""")
             }
           }
         }
@@ -539,7 +541,7 @@ class Parser extends RegexParsers with PackratParsers {
     pSetExpr11 ~ rep("inter" ~> pSetExpr11) ^^ {
       case setS ~ listS =>
         for {
-          set <- setS
+          set  <- setS
           list <- listS.sequence
         } yield {
           list.foldLeft(set) {
@@ -552,7 +554,7 @@ class Parser extends RegexParsers with PackratParsers {
     pSetExpr10 ~ rep("cross" ~> pSetExpr10) ^^ {
       case setS ~ listS =>
         for {
-          set <- setS
+          set  <- setS
           list <- listS.sequence
         } yield {
           list.foldLeft(set) {
@@ -569,7 +571,7 @@ class Parser extends RegexParsers with PackratParsers {
       case indexingS ~ integrandS =>
         for {
           p <- scoped(indexingS, integrandS)
-          indexing = p._1
+          indexing  = p._1
           integrand = p._2
         } yield SetOf(indexing, integrand): SetExpr
     } |
@@ -577,7 +579,7 @@ class Parser extends RegexParsers with PackratParsers {
         case indexingS ~ integrandS =>
           for {
             p <- scoped(indexingS, integrandS)
-            indexing = p._1
+            indexing  = p._1
             integrand = p._2
           } yield SetOf(indexing, List(integrand)): SetExpr
       } |
@@ -599,16 +601,16 @@ class Parser extends RegexParsers with PackratParsers {
 
   lazy val pSetExpr1: PP[SetExpr] =
     pSetRef.as[SetExpr] |
-      pSetLit.as[SetExpr] |
-      "(" ~> pSetExpr <~ ")" |
-       pSetExpr
+    pSetLit.as[SetExpr] |
+    "(" ~> pSetExpr <~ ")" |
+      pSetExpr
 
   lazy val pSetRef: PP[SetRef] = pSubscriptedSetRef | pUnsubscriptedSetRef
 
   lazy val pSubscriptedSetRef: PP[SetRef] = wpos(pRefSymName) ~ pSubscript ^^ {
     case (name, pos) ~ subscriptS =>
       for {
-        param <- ref[SetStat](name, pos)
+        param     <- ref[SetStat](name, pos)
         subscript <- subscriptS
       } yield {
         SetRef(param, subscript)
@@ -625,8 +627,8 @@ class Parser extends RegexParsers with PackratParsers {
   }
 
   lazy val pSetLit: PP[SetLit] =
-    "{" ~> repsep(pTuple, ",") <~ "}" ^^ (_.sequence.map(x => SetLit(x: _*))) |
-      "{" ~> repsep(pSimpleExpr, ",") <~ "}" ^^ (_.sequence.map(list => SetLit(list.map(List(_)): _*)))
+    "{" ~> repsep(pTuple, ",")      <~ "}" ^^ (_.sequence.map(x    => SetLit(x: _*))) |
+    "{" ~> repsep(pSimpleExpr, ",") <~ "}" ^^ (_.sequence.map(list => SetLit(list.map(List(_)): _*)))
 
   // ideally this should be something in [1,20] instead of an Int
   def pDimen: Parser[Int] =
@@ -651,7 +653,7 @@ class Parser extends RegexParsers with PackratParsers {
       case indicesS ~ _ ~ setS =>
         for {
           indices <- indicesS.sequence
-          set <- setS
+          set     <- setS
         } yield {
 
           /*
@@ -663,15 +665,16 @@ class Parser extends RegexParsers with PackratParsers {
 
           val indicesWithExpr =
             indices.map {
-              case -\/(sexpr) =>
+              case Left(sexpr) =>
                 val d = DummyIndDecl(gen.dummy.freshName, synthetic = true)
                 d -> (Eq(DummyIndRef(d), sexpr): LogicExpr).some
 
-              case \/-(d) => d -> none
+              case Right(d) => 
+                d -> none
             }
 
           val (extIndices, exprs) = indicesWithExpr.unzip
-          val predicate = exprs.flatten.toNel.map(_.foldLeft1((expr1, expr2) => Conj(expr1, expr2)))
+          val predicate = exprs.flatten.toNel.map(_.reduceLeft((expr1, expr2) => Conj(expr1, expr2)))
 
           IndEntry(extIndices, set, predicate)
 
@@ -705,7 +708,7 @@ class Parser extends RegexParsers with PackratParsers {
 
         for {
           prop <- propS
-          list <- ev.sequence(listS)
+          list <- listS.sequence
         } yield {
 
           list.foldLeft(prop) {
@@ -724,13 +727,13 @@ class Parser extends RegexParsers with PackratParsers {
       case op ~ indexingS ~ integrandS =>
         for {
           p <- scoped(indexingS, integrandS)
-          indexing = p._1
+          indexing  = p._1
           integrand = p._2
         } yield {
           op match {
             case "forall" => Forall(indexing, integrand): LogicExpr
             case "exists" => Exists(indexing, integrand): LogicExpr
-            case _ => sys.error(s"""Found `$op' expecting `("forall" | "exists")' on pre-validated String. This is a bug.""")
+            case _        => sys.error(s"""Found `$op' expecting `("forall" | "exists")' on pre-validated String. This is a bug.""")
           }
         }
     }
@@ -740,7 +743,7 @@ class Parser extends RegexParsers with PackratParsers {
       case propS ~ listS =>
         for {
           prop <- propS
-          list <- ev.sequence(listS)
+          list <- listS.sequence
         } yield {
 
           list.foldLeft(prop) {
@@ -761,39 +764,39 @@ class Parser extends RegexParsers with PackratParsers {
     pSimpleExpr ~ "<" ~ pSimpleExpr ^^ {
       case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (LT(left, right): LogicExpr)
     } |
-      pSimpleExpr ~ "<=" ~ pSimpleExpr ^^ {
-        case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (LTE(left, right): LogicExpr)
-      } |
-      pSimpleExpr ~ ">" ~ pSimpleExpr ^^ {
-        case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (GT(left, right): LogicExpr)
-      } |
-      pSimpleExpr ~ ">=" ~ pSimpleExpr ^^ {
-        case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (GTE(left, right): LogicExpr)
-      } |
-      pSimpleExpr ~ ("==" | "=") ~ pSimpleExpr ^^ {
-        case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (Eq(left, right): LogicExpr)
-      } |
-      pSimpleExpr ~ ("<>" | "!=") ~ pSimpleExpr ^^ {
-        case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (NEq(left, right): LogicExpr)
-      } |
-      pTuple ~ ("not" | "!") ~ "in" ~ pSetExpr ^^ {
-        case valuesS ~ _ ~ _ ~ setS => for { values <- valuesS; set <- setS } yield (NotIn(values, set): LogicExpr)
-      } |
-      pSimpleExpr ~ ("not" | "!") ~ "in" ~ pSetExpr ^^ {
-        case valueS ~ _ ~ _ ~ setS => for { value <- valueS; set <- setS } yield (NotIn(List(value), set): LogicExpr)
-      } |
-      pTuple ~ "in" ~ pSetExpr ^^ {
-        case valuesS ~ _ ~ setS => for { values <- valuesS; set <- setS } yield (In(values, set): LogicExpr)
-      } |
-      pSimpleExpr ~ "in" ~ pSetExpr ^^ {
-        case valueS ~ _ ~ setS => for { value <- valueS; set <- setS } yield (In(List(value), set): LogicExpr)
-      } |
-      pSetExpr ~ ("not" | "!") ~ "within" ~ pSetExpr ^^ {
-        case leftS ~ _ ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (NotWithin(left, right): LogicExpr)
-      } |
-      pSetExpr ~ "within" ~ pSetExpr ^^ {
-        case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (Within(left, right): LogicExpr)
-      }
+    pSimpleExpr ~ "<=" ~ pSimpleExpr ^^ {
+      case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (LTE(left, right): LogicExpr)
+    } |
+    pSimpleExpr ~ ">" ~ pSimpleExpr ^^ {
+      case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (GT(left, right): LogicExpr)
+    } |
+    pSimpleExpr ~ ">=" ~ pSimpleExpr ^^ {
+      case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (GTE(left, right): LogicExpr)
+    } |
+    pSimpleExpr ~ ("==" | "=") ~ pSimpleExpr ^^ {
+      case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (Eq(left, right): LogicExpr)
+    } |
+    pSimpleExpr ~ ("<>" | "!=") ~ pSimpleExpr ^^ {
+      case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (NEq(left, right): LogicExpr)
+    } |
+    pTuple ~ ("not" | "!") ~ "in" ~ pSetExpr ^^ {
+      case valuesS ~ _ ~ _ ~ setS => for { values <- valuesS; set <- setS } yield (NotIn(values, set): LogicExpr)
+    } |
+    pSimpleExpr ~ ("not" | "!") ~ "in" ~ pSetExpr ^^ {
+      case valueS ~ _ ~ _ ~ setS => for { value <- valueS; set <- setS } yield (NotIn(List(value), set): LogicExpr)
+    } |
+    pTuple ~ "in" ~ pSetExpr ^^ {
+      case valuesS ~ _ ~ setS => for { values <- valuesS; set <- setS } yield (In(values, set): LogicExpr)
+    } |
+    pSimpleExpr ~ "in" ~ pSetExpr ^^ {
+      case valueS ~ _ ~ setS => for { value <- valueS; set <- setS } yield (In(List(value), set): LogicExpr)
+    } |
+    pSetExpr ~ ("not" | "!") ~ "within" ~ pSetExpr ^^ {
+      case leftS ~ _ ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (NotWithin(left, right): LogicExpr)
+    } |
+    pSetExpr ~ "within" ~ pSetExpr ^^ {
+      case leftS ~ _ ~ rightS => for { left <- leftS; right <- rightS } yield (Within(left, right): LogicExpr)
+    }
 
   lazy val pLogicExpr14: PP[LogicExpr] =
     pLogicExpr1
@@ -801,23 +804,23 @@ class Parser extends RegexParsers with PackratParsers {
   lazy val pLogicExpr1: PP[LogicExpr] =
     pNumExpr.as[LogicExpr] |
       "(" ~> pLogicExpr <~ ")" |
-       pLogicExpr
+      pLogicExpr
 
   ////
   // LINEAR
 
   lazy val pLinExpr: PP[LinExpr] = pLinExprDisj.joinL(identity)
 
-  lazy val pLinExprDisj: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExprDisj: PP[Either[LinExpr, NumExpr]] =
     pCondLinExpr |
-      pLinExpr6
+    pLinExpr6
 
-  lazy val pCondLinExpr: PP[LinExpr \/ NumExpr] =
+  lazy val pCondLinExpr: PP[Either[LinExpr, NumExpr]] =
     ("if" ~> pLogicExpr <~ "then") ~ pLinExpr6 ~ opt("else" ~> pLinExpr6) ^^ {
       case testS ~ ifTrueS ~ otherwiseS =>
         for {
-          test <- testS
-          ifTrue <- ifTrueS
+          test      <- testS
+          ifTrue    <- ifTrueS
           otherwise <- otherwiseS.sequence
         } yield {
           ifTrue.fold(
@@ -825,61 +828,61 @@ class Parser extends RegexParsers with PackratParsers {
               (CondLinExpr(
                 test,
                 left,
-                otherwise.map(_.fold(identity, identity))): LinExpr).left
+                otherwise.map(_.fold(identity, identity))): LinExpr).asLeft
             },
             { right =>
               otherwise match {
-                case None => (CondNumExpr(test, right, none): NumExpr).right
-                case Some(-\/(lin)) =>
+                case None => (CondNumExpr(test, right, none): NumExpr).asRight
+                case Some(Left(lin)) =>
                   (CondLinExpr(
                     test,
                     right,
-                    lin.some): LinExpr).left
-                case Some(\/-(num)) =>
+                    lin.some): LinExpr).asLeft
+                case Some(Right(num)) =>
                   (CondNumExpr(
                     test,
                     right,
-                    num.some): NumExpr).right
+                    num.some): NumExpr).asRight
               }
             })
         }
     }
 
-  lazy val pLinExpr6: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExpr6: PP[Either[LinExpr, NumExpr]] =
     pLinExpr5 ~ rep(wpos("+" | "-" | "less") ~ pLinExpr5) ^^ {
       case numS ~ listP =>
         for {
-          num <- numS
-          p = listP.map { case op ~ exprS => (op, exprS) }.unzip
-          ops = p._1
+          num  <- numS
+          p     = listP.map { case op ~ exprS => (op, exprS) }.unzip
+          ops   = p._1
           listS = p._2
           list <- listS.sequence.map(ops.zip(_))
           result <- stateT {
-            val newVal: V[LinExpr \/ NumExpr] =
-              list.foldLeft(num.right[RefError]) {
+            val newVal: V[Either[LinExpr, NumExpr]] =
+              list.foldLeft(num.asRight[RefError]) {
                 case (accum, (oper, expr)) => oper match {
                   case ("+", _) =>
                     (accum, expr) match {
-                      case (\/-(-\/(lin)), \/-(num)) => (LinAdd(lin, num): LinExpr).left.right
-                      case (\/-(\/-(num)), -\/(lin)) => (LinAdd(num, lin): LinExpr).left.right
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumAdd(num1, num2): NumExpr).right.right
-                      case (\/-(-\/(lin1)), -\/(lin2)) => (LinAdd(lin1, lin2): LinExpr).left.right
+                      case (Right(Left (lin)) , Right(num))  => (LinAdd(lin,  num) : LinExpr).asLeft.asRight
+                      case (Right(Right(num)) , Left (lin))  => (LinAdd(num,  lin) : LinExpr).asLeft.asRight
+                      case (Right(Right(num1)), Right(num2)) => (NumAdd(num1, num2): NumExpr).asRight.asRight
+                      case (Right(Left (lin1)), Left (lin2)) => (LinAdd(lin1, lin2): LinExpr).asLeft.asRight
                       case (x, _) => x
                     }
                   case ("-", _) =>
                     (accum, expr) match {
-                      case (\/-(-\/(lin)), \/-(num)) => (LinSub(lin, num): LinExpr).left.right
-                      case (\/-(\/-(num)), -\/(lin)) => (LinSub(num, lin): LinExpr).left.right
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumSub(num1, num2): NumExpr).right.right
-                      case (\/-(-\/(lin1)), -\/(lin2)) => (LinSub(lin1, lin2): LinExpr).left.right
+                      case (Right(Left (lin)) , Right(num))  => (LinSub(lin,  num) : LinExpr).asLeft.asRight
+                      case (Right(Right(num)) , Left (lin))  => (LinSub(num,  lin) : LinExpr).asLeft.asRight
+                      case (Right(Right(num1)), Right(num2)) => (NumSub(num1, num2): NumExpr).asRight.asRight
+                      case (Right(Left (lin1)), Left (lin2)) => (LinSub(lin1, lin2): LinExpr).asLeft.asRight
                       case (x, _) => x
                     }
                   case ("less", pos) =>
                     (accum, expr) match {
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumLess(num1, num2): NumExpr).right.right
-                      case (\/-(x), y) =>
-                        val str = x.fold(_.shows, _.shows) + " less " + y.fold(_.shows, _.shows)
-                        TypeMismatch(s"`less' of linear expressions is not allowed: `$str'", pos).left
+                      case (Right(Right(num1)), Right(num2)) => (NumLess(num1, num2): NumExpr).asRight.asRight
+                      case (Right(x), y) =>
+                        val str = x.fold(_.show, _.show) + " less " + y.fold(_.show, _.show)
+                        TypeMismatch(s"`less' of linear expressions is not allowed: `$str'", pos).asLeft
                       case (x, _) => x
                     }
                   case _ => sys.error(s"""Found `$oper' expecting `("+" | "-" | "less")' on pre-validated String. This is a bug.""")
@@ -892,24 +895,24 @@ class Parser extends RegexParsers with PackratParsers {
         }
     }
 
-  lazy val pLinExpr5: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExpr5: PP[Either[LinExpr, NumExpr]] =
     pIterLinExpr |
       pLinExpr4
 
-  lazy val pIterLinExpr: PP[LinExpr \/ NumExpr] =
+  lazy val pIterLinExpr: PP[Either[LinExpr, NumExpr]] =
     ("sum" | "prod" | "min" | "max") ~ pIndExpr ~ wpos(pLinExpr4) ^^ {
       case op ~ indexingS ~ ((integrandS, pos)) =>
         for {
           p <- scoped(indexingS, integrandS)
-          indexing = p._1
+          indexing  = p._1
           integrand = p._2
           safeIntegrand <- stateT {
             (op, integrand) match {
-              case ("sum", _) => integrand.right
-              case (_, \/-(num @_)) => integrand.right
-              case (_, -\/(lin)) =>
-                val linStr = lin.shows
-                TypeMismatch(s"`$op' is not allowed for linear expresions: `$linStr'", pos).left
+              case ("sum", _)         => integrand.asRight
+              case (_, Right(num @_)) => integrand.asRight
+              case (_, Left(lin)) =>
+                val linStr = lin.show
+                TypeMismatch(s"`$op' is not allowed for linear expresions: `$linStr'", pos).asLeft
             }
           }
         } yield {
@@ -918,59 +921,59 @@ class Parser extends RegexParsers with PackratParsers {
               integrand.bimap(
                 LinSum(indexing, _): LinExpr,
                 NumSum(indexing, _): NumExpr)
-            case ("prod", \/-(num)) => (NumProd(indexing, num): NumExpr).right
-            case ("min", \/-(num)) => (NumMin(indexing, num): NumExpr).right
-            case ("max", \/-(num)) => (NumMax(indexing, num): NumExpr).right
+            case ("prod", Right(num)) => (NumProd(indexing, num): NumExpr).asRight
+            case ("min" , Right(num)) => (NumMin (indexing, num): NumExpr).asRight
+            case ("max" , Right(num)) => (NumMax (indexing, num): NumExpr).asRight
           }
         }
     }
 
-  lazy val pLinExpr4: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExpr4: PP[Either[LinExpr, NumExpr]] =
     pLinExpr3 ~ rep(wpos("*" | "/" | "div" | "mod") ~ pLinExpr3) ^^ {
       case numS ~ listP =>
         for {
-          num <- numS
-          p = listP.map { case op ~ exprS => (op, exprS) }.unzip
-          ops = p._1
+          num  <- numS
+          p     = listP.map { case op ~ exprS => (op, exprS) }.unzip
+          ops   = p._1
           listS = p._2
           list <- listS.sequence.map(ops.zip(_))
           result <- stateT {
-            val newVal: V[LinExpr \/ NumExpr] =
-              list.foldLeft(num.right[RefError]) {
+            val newVal: V[Either[LinExpr, NumExpr]] =
+              list.foldLeft(num.asRight[RefError]) {
                 case (accum, (oper, expr)) => oper match {
                   case ("*", pos) =>
                     (accum, expr) match {
-                      case (\/-(-\/(lin)), \/-(num)) => (LinMult(num, lin): LinExpr).left.right
-                      case (\/-(\/-(num)), -\/(lin)) => (LinMult(num, lin): LinExpr).left.right
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumMult(num1, num2): NumExpr).right.right
-                      case (\/-(-\/(lin1)), -\/(lin2)) =>
-                        val str = lin1.shows + " * " + lin2.shows
-                        TypeMismatch(s"Multiplication of linear expressions is not allowed: `$str'", pos).left
+                      case (Right(Left (lin)) , Right(num))  => (LinMult(num,  lin) : LinExpr).asLeft.asRight
+                      case (Right(Right(num)) , Left (lin))  => (LinMult(num,  lin) : LinExpr).asLeft.asRight
+                      case (Right(Right(num1)), Right(num2)) => (NumMult(num1, num2): NumExpr).asRight.asRight
+                      case (Right(Left (lin1)), Left (lin2)) =>
+                        val str = lin1.show + " * " + lin2.show
+                        TypeMismatch(s"Multiplication of linear expressions is not allowed: `$str'", pos).asLeft
                       case (x, _) => x
                     }
                   case ("/", pos) =>
                     (accum, expr) match {
-                      case (\/-(-\/(lin)), \/-(num)) => (LinDiv(lin, num): LinExpr).left.right
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumDiv(num1, num2): NumExpr).right.right
-                      case (\/-(x), -\/(lin2)) =>
-                        val str = x.fold(_.shows, _.shows) + " / " + lin2.shows
-                        TypeMismatch(s"Division by linear expressions is not allowed: `$str'", pos).left
+                      case (Right(Left (lin)) , Right(num))  => (LinDiv(lin,  num) : LinExpr).asLeft.asRight
+                      case (Right(Right(num1)), Right(num2)) => (NumDiv(num1, num2): NumExpr).asRight.asRight
+                      case (Right(x), Left(lin2)) =>
+                        val str = x.fold(_.show, _.show) + " / " + lin2.show
+                        TypeMismatch(s"Division by linear expressions is not allowed: `$str'", pos).asLeft
                       case (x, _) => x
                     }
                   case ("div", pos) =>
                     (accum, expr) match {
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumDivExact(num1, num2): NumExpr).right.right
-                      case (\/-(x), y) =>
-                        val str = x.fold(_.shows, _.shows) + " div " + y.fold(_.shows, _.shows)
-                        TypeMismatch(s"Exact division of linear expressions is not allowed: `$str'", pos).left
+                      case (Right(Right(num1)), Right(num2)) => (NumDivExact(num1, num2): NumExpr).asRight.asRight
+                      case (Right(x), y) =>
+                        val str = x.fold(_.show, _.show) + " div " + y.fold(_.show, _.show)
+                        TypeMismatch(s"Exact division of linear expressions is not allowed: `$str'", pos).asLeft
                       case (x, _) => x
                     }
                   case ("mod", pos) =>
                     (accum, expr) match {
-                      case (\/-(\/-(num1)), \/-(num2)) => (NumMod(num1, num2): NumExpr).right.right
-                      case (\/-(x), y) =>
-                        val str = x.fold(_.shows, _.shows) + " div " + y.fold(_.shows, _.shows)
-                        TypeMismatch(s"Modulus of linear expressions is not allowed: `$str'", pos).left
+                      case (Right(Right(num1)), Right(num2)) => (NumMod(num1, num2): NumExpr).asRight.asRight
+                      case (Right(x), y) =>
+                        val str = x.fold(_.show, _.show) + " div " + y.fold(_.show, _.show)
+                        TypeMismatch(s"Modulus of linear expressions is not allowed: `$str'", pos).asLeft
                       case (x, _) => x
                     }
                   case _ => sys.error(s"""Found `$oper' expecting `("*" | "/" | "div" | "mod")' on pre-validated String. This is a bug.""")
@@ -983,7 +986,7 @@ class Parser extends RegexParsers with PackratParsers {
         }
     }
 
-  lazy val pLinExpr3: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExpr3: PP[Either[LinExpr, NumExpr]] =
     pLinExpr2 |
       ("+" | "-") ~ pLinExpr2 ^^ {
         case op ~ exprS =>
@@ -991,29 +994,29 @@ class Parser extends RegexParsers with PackratParsers {
             exp <- exprS
           } yield {
             op match {
-              case "+" => exp.bimap(LinUnaryPlus(_): LinExpr, NumUnaryPlus(_): NumExpr)
+              case "+" => exp.bimap(LinUnaryPlus (_): LinExpr, NumUnaryPlus (_): NumExpr)
               case "-" => exp.bimap(LinUnaryMinus(_): LinExpr, NumUnaryMinus(_): NumExpr)
               case _ => sys.error(s"""Found `$op' expecting `("+" | "-")' on pre-validated String. This is a bug.""")
             }
           }
       }
 
-  lazy val pLinExpr2: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExpr2: PP[Either[LinExpr, NumExpr]] =
     wpos(pLinExpr1) ~ rep(wpos("**" | "^") ~ pLinExpr1) ^^ {
       case (numS, pos) ~ listP =>
         for {
-          num <- numS
-          p = listP.map { case op ~ exprS => (op, exprS) }.unzip
-          ops = p._1
+          num  <- numS
+          p     = listP.map { case op ~ exprS => (op, exprS) }.unzip
+          ops   = p._1
           listS = p._2
           list <- listS.sequence.map(ops.zip(_))
           result <- stateT {
             val aux = (num, pos) :: list.map { case ((_, pos), x) => x -> pos }
-            aux.init.foldRight(aux.last._1.right[RefError]) {
-              case ((\/-(num1), _), \/-(\/-(num2))) => (NumRaise(num1, num2): NumExpr).right.right
-              case ((x, pos), \/-(y)) =>
-                val str = x.fold(_.shows, _.shows) + " ** " + y.fold(_.shows, _.shows)
-                TypeMismatch(s"`raise' is not allowed for linear expresions: `$str'", pos).left
+            aux.init.foldRight(aux.last._1.asRight[RefError]) {
+              case ((Right(num1), _), Right(Right(num2))) => (NumRaise(num1, num2): NumExpr).asRight.asRight
+              case ((x, pos), Right(y)) =>
+                val str = x.fold(_.show, _.show) + " ** " + y.fold(_.show, _.show)
+                TypeMismatch(s"`raise' is not allowed for linear expresions: `$str'", pos).asLeft
               case (_, x) => x
             }
           }
@@ -1022,33 +1025,33 @@ class Parser extends RegexParsers with PackratParsers {
         }
     }
 
-  lazy val pLinExpr1: PP[LinExpr \/ NumExpr] =
+  lazy val pLinExpr1: PP[Either[LinExpr, NumExpr]] =
     pLinRef |
-      pNumFuncRef.asRight[LinExpr] |
-      pNumLit.map(x => ev.state(x: NumExpr)).asRight[LinExpr] |
-      "(" ~> pLinExprDisj <~ ")" | 
-      pLinExprDisj
+    pNumFuncRef.asRight[LinExpr] |
+    pNumLit.map(x => ev.pure(x: NumExpr)).asRight[LinExpr] |
+    "(" ~> pLinExprDisj <~ ")" | 
+    pLinExprDisj
 
-  lazy val pLinRef: PP[LinExpr \/ NumExpr] = pSubscriptedLinRef | pUnsubscriptedLinRef
+  lazy val pLinRef: PP[Either[LinExpr, NumExpr]] = pSubscriptedLinRef | pUnsubscriptedLinRef
 
-  lazy val pSubscriptedLinRef: PP[LinExpr \/ NumExpr] = wpos(pRefSymName) ~ pSubscript ^^ {
+  lazy val pSubscriptedLinRef: PP[Either[LinExpr, NumExpr]] = wpos(pRefSymName) ~ pSubscript ^^ {
     case (name, pos) ~ subscriptS =>
       for {
         subscript <- subscriptS
-        linRef <- ref(name, pos, {
-          case xvar: VarStat => (VarRef(xvar, subscript): LinExpr).left
-          case param: ParamStat => (ParamRef(param, subscript): NumExpr).right
+        linRef    <- ref(name, pos, {
+          case xvar : VarStat   => (VarRef  (xvar , subscript): LinExpr).asLeft
+          case param: ParamStat => (ParamRef(param, subscript): NumExpr).asRight
         })
       } yield linRef
   }
 
-  lazy val pUnsubscriptedLinRef: PP[LinExpr \/ NumExpr] = wpos(pRefSymName) ^^ {
+  lazy val pUnsubscriptedLinRef: PP[Either[LinExpr, NumExpr]] = wpos(pRefSymName) ^^ {
     case (name, pos) =>
       for {
         linRef <- ref(name, pos, {
-          case xvar: VarStat => (VarRef(xvar): LinExpr).left
-          case param: ParamStat => (ParamRef(param): NumExpr).right
-          case dummy: DummyIndDecl => (DummyIndRef(dummy): NumExpr).right
+          case xvar : VarStat      => (VarRef     (xvar) : LinExpr).asLeft
+          case param: ParamStat    => (ParamRef   (param): NumExpr).asRight
+          case dummy: DummyIndDecl => (DummyIndRef(dummy): NumExpr).asRight
         })
       } yield linRef
   }
@@ -1083,20 +1086,20 @@ class Parser extends RegexParsers with PackratParsers {
   implicit class PAOps[A](x: P[A]) {
     def as[B >: A]: P[B] = x.map(_.map(x => x: B))
 
-    def asRight[B]: P[B \/ A] = x.map(_.map(_.right[B]))
+    def asRight[B]: P[Either[B, A]] = x.map(_.map(_.asRight[B]))
 
-    def asLeft[B]: P[A \/ B] = x.map(_.map(_.left[B]))
+    def asLeft [B]: P[Either[A, B]] = x.map(_.map(_.asLeft[B]))
   }
 
   implicit class PPAOps[A](x: PP[A]) {
     def as[B >: A]: PP[B] = x.map(_.map(x => x: B))
 
-    def asRight[B]: PP[B \/ A] = x.map(_.map(_.right[B]))
+    def asRight[B]: PP[Either[B, A]] = x.map(_.map(_.asRight[B]))
 
-    def asLeft[B]: PP[A \/ B] = x.map(_.map(_.left[B]))
+    def asLeft [B]: PP[Either[A, B]] = x.map(_.map(_.asLeft[B]))
   }
 
-  implicit class PPAOrBOps[A, B](x: PP[A \/ B]) {
+  implicit class PPAOrBOps[A, B](x: PP[Either[A,B]]) {
     def joinL(r: B => A): PP[A] = x.map(_.map(_.fold(identity, r)))
     def joinR(l: A => B): PP[B] = x.map(_.map(_.fold(l, identity)))
   }
@@ -1151,11 +1154,15 @@ object Parser {
 
   def apply(): Parser = new Parser
 
-  type V[A] = RefError \/ A
+  type V[A] = Either[RefError, A]
 
   type S[A] = StateT[V, SymTab, A]
 
-  val ev = StateT.stateTMonadState[SymTab, V]
+  //val ev = StateT.stateTMonadState[SymTab, V]
+  object ev {
+    def pure[A](x: A) = StateT.pure[V, SymTab, A](x)
+    def get           = StateT.get [V, SymTab] 
+  }
 
   case class SymTab(tab: LinkedMap[SymName, Decl], upperScope: Option[SymTab] = None) {
 
@@ -1178,7 +1185,7 @@ object Parser {
       val ws = " " * size
       s"""SymTab(
          |$ws  tab=${tab.map(x => s"$ws    ${x._1} -> ${x._2}").mkString("\n", "\n", "")}
-         |$ws  upperScope=${upperScope.map(_.string(size + 2)) | "none"}
+         |$ws  upperScope=${upperScope.map(_.string(size + 2)).getOrElse("none")}
          |$ws)""".stripMargin
     }
 
@@ -1231,25 +1238,25 @@ object Parser {
   def putDecl[A <: Decl](a: A, pos: Position): S[A] = stateT { symTab =>
     symTab.get(a.name).fold {
       val newState = symTab + (a.name -> a)
-      (newState -> a).right[RefError]
+      (newState -> a).asRight[RefError]
     } { decl =>
-      AlreadyDeclared(a.name, decl, pos).left
+      AlreadyDeclared(a.name, decl, pos).asLeft
     }
   }
 
   def updateDecl[A <: Decl](a: A): S[A] = stateT { symTab =>
     val newState = symTab + (a.name -> a)
-    (newState -> a).right
+    (newState -> a).asRight
   }
 
   def removeScope: S[SymTab] = stateT { symTab =>
-    val newState = symTab.upperScope | SymTab.empty
-    (newState -> symTab).right
+    val newState = symTab.upperScope.getOrElse(SymTab.empty)
+    (newState -> symTab).asRight
   }
 
   def putScope: S[SymTab] = stateT { symTab =>
     val newState = SymTab(LinkedMap.empty, symTab.some)
-    (newState -> symTab).right
+    (newState -> symTab).asRight
   }
 
   def scoped[A, B](indexingS: S[A], integrandS: S[B]): S[(A, B)] =
@@ -1265,8 +1272,8 @@ object Parser {
 
   def ref[A](name: SymName, pos: Position, pf: PartialFunction[Decl, A])(implicit Manifest: Manifest[A]): S[A] = stateT { symTab =>
     for {
-      decl <- symTab.get(name).toRightDisjunction(NotDeclared(name, pos))
-      a <- pf.lift(decl).toRightDisjunction(TypeMismatch(decl, Manifest, pos))
+      decl <- symTab.get(name).toRight(NotDeclared(name, pos))
+      a    <-    pf.lift(decl).toRight(TypeMismatch(decl, Manifest, pos))
     } yield {
       (symTab, a)
     }
@@ -1278,24 +1285,24 @@ object Parser {
     val pf: PartialFunction[Any, A] = { case a: A => a }
 
     for {
-      given <- symTab.get(name).toRightDisjunction(NotDeclared(name, pos))
-      a <- pf.lift(given).toRightDisjunction(TypeMismatch(given, Manifest, pos))
+      given <- symTab.get(name).toRight(NotDeclared(name, pos))
+      a     <-   pf.lift(given).toRight(TypeMismatch(given, Manifest, pos))
     } yield {
       (symTab, a)
     }
 
   }
 
-  def refDisj[A <: Decl, B <: Decl](name: SymName, pos: Position)(implicit ManifestA: Manifest[A], ManifestB: Manifest[B]): S[A \/ B] = stateT { symTab =>
+  def refDisj[A <: Decl, B <: Decl](name: SymName, pos: Position)(implicit ManifestA: Manifest[A], ManifestB: Manifest[B]): S[Either[A, B]] = stateT { symTab =>
 
-    val pf: PartialFunction[Any, A \/ B] = {
-      case a: A => a.left
-      case b: B => b.right
+    val pf: PartialFunction[Any, Either[A, B]] = {
+      case a: A => a.asLeft
+      case b: B => b.asRight
     }
 
     for {
-      given <- symTab.get(name).toRightDisjunction(NotDeclared(name, pos))
-      d <- pf.lift(given).toRightDisjunction(TypeMismatch(given, manifest[A \/ B], pos))
+      given <- symTab.get(name).toRight(NotDeclared(name, pos))
+      d     <-   pf.lift(given).toRight(TypeMismatch(given, manifest[Either[A, B]], pos))
     } yield {
       (symTab, d)
     }
@@ -1339,7 +1346,7 @@ object Parser {
       val simpleName = scala.reflect.NameTransformer.decode(m.runtimeClass.getSimpleName)
       m.typeArguments match {
         case Nil => simpleName
-        case xs => s"$simpleName[${xs.map(string(_)).mkString(", ")}]"
+        case xs  => s"$simpleName[${xs.map(string(_)).mkString(", ")}]"
       }
     }
   }
@@ -1350,42 +1357,40 @@ object Parser {
 
     implicit class RunParseResult[A](result: Parsers#ParseResult[S[A]]) {
 
-      import scalaz.{ Success => _, _ } //, Scalaz._
-
-      def run(implicit symTab: SymTab): \/[Parsers#NoSuccess \/ RefError, (SymTab, A)] = {
+      def run(implicit symTab: SymTab): Either[Either[Parsers#NoSuccess, RefError], (SymTab, A)] = {
 
         result match {
           case s: Parsers#Success[S[A]] =>
 
             s.result.run(symTab) match {
-              case -\/(err) =>
-                err.right.left
+              case Left(err) =>
+                err.asRight.asLeft
 
-              case \/-(res) =>
-                res.right
+              case Right(res) =>
+                res.asRight
             }
 
           case e: Parsers#NoSuccess =>
-            e.left.left
+            e.asLeft.asLeft
 
         }
 
       }
 
-      def run2(implicit symTab: SymTab): \/[Parsers#NoSuccess \/ RefError, A] = {
+      def run2(implicit symTab: SymTab): Either[Either[Parsers#NoSuccess, RefError], A] = {
         run match {
-          case \/-((_, value)) =>
+          case Right((_, value)) =>
             //println(state); println()
-            value.right
+            value.asRight
 
-          case -\/(x) => x.left
+          case Left(x) => x.asLeft
         }
 
       }
 
       def runR(implicit symTab: SymTab): A = run2 match {
-        case \/-(a) => a
-        case -\/(err) => sys.error(s"Right value expected. Left found: $err")
+        case Right(a)  => a
+        case Left(err) => sys.error(s"Right value expected. Left found: $err")
       }
 
     }

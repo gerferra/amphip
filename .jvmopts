@@ -4,8 +4,6 @@
 -XX:+UseG1GC
 
 # Enable Graal JIT
--XX:+UnlockExperimentalVMOptions
--XX:+EnableJVMCI
--XX:+UseJVMCICompiler
-
-
+# -XX:+UnlockExperimentalVMOptions
+# -XX:+EnableJVMCI
+# -XX:+UseJVMCICompiler

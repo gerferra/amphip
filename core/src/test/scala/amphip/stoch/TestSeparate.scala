@@ -139,11 +139,11 @@ class TestSeparate {
 
   }
 
-  import scalaz._, Scalaz._
+  import cats.syntax.show._
 
   def assertEq(msg: String, mSep: Model, m: Model): Unit = {
-    val mSepShows = mSep.shows
-    val mShows = m.shows
+    val mSepShows = mSep.show
+    val mShows = m.show
     assertEquals(s"$msg\nSep:\n$mSepShows\n\nExpected:\n$mShows\n", mSep, m)
   }
 

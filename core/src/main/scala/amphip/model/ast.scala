@@ -532,7 +532,8 @@ object ast {
 
       override def toString = {
         import scala.collection.JavaConverters._
-        import scalaz._, Scalaz._
+        import cats.syntax.list._
+        import mouse.option._
         val hints = hinted.asScala.valuesIterator.map(x => s"- $x").toList.toNel.cata(_.toList.mkString("\nhints:\n", "\n", ""), "")
         s"freshNames for prefix=$prefix, count=${ count.get }$hints"
       }

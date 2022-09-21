@@ -60,6 +60,8 @@ lazy val commonSettings = Seq(
     "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
     "-Ywarn-macros:before",              // via som
     "-Yrangepos"                         // for longer squiggles
+    ,
+    "-Xmaxerrs", "5"
   ),
   Compile / console / scalacOptions --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
   Compile / doc     / scalacOptions --= Seq("-Xfatal-warnings"),
@@ -91,12 +93,8 @@ lazy val core = project
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
       
-      // transitioning ...
-      "org.scalaz"             %% "scalaz-core"  % "7.2.20",
       "org.typelevel"          %% "cats-core"    % "1.1.0",
       "org.typelevel"          %% "mouse"        % "0.17",
-      //
-
       "org.typelevel"          %% "spire"        % "0.15.0",
       "com.lihaoyi"            %% "sourcecode"   % "0.1.4",
       "com.github.pathikrit"   %% "better-files" % "3.4.0",
@@ -107,7 +105,8 @@ lazy val core = project
     ),
     console / initialCommands := 
       """
-      |import scalaz.syntax.show._
+      |import cats.instances.all._
+      |import cats.syntax.show._
       |import amphip.dsl._
       """.stripMargin,
     // BigModelSpec

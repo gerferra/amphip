@@ -1,12 +1,12 @@
 package amphip.sem.mathprog
 
-import scalaz.syntax.show._
+import cats.syntax.show._
 
 import amphip.model.ast._
 import amphip.model.show._
 
 object genModel {
   
-  def apply(model: Model): String = model.shows + "\n"
+  def apply(model: Model): String = model.show + "\n"
 
 }

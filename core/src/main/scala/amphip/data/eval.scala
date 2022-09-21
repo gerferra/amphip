@@ -5,14 +5,9 @@ import scala.math.BigDecimal.RoundingMode.{ HALF_UP => HalfUp, DOWN => Down }
 
 import java.math.MathContext.{ DECIMAL128 => D128 }
 
-/*
-import scalaz.std.list._, listSyntax._
-import scalaz.std.option._, optionSyntax._
-import scalaz.syntax.foldable1._
-import scalaz.syntax.show._
-import scalaz.syntax.std.map._
-*/
-import scalaz.Scalaz._
+import cats.instances.list._
+import cats.syntax.show._
+import cats.syntax.option._
 
 import spire.math._
 import spire.implicits._
@@ -378,7 +373,7 @@ object eval {
         val expParam = 
           modelData.paramsExpansion.get(k) 
           .orElse(expand(param).get(k).map(_())) // only calculates the expansion if it is not preloaded
-          .err(s"subscript `${subscript.shows}' does not " +
+          .err(s"subscript `${subscript.show}' does not " +
             s"conform to parameter `${param.name}' definition")
 
         val assignData  = evalAtt(expParam, PFParamAssing)
@@ -573,7 +568,7 @@ object eval {
       val expSet =
         modelData.setsExpansion.get(k) 
         .orElse(expand(set).get(k).map(_())) // only calculates the expansion if it is not preloaded
-        .err(s"subscript `${subscript.shows}' does not conform to set `${set.name}' definition")
+        .err(s"subscript `${subscript.show}' does not conform to set `${set.name}' definition")
 
       val assignData  = evalAtt(expSet, PFSetAssing)
       val defaultData = evalAtt(expSet, PFSetDefault)
@@ -611,7 +606,7 @@ object eval {
           (indices, setD) match {
             case (Nil, SetTuple(Nil)) => LinkedMap.empty
             case (i :: is, SetTuple(x :: xs)) => LinkedMap(key(i.name) -> x) ++ localData(is, SetTuple(xs))
-            case (_, SetTuple(_)) => sys.error(s"`${indices.shows}' has incompatible size for `${set.shows}'")
+            case (_, SetTuple(_)) => sys.error(s"`${indices.show}' has incompatible size for `${set.show}'")
           }
 
         val setEv = eval(set)
@@ -773,6 +768,14 @@ object eval {
   private def asSetLit(data: SetData): SetLit = {
     val tuples = data.map(_.values.map(_.fold(NumLit, StringLit)))
     SetLit(tuples: _*)
+  }
+
+  private implicit class OptionOps[A](x: Option[A]) {
+    def err(msg: => String): A = x.getOrElse(sys.error(msg))
+  }
+
+  private implicit class MapOps[A, B](x: Map[A, B]) {
+    def mapKeys[C](f: A => C): Map[C, B] = x.map { case (a, b) => (f(a), b) } 
   }
 }
 

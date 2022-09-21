@@ -1,6 +1,6 @@
 package amphip.stoch
 
-import scalaz.std.option._, optionSyntax._
+import cats.syntax.option._
 
 import spire.math._, spire.implicits._
 
@@ -122,13 +122,13 @@ trait AllSyntax {
         dependsOnS && dependsOnT
     }
 
-    def isDeterministic(xvar: VarStat): Boolean = xvar.domain.map(isDeterministic) | true
+    def isDeterministic(xvar: VarStat): Boolean = xvar.domain.map(isDeterministic).getOrElse(true)
 
-    def isStochastic(xvar: VarStat): Boolean = xvar.domain.map(isStochastic) | false
+    def isStochastic(xvar: VarStat): Boolean = xvar.domain.map(isStochastic).getOrElse(false)
 
-    def isDeterministic(param: ParamStat): Boolean = param.domain.map(isDeterministic) | true
+    def isDeterministic(param: ParamStat): Boolean = param.domain.map(isDeterministic).getOrElse(true)
 
-    def isStochastic(param: ParamStat): Boolean = param.domain.map(isStochastic) | false
+    def isStochastic(param: ParamStat): Boolean = param.domain.map(isStochastic).getOrElse(false)
 
     def deterministicVariables: List[VarStat] = variables.filter(isDeterministic)
 

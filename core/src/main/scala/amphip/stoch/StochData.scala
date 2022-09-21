@@ -3,12 +3,12 @@ package amphip.stoch
 import scala.language.implicitConversions
 import scala.collection.mutable.ListBuffer
 
-import scalaz.std.option.optionSyntax._
-import scalaz.syntax.show._
-import scalaz.syntax.std.boolean._
-import scalaz.Scalaz.stringInstance
-//import scalaz.std.list.listSyntax._
+import cats.syntax.show._
+import cats.syntax.option._
 import cats.syntax.list._
+import cats.instances.string._
+import mouse.option._
+import mouse.boolean._
 
 
 import spire.math._
@@ -62,7 +62,7 @@ case class StochData private (
         dbss      = bss.unzip._1.filter { !cbssBS.contains(_) }.toSet
       } yield {
         dbss
-      }) | Set.empty
+      }).getOrElse(Set.empty)
 
     val currDS = deletedScenarios.getOrElse(history, Set.empty)
     val normalized = normalize(replacementMap) 
@@ -671,8 +671,8 @@ object StochData {
   def requireStochastic(p: ParamStat, model: StochModel): Unit = {
     require(isStochastic(p, model), {
       val stochIndExpr = IndExpr(stochIndices(model))
-      val pIndex = p.domain.cata(_.shows, "not-indexed")
-      s"Index of parameter `${p.name}' must start with ${stochIndExpr.shows} (index: $pIndex)"
+      val pIndex = p.domain.cata(_.show, "not-indexed")
+      s"Index of parameter `${p.name}' must start with ${stochIndExpr.show} (index: $pIndex)"
     })
   }
 
@@ -715,7 +715,7 @@ object Stage {
   implicit def StringToStage(str: String): Stage = Stage(str)
 }
 case class BasicScenario(name: String) {
-  override def toString = name.shows
+  override def toString = name.show
 }
 object BasicScenario {
   implicit def StringToBasicScenario(str: String): BasicScenario = BasicScenario(str)

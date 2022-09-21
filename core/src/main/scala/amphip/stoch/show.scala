@@ -1,6 +1,7 @@
 package amphip.stoch
 
-import scalaz.Show, scalaz.syntax.show._
+import cats.Show
+import cats.syntax.show._
 
 import amphip.data.show._
 import amphip.stoch.dsl._

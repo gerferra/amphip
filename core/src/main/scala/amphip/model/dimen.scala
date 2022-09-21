@@ -2,14 +2,13 @@ package amphip.model
 
 import scala.annotation.implicitNotFound
 
-import scalaz.std.option.optionSyntax._
-import scalaz.std.list.listSyntax._
-import scalaz.syntax.foldable1._
+import cats.syntax.list._
+import mouse.option._
 
 import spire.math
 
 import amphip.model.ast._
-import amphip.model.dsl._
+//import amphip.model.dsl._
 
 object dimen {
 
@@ -34,7 +33,7 @@ object dimen {
       }
 
       // all the dimensions must be the same. check?
-      dimensions.headOption | 1
+      dimensions.headOption.getOrElse(1)
   })
 
   implicit val SetExprDimen: Dimen[SetExpr] = from({
@@ -63,7 +62,7 @@ object dimen {
         case Nil => 1 // empty set has dimen 1 in MathProg
         case _ :: Nil => 1
         case l => l.size
-      } | 1
+      }.getOrElse(1)
 
     case IndExprSet(indexing) => dimen(indexing)
   })
@@ -71,7 +70,7 @@ object dimen {
   implicit val IndExprDimen: Dimen[IndExpr] = from({
     case x: IndExpr =>
       val entryDimen = x.entries.map(x => dimen(x.set))
-      entryDimen.toNel.cata(_.foldLeft1((n1, n2) => n1 + n2), 1)
+      entryDimen.toNel.cata(_.reduceLeft((n1, n2) => n1 + n2), 1)
   })
 
 }

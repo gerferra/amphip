@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 
 import scala.collection.immutable.NumericRange
 
-import scalaz.std.option._, optionSyntax._
+import cats.syntax.option._
 
 import spire.math._
 import spire.implicits._
@@ -116,8 +116,8 @@ trait TupleInstances {
 trait SetInstances extends SetInstancesLowPriority { self: NumInstances =>
 
   implicit def SetExprAsIndEntry[A](a: A)(implicit conv: A => SetExpr): IndEntry = IndEntry(Nil, a)
-  implicit def RangeAsArithSet(t: Range): ArithSet = ArithSet(t.start, t.end, if (t.step != 1) some(t.step) else none)
-  implicit def NumericRangeAsArithSet[T: Numeric](t: NumericRange[T]): ArithSet = ArithSet(t.start, t.end, some(t.step))
+  implicit def RangeAsArithSet(t: Range): ArithSet = ArithSet(t.start, t.end, if (t.step != 1) Some(t.step) else None)
+  implicit def NumericRangeAsArithSet[T: Numeric](t: NumericRange[T]): ArithSet = ArithSet(t.start, t.end, Some(t.step))
   implicit def IndExprAsSetexpr[A](a: A)(implicit conv: A => IndExpr): SetExpr = IndExprSet(a)
 
   implicit def ListListSimpleExprAsSetLit[A](values: List[List[A]])(implicit conv: A => SimpleExpr): SetExpr = SetLit(values.map(_.map(conv)): _*)

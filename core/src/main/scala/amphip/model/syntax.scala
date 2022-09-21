@@ -2,8 +2,8 @@ package amphip.model
 
 import scala.language.implicitConversions
 
-import scalaz.std.option._, optionSyntax._
-import scalaz.std.list.listSyntax._
+import cats.syntax.option._
+import cats.syntax.list._
 
 import spire.math._
 
@@ -19,19 +19,19 @@ trait AllSyntax {
   // TODO check the scope of the dummy indices used on the declarations
   // and maybe the arity of the references using `dimen' and `Try(eval)'
   def set(name: SymName, indexing: IndExpr): SetStat = SetStat(name, domain = indexing.some)
-  def set(name: SymName, entries: IndEntry*): SetStat = SetStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list.toList)))
+  def set(name: SymName, entries: IndEntry*): SetStat = SetStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.toList.toList)))
   def set(indexing: IndExpr)(implicit name: sourcecode.Name): SetStat = set(name.value, indexing)
   def set(entries: IndEntry*)(implicit name: sourcecode.Name): SetStat = set(name.value, entries: _*)
   def set(implicit name: sourcecode.Name): SetStat = set(name.value)
 
   def param(name: SymName, indexing: IndExpr): ParamStat = ParamStat(name, domain = indexing.some)
-  def param(name: SymName, entries: IndEntry*): ParamStat = ParamStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list.toList)))
+  def param(name: SymName, entries: IndEntry*): ParamStat = ParamStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.toList.toList)))
   def param(indexing: IndExpr)(implicit name: sourcecode.Name): ParamStat = param(name.value, indexing)
   def param(entries: IndEntry*)(implicit name: sourcecode.Name): ParamStat = param(name.value, entries: _*)
   def param(implicit name: sourcecode.Name): ParamStat = param(name.value)
 
   def xvar(name: SymName, indexing: IndExpr): VarStat = VarStat(name, domain = indexing.some)
-  def xvar(name: SymName, entries: IndEntry*): VarStat = VarStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.list.toList)))
+  def xvar(name: SymName, entries: IndEntry*): VarStat = VarStat(name, domain = entries.toList.toNel.map(x => IndExpr(x.toList.toList)))
   def xvar(indexing: IndExpr)(implicit name: sourcecode.Name): VarStat = xvar(name.value, indexing)
   def xvar(entries: IndEntry*)(implicit name: sourcecode.Name): VarStat = xvar(name.value, entries: _*)
   def xvar(implicit name: sourcecode.Name): VarStat = xvar(name.value)
@@ -400,7 +400,7 @@ trait AllSyntax {
   }
 
   implicit class ParamStatSyntax(val param: ParamStat) {
-    def sets: List[SetExpr] = param.domain.map(_.sets) | Nil
+    def sets: List[SetExpr] = param.domain.map(_.sets).getOrElse(Nil)
 
     def isComputable: Boolean = param.atts.exists(_ match {
       case _: ParamAssign => true
@@ -418,7 +418,7 @@ trait AllSyntax {
       xvar.copy(atts = newAtts)
     }
 
-    def sets: List[SetExpr] = xvar.domain.map(_.sets) | Nil
+    def sets: List[SetExpr] = xvar.domain.map(_.sets).getOrElse(Nil)
   }
 
   //// FUNCTIONS
@@ -427,6 +427,12 @@ trait AllSyntax {
 
   implicit class SizeSyntax[A](a: A) {
     def size[B](implicit SizeOp: SizeOp[A, B]): B = SizeOp.size(a)
+  }
+
+  // PRIVATE
+
+  private implicit class OptionOps[A](x: Option[A]) {
+    def err(msg: => String): A = x.getOrElse(sys.error(msg))
   }
 
 }

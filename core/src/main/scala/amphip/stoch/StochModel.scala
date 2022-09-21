@@ -1,6 +1,6 @@
 package amphip.stoch
 
-import scalaz.syntax.show._
+import cats.syntax.show._
 import cats.syntax.option._
 
 import amphip.dsl._
@@ -34,8 +34,8 @@ final case class MultiStageStochModel(model: ModelWithData, stochData: StochData
       checkDomain(link.name, link.domain, List(T))
 
     case STAdapter(innerT, innerS) => 
-      require(innerT == T, s"STAdapter stages set is different to model stages set (${innerT.shows} vs ${T.shows})")
-      require(innerS == S, s"STAdapter scenarios set is different to model scenarios set (${innerS.shows} vs ${S.shows})")
+      require(innerT == T, s"STAdapter stages set is different to model stages set (${innerT.show} vs ${T.show})")
+      require(innerS == S, s"STAdapter scenarios set is different to model scenarios set (${innerS.show} vs ${S.show})")
 
   }
   
@@ -45,7 +45,7 @@ object StochModel {
   def checkDomain(name: String, domain: Option[IndExpr], targetDomain: List[SetExpr]): Unit = 
     require({
       domain.fold(false)(_.entries.map(_.set) == targetDomain)
-    }, s"`$name' must be indexed " + ind(targetDomain.map(x => x: IndEntry): _*).shows + " but was: " + domain.fold("not-indexed")(_.shows))
+    }, s"`$name' must be indexed " + ind(targetDomain.map(x => x: IndEntry): _*).show + " but was: " + domain.fold("not-indexed")(_.show))
 
   def isStochastic(entries: List[IndEntry], T: SetStat, S: SetStat): Boolean = {
     val dependsOnT = entries.exists(_.set == T())
@@ -105,8 +105,7 @@ object StochModel {
   /* hint to use as name of the dummy index */
   def nameHint(expr: SetExpr): Option[SymName] = {
     def isValidChar(c: Char) = c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_'
-    import scalaz.syntax.show._
-    val str = expr.shows
+    val str = expr.show
     str.filter(isValidChar).take(1).toLowerCase.some
   }
 }
