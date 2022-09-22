@@ -1662,28 +1662,23 @@ class TestParser {
         EqConstraintStat("E", left = NumLit(1), right = ParamRef(ParamStat("pB"))))))
 
 
-    // XXX add tests for sample models
-    /*
+    // tests for sample models
+
+    import cats.syntax.show._
+    import better.files._
     import amphip.model.show._
-    import scalax.io.Resource
     
     object data {
-      val modelA = Resource.fromClasspath("examples.modelA").string
-
+      val modelAName = "fuelSupplyMinTSSep.mod"
+      val modelA     = Resource.getAsString(modelAName)
     }
 
-    val start = System.currentTimeMillis()
     val res = parseModel(data.modelA).runR(SymTab.empty)
-    val end = System.currentTimeMillis()
-    val elapsed = end - start
-    println(s"$elapsed millis")
     assertTrue(res.isInstanceOf[Model])
-
+    
     val model = res.asInstanceOf[Model]
-    assertEquals(parse(phrase(pModel), model.shows).runR(SymTab.empty), model)
-    * 
-    */
-
+    val res2  = parseModel(model.show).runR(SymTab.empty)
+    assertEquals(res2, model)
   }
 }
 

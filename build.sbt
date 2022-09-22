@@ -97,7 +97,7 @@ lazy val core = project
       "org.typelevel"          %% "mouse"        % "0.17",
       "org.typelevel"          %% "spire"        % "0.15.0",
       "com.lihaoyi"            %% "sourcecode"   % "0.1.4",
-      "com.github.pathikrit"   %% "better-files" % "3.4.0",
+      "com.github.pathikrit"   %% "better-files" % "3.9.1",
       "com.chuusai"            %% "shapeless"    % "2.3.3", 
     ),
     libraryDependencies ++= Seq(
