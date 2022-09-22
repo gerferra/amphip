@@ -772,7 +772,7 @@ class TestShow {
         left = LinSum(IndExpr(List(IndEntry(List(j), prd))), make(j, t)),
         right = max_prd): ConstraintStat).show)
 
-    assertEquals("""s.t. balance{i in raw, t in 1 .. N}: store[i, (t + 1)] == (store[i, t] - (sum{j in prd} (units[i, j] * make[j, t])));""",
+    assertEquals("""s.t. balance{i in raw, t in 1 .. N}: store[i, (t + 1)] = (store[i, t] - (sum{j in prd} (units[i, j] * make[j, t])));""",
       (EqConstraintStat(
         name = "balance",
         domain =
@@ -818,7 +818,7 @@ class TestShow {
       					 |
       					 |minimize D: (2 * x);
       					 |
-      					 |s.t. E: 1 == 1;
+      					 |s.t. E: 1 = 1;
       					 |
       					 |end;""".stripMargin,
       Model(List(
