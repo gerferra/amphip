@@ -13,19 +13,19 @@ object GLPSOL extends Solver {
   def solve(model: ModelWithData): Ret = {
 
     val modelSection = mathprog.genModel(model.model)
-    val dataSection = mathprog.genData(model.data)
+    val dataSection  = mathprog.genData (model.data)
 
     val modelPath  = File.newTemporaryFile(prefix = "mathprog-", suffix = "-model")
     val dataPath   = File.newTemporaryFile(prefix = "mathprog-", suffix = "-data")
     val outputPath = File.newTemporaryFile(prefix = "mathprog-", suffix = "-output")
 
     modelPath.write(modelSection)
-    dataPath.write(dataSection)
+    dataPath .write(dataSection)
 
     val builder = Process("glpsol",
       Seq(
-        "--model", modelPath.pathAsString,
-        "--data", dataPath.pathAsString,
+        "--model" , modelPath .pathAsString,
+        "--data"  , dataPath  .pathAsString,
         "--output", outputPath.pathAsString))
 
     println(builder)
