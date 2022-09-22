@@ -17,6 +17,8 @@ import Parser._
 /**
  * Parser for MathProg model files.
  * Based on http://www.cs.unb.ca/~bremner/docs/glpk/gmpl.pdf
+ * 
+ * (recursive declarations are not supported.)
  */
 class Parser extends RegexParsers with PackratParsers {
 
@@ -131,7 +133,7 @@ class Parser extends RegexParsers with PackratParsers {
             LTEConstraintStat(name, alias, domain, f, g): ConstraintStat
           }
       } |
-      base ~ pLinExpr ~ opt(",") ~ "=" ~ pLinExpr <~ ";" ^^ {
+      base ~ pLinExpr ~ opt(",") ~ ("==" | "=") ~ pLinExpr <~ ";" ^^ {
         case name ~ alias ~ domainS ~ _ ~ fS ~ _ ~ _ ~ gS =>
           for {
             _ <- putScope
