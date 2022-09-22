@@ -13,6 +13,7 @@ import spire.math._
 import spire.implicits._
 
 import amphip.base._
+import amphip.base.implicits._
 import amphip.model.ast._
 import amphip.model.show._
 import amphip.data.ModelData._
@@ -768,14 +769,6 @@ object eval {
   private def asSetLit(data: SetData): SetLit = {
     val tuples = data.map(_.values.map(_.fold(NumLit, StringLit)))
     SetLit(tuples: _*)
-  }
-
-  private implicit class OptionOps[A](x: Option[A]) {
-    def err(msg: => String): A = x.getOrElse(sys.error(msg))
-  }
-
-  private implicit class MapOps[A, B](x: Map[A, B]) {
-    def mapKeys[C](f: A => C): Map[C, B] = x.map { case (a, b) => (f(a), b) } 
   }
 }
 

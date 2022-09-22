@@ -37,4 +37,11 @@ object implicits {
     }
   }
 
+  implicit class OptionOps[A](x: Option[A]) {
+    def err(msg: => String): A = x.getOrElse(sys.error(msg))
+  }
+
+  implicit class MapOps[A, B](x: Map[A, B]) {
+    def mapKeys[C](f: A => C): Map[C, B] = x.map { case (a, b) => (f(a), b) } 
+  }
 }

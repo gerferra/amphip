@@ -7,6 +7,7 @@ import cats.syntax.list._
 
 import spire.math._
 
+import amphip.base.implicits._
 import amphip.model.ast._
 import amphip.model.ops._
 import amphip.model.instances._
@@ -428,11 +429,4 @@ trait AllSyntax {
   implicit class SizeSyntax[A](a: A) {
     def size[B](implicit SizeOp: SizeOp[A, B]): B = SizeOp.size(a)
   }
-
-  // PRIVATE
-
-  private implicit class OptionOps[A](x: Option[A]) {
-    def err(msg: => String): A = x.getOrElse(sys.error(msg))
-  }
-
 }
