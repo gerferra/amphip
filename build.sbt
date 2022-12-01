@@ -4,7 +4,7 @@ lazy val commonSettings = Seq(
 
   // Publishing
   organization := "amphip",
-  version      := "0.3.0-SNAPSHOT",
+  version      := "1.0.1-SNAPSHOT",
   licenses     += "MPL-2.0" -> url("http://opensource.org/licenses/MPL-2.0"),
   homepage     := Some(url("https://github.com/gerferra/amphip")),
   developers   := List(
@@ -12,7 +12,7 @@ lazy val commonSettings = Seq(
   ),
 
   // Compilation
-  scalaVersion       := "2.12.15",
+  scalaVersion       := "2.12.17",
   scalacOptions     ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
     "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -133,7 +133,7 @@ lazy val example = project
     name := "amphip-example",
     publish / skip := true,
     libraryDependencies ++= Seq(
-      "org.scalanlp" %% "breeze" % "0.13.2"
+      "org.scalanlp" %% "breeze" % "1.3"
     )
   )
 
