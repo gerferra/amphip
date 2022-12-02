@@ -17,7 +17,7 @@ object StochDataBench {
   val BS = BasicScenario
 }
 
-/* bench/jmh:run -wi 10 -i 10 -f 1 -prof gc  -rf csv StochDataBench */
+/* bench/Jmh/run -wi 10 -i 10 -f 1 -prof gc  -rf csv StochDataBench */
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.AverageTime))
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
