@@ -395,7 +395,7 @@ This basic support is provided by the `amphip.solver.GLPSOL` object, and by exte
 
 This library was developed as part of my master's thesis. [The thesis (in Spanish) is available at the institutional repository of the Universidad de la República, of Uruguay](https://hdl.handle.net/20.500.12008/33136). 
 
-I talked about the techniques used to encode the MathProg syntax in Scala at the [Scala by the Bay 2015](http://scalabythebay2015.sched.org/event/8cbbc52523ac9e5a905361e00d357099) conference ([video](https://www.youtube.com/watch?v=Od_AH-_XoEQ), [slides](http://www.slideshare.net/gerferra/an-embedded-dsl-to-manipulate-mathprog-mixed-integer-programming-models-within-scala)).
+I talked about the techniques used to encode the MathProg syntax in Scala at the [Scala by the Bay 2015](http://2015.scala.bythebay.io/) conference ([video](https://www.youtube.com/watch?v=Od_AH-_XoEQ), [slides](http://www.slideshare.net/gerferra/an-embedded-dsl-to-manipulate-mathprog-mixed-integer-programming-models-within-scala)).
 
 
 ## Citation
