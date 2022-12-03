@@ -404,7 +404,7 @@ I talked about the techniques used to encode the MathProg syntax in Scala at the
 @mastersthesis{ferrari2022lenguaje,
   author = {Ferrari, Germán},
   title = {Lenguaje de dominio específico embebido para programación estocástica multietapa en Scala},
-  institution = {Universidad de la República (Uruguay). Facultad de Ingeniería},
+  institution = {PEDECIBA Informática, Universidad de la República},
   year = {2022},
   url = {https://hdl.handle.net/20.500.12008/33136}
 }
