@@ -13,7 +13,7 @@
 
 <img align="right" alt="Hyalella batoviensis" src="docs/hyalella-batoviensis-jtg3.png" width="200" />
 
-`amphip` is a domain specific language (DSL) that extends the algebraic modeling language GNU MathProg to support scenario-based multistage stochastic programming. The DSL is embedded in the Scala programming language, allowing models to be transformed and manipulated. It uses functional programming aiming to get the desired functionality with code that is more modular, reusable, concise, and with fewer defects.
+`amphip` is a domain specific language (DSL) that extends the algebraic modeling language [GNU MathProg](https://en.wikibooks.org/wiki/GLPK/GMPL_(MathProg)) to support scenario-based multistage stochastic programming. The DSL is embedded in the Scala programming language, allowing models to be transformed and manipulated. It uses functional programming aiming to get the desired functionality with code that is more modular, reusable, concise, and with fewer defects.
 
 ## Quick Start
 
