@@ -12,7 +12,7 @@ lazy val commonSettings = Seq(
   ),
 
   // Compilation
-  scalaVersion       := "2.12.17",
+  scalaVersion       := "2.12.20",
   scalacOptions     ++= Seq(
     "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
     "-encoding", "utf-8",                // Specify character encoding used by source files.
